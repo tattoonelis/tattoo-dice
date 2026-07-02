@@ -1,4 +1,4 @@
-# Tattoo Dice v1.5.1
+# Tattoo Dice v1.5.2
 
 Supabase counter release.
 
@@ -42,3 +42,6 @@ end;
 $$;
 
 grant execute on function increment_roll_counter() to anon;
+
+
+v1.5.2: Only lowered the logo slightly and made the slogan a touch smaller.
