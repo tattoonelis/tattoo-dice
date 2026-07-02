@@ -1,16 +1,8 @@
-# Tattoo Dice v1.3.1
+# Tattoo Dice v1.3.3
 
-Quality update.
-
-Includes:
-- visible global roll counter: `xxxxx tattoo ideas rolled`
-- weighted Classic deck
-- no duplicate words in one roll
-- no duplicate families in one roll, e.g. Cat + Panther, Snake + Cobra, Skull + Pile of Skulls
-- max 1 effect per roll, e.g. no Lightning + Flames
-- max 1 floral per roll
-- max 1 weapon per roll
-- hidden message logic stays intact
-- secret code stays intact
-
-Deploy through GitHub + Netlify.
+- Restores original roll distribution: main / detail / effect.
+- Uses the current deck only; no extra AI-added subjects.
+- Removes Star.
+- Adds visible global roll counter under the roll button.
+- Counter text uses the same color as the header.
+- Rewrites the roll script.

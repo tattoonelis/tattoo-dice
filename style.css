@@ -26,3 +26,15 @@ h1{margin:6vh 0 0;font-family:"UnifrakturCook",Georgia,serif;font-size:clamp(64p
 .credit{color:var(--footer-text);font-size:20px;letter-spacing:.08em}.credit a{color:var(--footer-text);text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:1px}.credit a:active{color:#777}
 .counter{min-height:15px;color:var(--counter-text);font-size:13px;line-height:1;letter-spacing:.11em;opacity:.95;text-transform:uppercase}
 @media (max-height:720px){h1{margin-top:2vh}.controls{gap:18px}.result{min-height:80px}.roll-button{min-height:78px}.footer{min-height:max(74px,calc(66px + env(safe-area-inset-bottom)));gap:5px}}
+
+
+.roll-counter {
+  margin: 18px auto 0;
+  text-align: center;
+  color: var(--cream);
+  font-family: inherit;
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+  min-height: 1.4em;
+}

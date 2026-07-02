@@ -4,608 +4,695 @@
     "score": 1,
     "weight": 2,
     "family": "8-ball",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Ace of Spades",
     "score": 1,
     "weight": 2,
     "family": "cards",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Anchor",
     "score": 1,
     "weight": 2,
     "family": "anchor",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Angel",
     "score": 1,
     "weight": 2,
     "family": "angel",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Axe",
     "score": 2,
     "weight": 6,
     "family": "weapon",
-    "group": "weapon"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Bamboe",
     "score": 0,
     "weight": 0.25,
     "family": "bamboe",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Barbed Wire",
     "score": 3,
     "weight": 12,
     "family": "barbed-wire",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Battle Royale",
     "score": 0,
     "weight": 0.25,
     "family": "battle-royale",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Beer",
     "score": 1,
     "weight": 2,
     "family": "beer",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Blood",
     "score": 2,
     "weight": 6,
     "family": "blood",
-    "group": "effect"
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Boobs",
     "score": 0,
     "weight": 0.25,
     "family": "boobs",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Butterfly",
     "score": 3,
     "weight": 12,
     "family": "butterfly",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Cards",
     "score": 1,
     "weight": 2,
     "family": "cards",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Cartoon",
     "score": 1,
     "weight": 2,
     "family": "cartoon",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Cat",
     "score": 1,
     "weight": 2,
     "family": "feline",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Chain",
     "score": 3,
     "weight": 12,
     "family": "chain",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Cherry",
     "score": 1,
     "weight": 2,
     "family": "floral",
-    "group": "floral"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Chrysanthemum",
     "score": 1,
     "weight": 2,
     "family": "floral",
-    "group": "floral"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Clown",
     "score": 2,
     "weight": 6,
     "family": "clown",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Cobra",
     "score": 3,
     "weight": 12,
     "family": "snake",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Cross",
     "score": 1,
     "weight": 2,
     "family": "cross",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Crystal Ball",
     "score": 1,
     "weight": 2,
     "family": "crystal-ball",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Dagger",
     "score": 3,
     "weight": 12,
     "family": "weapon",
-    "group": "weapon"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Demon",
     "score": 3,
     "weight": 12,
     "family": "demon",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Devil",
     "score": 3,
     "weight": 12,
     "family": "devil",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Dragon",
     "score": 3,
     "weight": 12,
     "family": "dragon",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Eagle",
     "score": 3,
     "weight": 12,
     "family": "bird",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Evil Clown",
     "score": 2,
     "weight": 6,
-    "family": "clown",
-    "group": "subject"
+    "family": "evil-clown",
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Eye",
     "score": 2,
     "weight": 6,
     "family": "eye",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Fan",
     "score": 0,
     "weight": 0.25,
     "family": "fan",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Fire",
     "score": 2,
     "weight": 6,
-    "family": "effect_fire",
-    "group": "effect"
+    "family": "fire",
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Flames",
     "score": 3,
     "weight": 12,
-    "family": "effect_fire",
-    "group": "effect"
+    "family": "fire",
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Flowers",
     "score": 3,
     "weight": 12,
     "family": "floral",
-    "group": "floral"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Frog",
     "score": 0,
     "weight": 0.25,
     "family": "frog",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Geisha",
     "score": 3,
     "weight": 12,
     "family": "lady",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Gorilla",
     "score": 2,
     "weight": 6,
     "family": "gorilla",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Grim Reaper",
     "score": 2,
     "weight": 6,
     "family": "grim-reaper",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Hannya",
     "score": 3,
     "weight": 12,
     "family": "hannya",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Hat",
     "score": 1,
     "weight": 2,
     "family": "hat",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Heart",
     "score": 3,
     "weight": 12,
     "family": "heart",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Helmet",
     "score": 1,
     "weight": 2,
     "family": "helmet",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Lady Head",
     "score": 3,
     "weight": 12,
     "family": "lady",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Lightning",
     "score": 3,
     "weight": 12,
     "family": "lightning",
-    "group": "effect"
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Lion",
     "score": 2,
     "weight": 6,
     "family": "feline",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Lotus",
     "score": 1,
     "weight": 2,
     "family": "floral",
-    "group": "floral"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Mace",
     "score": 1,
     "weight": 2,
     "family": "weapon",
-    "group": "weapon"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Mask",
     "score": 2,
     "weight": 6,
     "family": "mask",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Mermaid",
     "score": 1,
     "weight": 2,
-    "family": "lady",
-    "group": "subject"
+    "family": "mermaid",
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Moon",
     "score": 1,
     "weight": 2,
     "family": "moon",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Mountain",
     "score": 0,
     "weight": 0.25,
     "family": "mountain",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Oni",
     "score": 3,
     "weight": 12,
     "family": "oni",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Panther",
     "score": 3,
     "weight": 12,
     "family": "feline",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Parrot",
     "score": 1,
     "weight": 2,
     "family": "bird",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Peony",
     "score": 2,
     "weight": 6,
     "family": "floral",
-    "group": "floral"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Pig",
     "score": 0,
     "weight": 0.25,
     "family": "pig",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Pile of Skulls",
     "score": 1,
     "weight": 2,
     "family": "skull",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Pin-up",
     "score": 3,
     "weight": 12,
     "family": "lady",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Pistols",
     "score": 0,
     "weight": 0.25,
     "family": "weapon",
-    "group": "weapon"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Ram",
     "score": 0,
     "weight": 0.25,
     "family": "ram",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Raven",
     "score": 0,
     "weight": 0.25,
     "family": "bird",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Rope",
     "score": 1,
     "weight": 2,
     "family": "rope",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Rose",
     "score": 3,
     "weight": 12,
     "family": "floral",
-    "group": "floral"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Sacred Heart",
     "score": 2,
     "weight": 6,
     "family": "heart",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Scorpion",
     "score": 3,
     "weight": 12,
     "family": "scorpion",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Shark",
     "score": 2,
     "weight": 6,
     "family": "shark",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Shield",
     "score": 1,
     "weight": 2,
     "family": "shield",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Skin Rip",
     "score": 2,
     "weight": 6,
     "family": "skin-rip",
-    "group": "effect"
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Skull",
     "score": 3,
     "weight": 12,
     "family": "skull",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Smoke",
     "score": 1,
     "weight": 2,
     "family": "smoke",
-    "group": "effect"
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Snake",
     "score": 3,
     "weight": 12,
     "family": "snake",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Snake Head",
     "score": 3,
     "weight": 12,
-    "family": "snake",
-    "group": "subject"
+    "family": "snake-head",
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Spider",
     "score": 3,
     "weight": 12,
     "family": "spider",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Spider Web",
     "score": 2,
     "weight": 6,
-    "family": "spider-web",
-    "group": "subject"
+    "family": "spider",
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Stars",
     "score": 1,
     "weight": 2,
     "family": "stars",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Sun",
     "score": 1,
     "weight": 2,
     "family": "sun",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Swallow",
     "score": 3,
     "weight": 12,
     "family": "bird",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Sword",
     "score": 1,
     "weight": 2,
     "family": "weapon",
-    "group": "weapon"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Tiger",
     "score": 3,
     "weight": 12,
     "family": "feline",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Tribal",
     "score": 3,
     "weight": 12,
     "family": "tribal",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Vampire",
     "score": 0,
     "weight": 0.25,
     "family": "vampire",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Viking",
     "score": 0,
     "weight": 0.25,
     "family": "viking",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   },
   {
     "word": "Water",
     "score": 0,
     "weight": 0.25,
     "family": "water",
-    "group": "effect"
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Waves",
     "score": 0,
     "weight": 0.25,
     "family": "waves",
-    "group": "effect"
+    "group": "effect",
+    "slot": "effect"
   },
   {
     "word": "Wing",
     "score": 3,
     "weight": 12,
     "family": "wing",
-    "group": "subject"
+    "group": "detail",
+    "slot": "detail"
   },
   {
     "word": "Wizard",
     "score": 3,
     "weight": 12,
     "family": "wizard",
-    "group": "subject"
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Wolf",
     "score": 3,
     "weight": 12,
-    "family": "canine",
-    "group": "subject"
+    "family": "wolf",
+    "group": "main",
+    "slot": "main"
   },
   {
     "word": "Yin Yang",
     "score": 1,
     "weight": 2,
     "family": "yin-yang",
-    "group": "subject"
+    "group": "subject",
+    "slot": "subject"
   }
 ]

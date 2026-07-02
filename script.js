@@ -1,170 +1,141 @@
-let wordCount = 3;
+const resultEl = document.getElementById("result");
+const rollBtn = document.getElementById("rollBtn");
+const countButtons = document.querySelectorAll("[data-count]");
+const counterEl = document.getElementById("rollCounter");
+
+let selectedCount = 3;
 let deck = [];
-let secretSequence = "";
 
-const result = document.getElementById("result");
-const rollButton = document.getElementById("rollButton");
-const diceOptions = document.querySelectorAll(".dice-option");
-const counterEl = document.getElementById("counter");
-
-const HIDDEN_MESSAGE = "Keep drawing.";
-const HIDDEN_CHANCE = 0.0025;
 const SECRET_CODE = "332211";
-
-init();
+let codeBuffer = "";
+const hiddenMessages = ["Keep drawing"];
+const COUNTER_ENDPOINT = "/.netlify/functions/roll-counter";
 
 async function init() {
   await loadDeck();
-
-  result.textContent = makeRoll(wordCount).join(" - ");
+  bindControls();
   await loadCounter();
-
-  diceOptions.forEach(button => {
-    button.addEventListener("click", () => {
-      const count = Number(button.dataset.count);
-      wordCount = count;
-      diceOptions.forEach(b => b.classList.remove("active"));
-      button.classList.add("active");
-
-      registerSecretInput(String(count));
-      roll({ countIt: false, allowHidden: false });
-    });
-  });
-
-  rollButton.addEventListener("click", () => roll({ countIt: true, allowHidden: true }));
 }
 
 async function loadDeck() {
-  const response = await fetch("/decks/classic.json", { cache: "no-store" });
-  deck = await response.json();
+  try {
+    const response = await fetch("./decks/classic.json", { cache: "no-store" });
+    deck = await response.json();
+  } catch (error) {
+    console.error("Could not load deck:", error);
+    deck = [];
+  }
 }
 
-async function roll(options = { countIt: true, allowHidden: true }) {
-  if (!deck.length) return;
+function bindControls() {
+  countButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      selectedCount = Number(button.dataset.count);
+      countButtons.forEach(btn => btn.classList.remove("active"));
+      button.classList.add("active");
+      codeBuffer = (codeBuffer + selectedCount).slice(-SECRET_CODE.length);
+      if (codeBuffer === SECRET_CODE) {
+        showHiddenMessage();
+        codeBuffer = "";
+      }
+    });
+  });
 
-  if (options.allowHidden && Math.random() < HIDDEN_CHANCE) {
-    showHiddenMessage();
-    return;
+  if (rollBtn) {
+    rollBtn.addEventListener("click", async () => {
+      const roll = makeRoll(selectedCount);
+      resultEl.textContent = roll.join(" - ");
+      await incrementCounter();
+    });
   }
+}
 
-  result.classList.add("rolling");
-  rollButton.classList.add("rolling");
-
-  let ticks = 0;
-  const interval = setInterval(() => {
-    result.textContent = makeRoll(wordCount).join(" - ");
-    ticks++;
-
-    if (ticks >= 12) {
-      clearInterval(interval);
-      result.textContent = makeRoll(wordCount).join(" - ");
-      result.classList.remove("rolling");
-      rollButton.classList.remove("rolling");
-
-      if (options.countIt) incrementCounter();
-    }
-  }, 65);
+function showHiddenMessage() {
+  const message = hiddenMessages[Math.floor(Math.random() * hiddenMessages.length)];
+  resultEl.textContent = message;
 }
 
 function makeRoll(count) {
+  if (!deck.length) return ["No deck loaded"];
+
+  const plan = count === 1
+    ? ["main"]
+    : count === 2
+      ? ["main", "detail"]
+      : ["main", "detail", "effect"];
+
   const chosen = [];
   const usedWords = new Set();
   const usedFamilies = new Set();
-  const usedLimitedGroups = new Set();
 
-  let safety = 0;
-
-  while (chosen.length < count && safety < 250) {
-    safety++;
-
-    const options = deck.filter(item => {
-      if (usedWords.has(item.word)) return false;
-
-      const family = item.family || item.word;
-      if (usedFamilies.has(family)) return false;
-
-      // Keep the roll free, but avoid stacking elements that feel like the same job.
-      if (item.group === "effect" && usedLimitedGroups.has("effect")) return false;
-      if (item.group === "floral" && usedLimitedGroups.has("floral")) return false;
-      if (item.group === "weapon" && usedLimitedGroups.has("weapon")) return false;
-
-      return true;
-    });
-
-    if (options.length === 0) break;
-
-    const picked = weightedPick(options);
+  for (const slot of plan) {
+    let picked = pickFromSlot(slot, usedWords, usedFamilies);
+    if (!picked && slot === "effect") picked = pickFromSlot("detail", usedWords, usedFamilies);
+    if (!picked && slot === "detail") picked = pickFromSlot("main", usedWords, usedFamilies);
+    if (!picked) break;
     chosen.push(picked.word);
     usedWords.add(picked.word);
-    usedFamilies.add(picked.family || picked.word);
-
-    if (["effect", "floral", "weapon"].includes(picked.group)) {
-      usedLimitedGroups.add(picked.group);
-    }
+    usedFamilies.add(familyOf(picked));
   }
-
   return chosen;
+}
+
+function pickFromSlot(slot, usedWords, usedFamilies) {
+  const options = deck.filter(item => {
+    if ((item.slot || item.group) !== slot) return false;
+    if (usedWords.has(item.word)) return false;
+    if (usedFamilies.has(familyOf(item))) return false;
+    return true;
+  });
+  return options.length ? weightedPick(options) : null;
+}
+
+function familyOf(item) {
+  return item.family || item.word.toLowerCase().replace(/\s+/g, "-");
 }
 
 function weightedPick(items) {
   const total = items.reduce((sum, item) => sum + Number(item.weight || 1), 0);
   let roll = Math.random() * total;
-
   for (const item of items) {
     roll -= Number(item.weight || 1);
     if (roll <= 0) return item;
   }
-
   return items[items.length - 1];
 }
 
-function registerSecretInput(value) {
-  secretSequence = (secretSequence + value).slice(-SECRET_CODE.length);
-
-  if (secretSequence === SECRET_CODE) {
-    secretSequence = "";
-    showHiddenMessage();
-  }
-}
-
-function showHiddenMessage() {
-  result.classList.remove("rolling");
-  rollButton.classList.remove("rolling");
-  result.textContent = HIDDEN_MESSAGE;
-}
-
 async function loadCounter() {
-  counterEl.textContent = "Loading roll count...";
-
+  if (!counterEl) return;
   try {
-    const response = await fetch("/.netlify/functions/roll-counter", { cache: "no-store" });
+    const response = await fetch(COUNTER_ENDPOINT, { method: "GET", cache: "no-store" });
     if (!response.ok) throw new Error("Counter request failed");
     const data = await response.json();
-    updateCounter(data.count);
+    renderCounter(data.count || 0);
   } catch (error) {
-    counterEl.textContent = "Ideas rolled: --";
+    console.warn("Counter unavailable:", error);
+    renderCounter(0);
   }
 }
 
 async function incrementCounter() {
+  if (!counterEl) return;
   try {
-    const response = await fetch("/.netlify/functions/roll-counter", {
-      method: "POST",
-      cache: "no-store"
-    });
-    if (!response.ok) throw new Error("Counter request failed");
+    const response = await fetch(COUNTER_ENDPOINT, { method: "POST" });
+    if (!response.ok) throw new Error("Counter increment failed");
     const data = await response.json();
-    updateCounter(data.count);
+    renderCounter(data.count || 0);
   } catch (error) {
-    counterEl.textContent = "Ideas rolled: --";
+    console.warn("Counter increment unavailable:", error);
   }
 }
 
-function updateCounter(count) {
-  if (typeof count !== "number") return;
+function renderCounter(count) {
+  if (!counterEl) return;
   counterEl.textContent = `${formatNumber(count)} tattoo ideas rolled`;
 }
 
 function formatNumber(number) {
-  return new Intl.NumberFormat("en-US").format(number);
+  return new Intl.NumberFormat("en-US").format(Number(number || 0));
 }
+
+init();
