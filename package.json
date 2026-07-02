@@ -1,6 +1,6 @@
 {
   "name": "tattoo-dice",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "private": true,
   "dependencies": {
     "@netlify/blobs": "^8.1.0"

@@ -5,63 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#050505" />
   <title>Tattoo Dice</title>
-
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css" />
 </head>
-
 <body>
   <main class="app">
     <section class="stage">
       <h1>Tattoo Dice</h1>
       <div class="result" id="result">...</div>
-
       <div class="controls">
         <div class="dice-select" aria-label="Aantal woorden">
-          <button class="dice-option" data-count="1" aria-label="1 woord">
-            <span class="mini-die"><span class="pip center"></span></span>
-            <span class="dice-number">1</span>
-          </button>
-
-          <button class="dice-option" data-count="2" aria-label="2 woorden">
-            <span class="mini-die">
-              <span class="pip bottom-left"></span>
-              <span class="pip top-right"></span>
-            </span>
-            <span class="dice-number">2</span>
-          </button>
-
-          <button class="dice-option active" data-count="3" aria-label="3 woorden">
-            <span class="mini-die">
-              <span class="pip bottom-left"></span>
-              <span class="pip center"></span>
-              <span class="pip top-right"></span>
-            </span>
-            <span class="dice-number">3</span>
-          </button>
+          <button class="dice-option" data-count="1" aria-label="1 woord"><span class="mini-die"><span class="pip center"></span></span><span class="dice-number">1</span></button>
+          <button class="dice-option" data-count="2" aria-label="2 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip top-right"></span></span><span class="dice-number">2</span></button>
+          <button class="dice-option active" data-count="3" aria-label="3 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip center"></span><span class="pip top-right"></span></span><span class="dice-number">3</span></button>
         </div>
-
         <button class="roll-button" id="rollButton" aria-label="Roll tattoo dice">
-          <span class="cube" aria-hidden="true">
-            <span class="pip p1"></span><span class="pip p2"></span><span class="pip p3"></span>
-            <span class="pip p4"></span><span class="pip p5"></span><span class="pip p6"></span>
-          </span>
+          <span class="cube" aria-hidden="true"><span class="pip p1"></span><span class="pip p2"></span><span class="pip p3"></span><span class="pip p4"></span><span class="pip p5"></span><span class="pip p6"></span></span>
           <span>ROLL</span>
         </button>
       </div>
     </section>
-
     <footer class="footer">
-      <div class="credit">
-        <span>• by </span><a href="https://instagram.com/tattoonelis" target="_blank" rel="noopener">@tattoonelis</a><span> •</span>
-      </div>
-      <div class="counter" id="counter" aria-live="polite">0 tattoo ideas rolled</div>
+      <div class="credit"><span>• by </span><a href="https://instagram.com/tattoonelis" target="_blank" rel="noopener">@tattoonelis</a><span> •</span></div>
+      <div class="counter" id="counter" aria-live="polite"></div>
     </footer>
   </main>
-
   <script src="/script.js"></script>
 </body>
 </html>

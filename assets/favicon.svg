@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<rect width="512" height="512" fill="#050505"/>
-<rect x="92" y="92" width="328" height="328" rx="44" fill="none" stroke="#eee4cf" stroke-width="22"/>
-<circle cx="170" cy="170" r="18" fill="#eee4cf"/>
-<circle cx="256" cy="170" r="18" fill="#eee4cf"/>
-<circle cx="342" cy="170" r="18" fill="#eee4cf"/>
-<circle cx="170" cy="342" r="18" fill="#eee4cf"/>
-<circle cx="256" cy="342" r="18" fill="#eee4cf"/>
-<circle cx="342" cy="342" r="18" fill="#eee4cf"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#050505"/><rect x="92" y="92" width="328" height="328" rx="44" fill="none" stroke="#eee4cf" stroke-width="22"/><circle cx="170" cy="170" r="18" fill="#eee4cf"/><circle cx="256" cy="170" r="18" fill="#eee4cf"/><circle cx="342" cy="170" r="18" fill="#eee4cf"/><circle cx="170" cy="342" r="18" fill="#eee4cf"/><circle cx="256" cy="342" r="18" fill="#eee4cf"/><circle cx="342" cy="342" r="18" fill="#eee4cf"/></svg>
