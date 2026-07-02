@@ -1,13 +1,17 @@
-# Tattoo Dice v1.4
+# Tattoo Dice v1.4.1
 
-Stability release.
+Minimal update from v1.4.
 
-- Main / Detail / Effect roll logic restored.
-- Animation intact.
-- Visible global counter in footer.
-- Counter value is stored in Netlify Blobs, not in project files.
-- Secret code `332211` shows `Keep drawing` and does not count as a roll.
-- Hidden message stays until ROLL is pressed.
-- No Star/Stars/Python/Crow.
+Changed only:
+- fixed Netlify Blobs counter backend using the current Netlify Function style
+- added one-line slogan: `Stop scrolling. Start rolling.`
+- kept homepage locked to one screen with no unwanted scrolling
+- kept counter visible in the same cream color as the header
 
-Deck words: 86
+Not changed:
+- roll engine
+- deck
+- weights
+- animation
+- secret code
+- layout structure
