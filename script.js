@@ -11,7 +11,8 @@ const counterEl = document.getElementById("counter");
 
 const SECRET_CODE = "332211";
 const HIDDEN_MESSAGE = "Keep drawing";
-const COUNTER_ENDPOINT = "/.netlify/functions/roll-counter";
+const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
 init();
 
@@ -133,13 +134,11 @@ async function loadCounter() {
   if (!counterEl) return;
 
   try {
-    const response = await fetch(COUNTER_ENDPOINT, { method: "GET", cache: "no-store" });
-    if (!response.ok) throw new Error("Counter request failed");
-    const data = await response.json();
-    renderCounter(data.count || 0);
+    const total = await getCounterTotal();
+    renderCounter(total);
   } catch (error) {
     console.warn("Counter unavailable:", error);
-    counterEl.textContent = "";
+    renderCounter(0);
   }
 }
 
@@ -147,13 +146,46 @@ async function incrementCounter() {
   if (!counterEl) return;
 
   try {
-    const response = await fetch(COUNTER_ENDPOINT, { method: "POST" });
-    if (!response.ok) throw new Error("Counter increment failed");
-    const data = await response.json();
-    renderCounter(data.count || 0);
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_roll_counter`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "authorization": `Bearer ${SUPABASE_KEY}`,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({})
+    });
+
+    if (!response.ok) {
+      const message = await response.text();
+      throw new Error(message || "Counter increment failed");
+    }
+
+    const total = await response.json();
+    renderCounter(Number(total || 0));
   } catch (error) {
     console.warn("Counter increment unavailable:", error);
+    const total = await getCounterTotal().catch(() => null);
+    if (total !== null) renderCounter(total);
   }
+}
+
+async function getCounterTotal() {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/roll_counter?id=eq.1&select=total`, {
+    method: "GET",
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "authorization": `Bearer ${SUPABASE_KEY}`
+    }
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "Counter request failed");
+  }
+
+  const data = await response.json();
+  return Number(Array.isArray(data) && data[0] ? data[0].total : 0);
 }
 
 function renderCounter(count) {
