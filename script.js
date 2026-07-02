@@ -67,15 +67,40 @@ async function roll(options = { countIt: true, allowHidden: true }) {
 }
 
 function makeRoll(count) {
-  const available = deck.map(item => ({ ...item }));
   const chosen = [];
+  const usedWords = new Set();
+  const usedFamilies = new Set();
+  const usedLimitedGroups = new Set();
 
-  while (chosen.length < count && available.length > 0) {
-    const picked = weightedPick(available);
+  let safety = 0;
+
+  while (chosen.length < count && safety < 250) {
+    safety++;
+
+    const options = deck.filter(item => {
+      if (usedWords.has(item.word)) return false;
+
+      const family = item.family || item.word;
+      if (usedFamilies.has(family)) return false;
+
+      // Keep the roll free, but avoid stacking elements that feel like the same job.
+      if (item.group === "effect" && usedLimitedGroups.has("effect")) return false;
+      if (item.group === "floral" && usedLimitedGroups.has("floral")) return false;
+      if (item.group === "weapon" && usedLimitedGroups.has("weapon")) return false;
+
+      return true;
+    });
+
+    if (options.length === 0) break;
+
+    const picked = weightedPick(options);
     chosen.push(picked.word);
+    usedWords.add(picked.word);
+    usedFamilies.add(picked.family || picked.word);
 
-    const index = available.findIndex(item => item.word === picked.word);
-    if (index !== -1) available.splice(index, 1);
+    if (["effect", "floral", "weapon"].includes(picked.group)) {
+      usedLimitedGroups.add(picked.group);
+    }
   }
 
   return chosen;
@@ -109,26 +134,35 @@ function showHiddenMessage() {
 }
 
 async function loadCounter() {
+  counterEl.textContent = "Loading roll count...";
+
   try {
-    const response = await fetch("/.netlify/functions/roll-counter");
-    if (!response.ok) return;
+    const response = await fetch("/.netlify/functions/roll-counter", { cache: "no-store" });
+    if (!response.ok) throw new Error("Counter request failed");
     const data = await response.json();
     updateCounter(data.count);
-  } catch (error) {}
+  } catch (error) {
+    counterEl.textContent = "Ideas rolled: --";
+  }
 }
 
 async function incrementCounter() {
   try {
-    const response = await fetch("/.netlify/functions/roll-counter", { method: "POST" });
-    if (!response.ok) return;
+    const response = await fetch("/.netlify/functions/roll-counter", {
+      method: "POST",
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error("Counter request failed");
     const data = await response.json();
     updateCounter(data.count);
-  } catch (error) {}
+  } catch (error) {
+    counterEl.textContent = "Ideas rolled: --";
+  }
 }
 
 function updateCounter(count) {
   if (typeof count !== "number") return;
-  counterEl.textContent = `${formatNumber(count)} ideas rolled`;
+  counterEl.textContent = `${formatNumber(count)} tattoo ideas rolled`;
 }
 
 function formatNumber(number) {

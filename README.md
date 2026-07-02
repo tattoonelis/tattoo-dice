@@ -1,23 +1,16 @@
-# Tattoo Dice v1.2
+# Tattoo Dice v1.3.1
+
+Quality update.
 
 Includes:
-- cleaned Classic deck
-- weighted randomizer
-- 1 / 2 / 3 subjects
+- visible global roll counter: `xxxxx tattoo ideas rolled`
+- weighted Classic deck
 - no duplicate words in one roll
-- random start roll on page load
-- global Ideas Rolled counter
-- hidden message logic
+- no duplicate families in one roll, e.g. Cat + Panther, Snake + Cobra, Skull + Pile of Skulls
+- max 1 effect per roll, e.g. no Lightning + Flames
+- max 1 floral per roll
+- max 1 weapon per roll
+- hidden message logic stays intact
+- secret code stays intact
 
-## Deploy
-
-Best route: connect this project to GitHub and deploy with Netlify.
-
-The roll counter uses Netlify Functions + Netlify Blobs, so Netlify needs to install dependencies from `package.json`.
-
-## Deck
-
-Edit:
-`decks/classic.json`
-
-Current word count: 87
+Deploy through GitHub + Netlify.
