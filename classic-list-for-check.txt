@@ -1,0 +1,87 @@
+8 Ball — 1
+Ace of Spades — 1
+Anchor — 1
+Angel — 1
+Axe — 2
+Bamboe — 0
+Barbed Wire — 3
+Battle Royale — 0
+Beer — 1
+Blood — 2
+Boobs — 0
+Butterfly — 3
+Cards — 1
+Cartoon — 1
+Cat — 1
+Chain — 3
+Cherry — 1
+Chrysanthemum — 1
+Clown — 2
+Cobra — 3
+Cross — 1
+Crystal Ball — 1
+Dagger — 3
+Demon — 3
+Devil — 3
+Dragon — 3
+Eagle — 3
+Evil Clown — 2
+Eye — 2
+Fan — 0
+Fire — 2
+Flames — 3
+Flowers — 3
+Frog — 0
+Geisha — 3
+Gorilla — 2
+Grim Reaper — 2
+Hannya — 3
+Hat — 1
+Heart — 3
+Helmet — 1
+Lady Head — 3
+Lightning — 3
+Lion — 2
+Lotus — 1
+Mace — 1
+Mask — 2
+Mermaid — 1
+Moon — 1
+Mountain — 0
+Oni — 3
+Panther — 3
+Parrot — 1
+Peony — 2
+Pig — 0
+Pile of Skulls — 1
+Pin-up — 3
+Pistols — 0
+Ram — 0
+Raven — 0
+Rope — 1
+Rose — 3
+Sacred Heart — 2
+Scorpion — 3
+Shark — 2
+Shield — 1
+Skin Rip — 2
+Skull — 3
+Smoke — 1
+Snake — 3
+Snake Head — 3
+Spider — 3
+Spider Web — 2
+Stars — 1
+Sun — 1
+Swallow — 3
+Sword — 1
+Tiger — 3
+Tribal — 3
+Vampire — 0
+Viking — 0
+Water — 0
+Waves — 0
+Wing — 3
+Wizard — 3
+Wolf — 3
+Yin Yang — 1

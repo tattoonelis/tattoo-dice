@@ -1,0 +1,437 @@
+[
+  {
+    "word": "8 Ball",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Ace of Spades",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Anchor",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Angel",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Axe",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Bamboe",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Barbed Wire",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Battle Royale",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Beer",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Blood",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Boobs",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Butterfly",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Cards",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Cartoon",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Cat",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Chain",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Cherry",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Chrysanthemum",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Clown",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Cobra",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Cross",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Crystal Ball",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Dagger",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Demon",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Devil",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Dragon",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Eagle",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Evil Clown",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Eye",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Fan",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Fire",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Flames",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Flowers",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Frog",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Geisha",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Gorilla",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Grim Reaper",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Hannya",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Hat",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Heart",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Helmet",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Lady Head",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Lightning",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Lion",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Lotus",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Mace",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Mask",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Mermaid",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Moon",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Mountain",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Oni",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Panther",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Parrot",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Peony",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Pig",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Pile of Skulls",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Pin-up",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Pistols",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Ram",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Raven",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Rope",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Rose",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Sacred Heart",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Scorpion",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Shark",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Shield",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Skin Rip",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Skull",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Smoke",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Snake",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Snake Head",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Spider",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Spider Web",
+    "score": 2,
+    "weight": 6
+  },
+  {
+    "word": "Stars",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Sun",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Swallow",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Sword",
+    "score": 1,
+    "weight": 2
+  },
+  {
+    "word": "Tiger",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Tribal",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Vampire",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Viking",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Water",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Waves",
+    "score": 0,
+    "weight": 0.25
+  },
+  {
+    "word": "Wing",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Wizard",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Wolf",
+    "score": 3,
+    "weight": 12
+  },
+  {
+    "word": "Yin Yang",
+    "score": 1,
+    "weight": 2
+  }
+]
