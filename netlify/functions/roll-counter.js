@@ -4,11 +4,11 @@ const STORE_NAME = "tattoo-dice";
 const COUNTER_KEY = "ideas-rolled";
 
 exports.handler = async function(event) {
-  const store = getStore(STORE_NAME);
-
   try {
+    const store = getStore(STORE_NAME);
     const currentValue = await store.get(COUNTER_KEY, { type: "json" });
-    let count = Number(currentValue?.count || 0);
+
+    let count = Number(currentValue && currentValue.count ? currentValue.count : 0);
 
     if (event.httpMethod === "POST") {
       count += 1;
@@ -19,15 +19,19 @@ exports.handler = async function(event) {
       statusCode: 200,
       headers: {
         "content-type": "application/json",
-        "cache-control": "no-store"
+        "cache-control": "no-store",
+        "access-control-allow-origin": "*"
       },
       body: JSON.stringify({ count })
     };
   } catch (error) {
     return {
-      statusCode: 500,
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ error: "counter_unavailable" })
+      statusCode: 200,
+      headers: {
+        "content-type": "application/json",
+        "cache-control": "no-store"
+      },
+      body: JSON.stringify({ count: 0, fallback: true })
     };
   }
 };
