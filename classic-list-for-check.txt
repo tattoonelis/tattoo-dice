@@ -1,12 +1,11 @@
 8 Ball — 1 — main
 Ace of Spades — 1 — main
-Anchor — 1 — detail
+Anchor — 0 — main
 Angel — 1 — main
 Axe — 2 — detail
-Bamboe — 0 — detail
+Bamboo — 0 — detail
 Barbed Wire — 3 — detail
-Battle Royale — 0 — detail
-Beer — 1 — detail
+Bear — 0 — main
 Blood — 2 — effect
 Boobs — 0 — main
 Butterfly — 3 — main
@@ -26,9 +25,8 @@ Devil — 3 — main
 Dragon — 3 — main
 Eagle — 3 — main
 Evil Clown — 2 — main
-Eye — 2 — detail
+Eye — 1 — detail
 Fan — 0 — detail
-Fire — 2 — effect
 Flames — 3 — effect
 Flowers — 3 — main
 Frog — 0 — main
@@ -47,7 +45,7 @@ Mace — 1 — detail
 Mask — 2 — main
 Mermaid — 1 — main
 Moon — 1 — detail
-Mountain — 0 — main
+Mountain — 0 — detail
 Oni — 3 — main
 Panther — 3 — main
 Parrot — 1 — main
