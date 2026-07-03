@@ -45,3 +45,9 @@ grant execute on function increment_roll_counter() to anon;
 
 
 v1.5.2: Only lowered the logo slightly and made the slogan a touch smaller.
+
+
+v1.5.3:
+- Fixed Beer → Bear.
+- Crystal Ball can only roll when Wizard is already in the same result.
+- No new words added.

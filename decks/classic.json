@@ -56,11 +56,11 @@
     "family": "battle-royale"
   },
   {
-    "word": "Beer",
+    "word": "Bear",
     "score": 1,
     "weight": 2,
     "slot": "detail",
-    "family": "beer"
+    "family": "bear"
   },
   {
     "word": "Blood",
@@ -151,7 +151,10 @@
     "score": 1,
     "weight": 2,
     "slot": "main",
-    "family": "crystal-ball"
+    "family": "crystal-ball",
+    "requires": [
+      "Wizard"
+    ]
   },
   {
     "word": "Dagger",

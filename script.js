@@ -78,23 +78,31 @@ async function roll(options = { countIt: true }) {
 function makeRoll(count) {
   const plan = count === 1 ? ["main"] : count === 2 ? ["main", "detail"] : ["main", "detail", "effect"];
   const chosen = [];
+  const chosenWords = new Set();
   const usedFamilies = new Set();
 
   for (const slot of plan) {
-    let picked = pickForSlot(slot, usedFamilies);
-    if (!picked && slot === "effect") picked = pickForSlot("detail", usedFamilies);
-    if (!picked && slot === "detail") picked = pickForSlot("main", usedFamilies);
+    let picked = pickForSlot(slot, usedFamilies, chosenWords);
+    if (!picked && slot === "effect") picked = pickForSlot("detail", usedFamilies, chosenWords);
+    if (!picked && slot === "detail") picked = pickForSlot("main", usedFamilies, chosenWords);
     if (!picked) continue;
 
     chosen.push(picked.word);
+    chosenWords.add(picked.word);
     usedFamilies.add(getFamily(picked));
   }
 
   return chosen.length ? chosen : ["Roll again"];
 }
 
-function pickForSlot(slot, usedFamilies) {
-  const options = deck.filter(item => item.slot === slot && !usedFamilies.has(getFamily(item)));
+
+function requirementsMet(item, chosenWords) {
+  if (!Array.isArray(item.requires) || item.requires.length === 0) return true;
+  return item.requires.every(requiredWord => chosenWords.has(requiredWord));
+}
+
+function pickForSlot(slot, usedFamilies, chosenWords = new Set()) {
+  const options = deck.filter(item => item.slot === slot && !usedFamilies.has(getFamily(item)) && requirementsMet(item, chosenWords));
   if (!options.length) return null;
   return weightedPick(options);
 }
