@@ -1,7 +1,13 @@
-# Tattoo Dice v1.6.9 Fade Reset Fix
+# Tattoo Dice v1.7.0 Real Dice + Keep Drawing 1%
 
-Fix:
-- Keep Drawing full-screen fade now disappears on the next roll.
-- The fade layer transitions back out so the app returns to normal brightness.
-- Keep Drawing text also clears cleanly on the next roll.
-- All v1.6.8 final changes remain included.
+Updates:
+- Keep Drawing random chance lowered to 1%.
+- Keep Drawing can never happen two rolls in a row.
+- Secret code 3,3,2,2,1,1 still works.
+- Dice rendering tuned more realistic:
+  - improved renderer tone mapping
+  - clearer plastic material
+  - smoother rounded geometry
+  - stronger but cleaner shadows
+  - subtler face texture depth/highlight
+- All previous final polish remains included.

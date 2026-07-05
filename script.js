@@ -7,6 +7,7 @@ let secretSequence = "";
 let hiddenActive = false;
 let rollInProgress = false;
 let currentRoll = [];
+let lastRollWasKeepDrawing = false;
 
 const rollButton = document.getElementById("rollButton");
 const diceOptions = document.querySelectorAll(".dice-option");
@@ -17,7 +18,7 @@ const hiddenMessageEl = document.getElementById("hiddenMessage");
 const screenFade = document.getElementById("screenFade");
 
 const SECRET_CODE = "332211";
-const KEEP_DRAWING_CHANCE = 0.05;
+const KEEP_DRAWING_CHANCE = 0.01;
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
@@ -103,26 +104,29 @@ function setupThree() {
   camera.lookAt(0, -0.55, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   sceneWrap.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.82));
+  scene.add(new THREE.AmbientLight(0xffffff, 1.35));
 
   const key = new THREE.DirectionalLight(0xfff4dd, 2.15);
-  key.position.set(-2.2, 8.2, 7.8);
+  key.position.set(-2.8, 8.8, 7.2);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xe6efff, 0.36);
+  const fill = new THREE.DirectionalLight(0xe6efff, 0.28);
   fill.position.set(4.5, 4.6, 2.4);
   scene.add(fill);
 
   floor = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 12),
-    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.24 })
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.32 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -1.58;
@@ -184,17 +188,17 @@ function createTextDie(finalWord, layout, index) {
 
   const materials = allFaces.map((faceWord) => new THREE.MeshPhysicalMaterial({
     map: makeTextTexture(faceWord),
-    roughness: 0.48,
+    roughness: 0.36,
     metalness: 0,
-    clearcoat: 0.10,
-    clearcoatRoughness: 0.68,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.42,
     transparent: false,
     opacity: 1,
     depthTest: true,
     depthWrite: true
   }));
 
-  const geometry = new RoundedBoxGeometry(size, size, size, 20, size * 0.13);
+  const geometry = new RoundedBoxGeometry(size, size, size, 28, size * 0.11);
   geometry.computeVertexNormals();
 
   const mesh = new THREE.Mesh(geometry, materials);
@@ -267,11 +271,17 @@ function makeTextTexture(text) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1024, 1024);
 
-  const shine = ctx.createRadialGradient(340, 250, 60, 512, 512, 780);
-  shine.addColorStop(0, "rgba(255,255,255,.14)");
-  shine.addColorStop(1, "rgba(0,0,0,.05)");
+  const shine = ctx.createRadialGradient(330, 245, 70, 512, 512, 790);
+  shine.addColorStop(0, "rgba(255,255,255,.20)");
+  shine.addColorStop(0.55, "rgba(255,255,255,.04)");
+  shine.addColorStop(1, "rgba(0,0,0,.075)");
   ctx.fillStyle = shine;
   ctx.fillRect(0, 0, 1024, 1024);
+
+  // Very subtle printed-plastic face depth.
+  ctx.strokeStyle = "rgba(255,255,255,.16)";
+  ctx.lineWidth = 18;
+  ctx.strokeRect(42, 42, 940, 940);
 
   // Rotate canvas content so final visible face is upright in the fixed 3D landing pose.
   ctx.save();
@@ -399,13 +409,16 @@ async function roll(options = { countIt: true }) {
   currentRoll = makeRoll(wordCount);
   renderDice(currentRoll, true);
 
-  const randomKeepDrawing = Math.random() < KEEP_DRAWING_CHANCE;
+  const randomKeepDrawing = !lastRollWasKeepDrawing && Math.random() < KEEP_DRAWING_CHANCE;
   if (randomKeepDrawing) {
     setTimeout(() => {
       hiddenActive = true;
+      lastRollWasKeepDrawing = true;
       showHiddenMessage();
     }, 760);
   }
+
+  if (!randomKeepDrawing) lastRollWasKeepDrawing = false;
 
   setTimeout(() => {
     rollButton.classList.remove("rolling");
@@ -547,6 +560,7 @@ function registerSecretInput(value) {
 function showHiddenMessage() {
   rollButton.classList.remove("rolling");
   hiddenMessageEl.textContent = "Keep Drawing!";
+  lastRollWasKeepDrawing = true;
   if (screenFade) screenFade.classList.add("show");
   hiddenMessageEl.classList.add("show");
 }
