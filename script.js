@@ -14,8 +14,10 @@ const counterEl = document.getElementById("counter");
 const sceneWrap = document.getElementById("sceneWrap");
 const diceStageEl = document.getElementById("diceStage3d");
 const hiddenMessageEl = document.getElementById("hiddenMessage");
+const screenFade = document.getElementById("screenFade");
 
 const SECRET_CODE = "332211";
+const KEEP_DRAWING_CHANCE = 0.05;
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
@@ -72,16 +74,15 @@ async function init() {
 
       registerSecretInput(String(wordCount));
 
-      if (!hiddenActive) {
-        roll({ countIt: false });
-      }
+      // Changing dice count only changes the mode.
+      // No automatic roll here; user must press ROLL again.
     });
   });
 
   rollButton.addEventListener("click", () => {
     hiddenActive = false;
     hiddenMessageEl.classList.remove("show");
-    if (diceStageEl) diceStageEl.classList.remove("keep-active");
+    
     roll({ countIt: true });
   });
 
@@ -387,10 +388,18 @@ async function roll(options = { countIt: true }) {
   rollInProgress = true;
   rollButton.classList.add("rolling");
   hiddenMessageEl.classList.remove("show");
-  if (diceStageEl) diceStageEl.classList.remove("keep-active");
+  
 
   currentRoll = makeRoll(wordCount);
   renderDice(currentRoll, true);
+
+  const randomKeepDrawing = Math.random() < KEEP_DRAWING_CHANCE;
+  if (randomKeepDrawing) {
+    setTimeout(() => {
+      hiddenActive = true;
+      showHiddenMessage();
+    }, 760);
+  }
 
   setTimeout(() => {
     rollButton.classList.remove("rolling");
@@ -532,7 +541,7 @@ function registerSecretInput(value) {
 function showHiddenMessage() {
   rollButton.classList.remove("rolling");
   hiddenMessageEl.textContent = "Keep Drawing!";
-  if (diceStageEl) diceStageEl.classList.add("keep-active");
+  if (screenFade) screenFade.classList.add("show");
   hiddenMessageEl.classList.add("show");
 }
 
