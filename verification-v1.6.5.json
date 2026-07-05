@@ -1,0 +1,14 @@
+{
+  "source_deck": "tattoo-dice-v1.5.3.zip/decks/classic.json",
+  "deck_items": 86,
+  "score_counts": {
+    "0": 14,
+    "1": 26,
+    "2": 15,
+    "3": 31
+  },
+  "missing_score_count": 0,
+  "invalid_score_count": 0,
+  "secret_code": "332211",
+  "keep_drawing_overlay": "hiddenMessageEl.show, red CSS var(--red), z-index 30 over dice-stage"
+}

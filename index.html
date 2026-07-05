@@ -10,13 +10,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
   <main class="app">
     <section class="stage">
       <h1>Tattoo Dice</h1>
       <div class="tagline">Stop scrolling. Start rolling.</div>
-      <div class="result" id="result">...</div>
+      <div class="dice-stage-3d" id="diceStage3d">
+        <div id="sceneWrap" aria-label="Tattoo dice result"></div>
+        <div class="hidden-message" id="hiddenMessage">Keep Drawing!</div>
+      </div>
       <div class="controls">
         <div class="dice-select" aria-label="Aantal woorden">
           <button class="dice-option" data-count="1" aria-label="1 woord"><span class="mini-die"><span class="pip center"></span></span><span class="dice-number">1</span></button>
@@ -34,6 +45,6 @@
       <div class="counter" id="counter" aria-live="polite"></div>
     </footer>
   </main>
-  <script src="/script.js"></script>
+  <script type="module" src="/script.js"></script>
 </body>
 </html>

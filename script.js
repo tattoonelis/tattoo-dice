@@ -1,43 +1,375 @@
+import * as THREE from "three";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
 let wordCount = 3;
 let deck = [];
 let secretSequence = "";
 let hiddenActive = false;
 let rollInProgress = false;
+let currentRoll = [];
 
-const result = document.getElementById("result");
 const rollButton = document.getElementById("rollButton");
 const diceOptions = document.querySelectorAll(".dice-option");
 const counterEl = document.getElementById("counter");
+const sceneWrap = document.getElementById("sceneWrap");
+const hiddenMessageEl = document.getElementById("hiddenMessage");
 
 const SECRET_CODE = "332211";
-const HIDDEN_MESSAGE = "Keep drawing";
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
+
+let scene, camera, renderer, floor;
+let diceMeshes = [];
+
+const layouts = {
+  1: [
+    // main/result die
+    [0.00, -0.24, 0.34, -0.82, 0.10, 0.00, 2.42]
+  ],
+  2: [
+    // main in center/front, support to the right/back
+    [0.00, -0.30, 0.42, -0.82, 0.10, 0.00, 2.08],
+    [1.88, -0.08, -0.58, -0.78, -0.34, 0.12, 1.72]
+  ],
+  3: [
+    // main in center/front, detail/effect behind as lower visual layer
+    [0.00, -0.34, 0.56, -0.82, 0.10, 0.00, 2.06],
+    [-2.06, -0.04, -0.66, -0.78, 0.36, -0.13, 1.66],
+    [ 2.06, -0.04, -0.66, -0.78,-0.36,  0.13, 1.66]
+  ]
+};
+
+// RoundedBoxGeometry / BoxGeometry material order:
+// +x, -x, +y, -y, +z, -z
+const FACE_NORMALS = [
+  new THREE.Vector3(1, 0, 0),
+  new THREE.Vector3(-1, 0, 0),
+  new THREE.Vector3(0, 1, 0),
+  new THREE.Vector3(0, -1, 0),
+  new THREE.Vector3(0, 0, 1),
+  new THREE.Vector3(0, 0, -1)
+];
 
 init();
 
 async function init() {
+  lockInterface();
+  setupThree();
+
   await loadDeck();
-  result.textContent = makeRoll(wordCount).join(" - ");
+  validateDeckScores();
+  currentRoll = makeRoll(wordCount);
+  renderDice(currentRoll, false);
+
   await loadCounter();
 
   diceOptions.forEach(button => {
     button.addEventListener("click", () => {
+      if (rollInProgress) return;
+
       wordCount = Number(button.dataset.count);
       diceOptions.forEach(b => b.classList.remove("active"));
       button.classList.add("active");
+
       registerSecretInput(String(wordCount));
 
-      if (!hiddenActive && !rollInProgress) {
-        result.textContent = makeRoll(wordCount).join(" - ");
+      if (!hiddenActive) {
+        roll({ countIt: false });
       }
     });
   });
 
   rollButton.addEventListener("click", () => {
     hiddenActive = false;
+    hiddenMessageEl.classList.remove("show");
     roll({ countIt: true });
   });
+
+  window.addEventListener("resize", resizeRenderer);
+}
+
+function lockInterface() {
+  document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+  document.addEventListener("selectstart", event => event.preventDefault());
+  document.addEventListener("contextmenu", event => event.preventDefault());
+}
+
+function setupThree() {
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(29, 1, 0.1, 100);
+  camera.position.set(0, 6.8, 7.1);
+  camera.lookAt(0, -0.55, 0);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  sceneWrap.appendChild(renderer.domElement);
+
+  scene.add(new THREE.AmbientLight(0xffffff, 1.82));
+
+  const key = new THREE.DirectionalLight(0xfff4dd, 2.15);
+  key.position.set(-4.2, 7.4, 5.4);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  scene.add(key);
+
+  const fill = new THREE.DirectionalLight(0xe6efff, 0.42);
+  fill.position.set(4.5, 4.6, 3.0);
+  scene.add(fill);
+
+  floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(20, 12),
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.30 })
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = -1.58;
+  floor.receiveShadow = true;
+  scene.add(floor);
+
+  resizeRenderer();
+  animate();
+}
+
+function renderDice(words, animateIn = false) {
+  diceMeshes.forEach(mesh => {
+    scene.remove(mesh);
+    if (Array.isArray(mesh.material)) mesh.material.forEach(mat => {
+      if (mat.map) mat.map.dispose();
+      mat.dispose();
+    });
+    if (mesh.geometry) mesh.geometry.dispose();
+  });
+
+  diceMeshes = [];
+
+  const layout = layouts[words.length] || layouts[3];
+
+  words.forEach((word, index) => {
+    const p = layout[index];
+    const mesh = createTextDie(word, p, index);
+
+    // Photoshop-like layer trick:
+    // index 0 is the main subject. It is rendered in front so it cannot visually disappear behind side dice.
+    if (index === 0) {
+      mesh.renderOrder = 10;
+      if (Array.isArray(mesh.material)) {
+        mesh.material.forEach(mat => {
+          mat.depthTest = false;
+          mat.depthWrite = false;
+        });
+      }
+    } else {
+      mesh.renderOrder = 1;
+    }
+
+    mesh.position.set(p[0], p[1], p[2]);
+    mesh.rotation.set(p[3], p[4], p[5]);
+    mesh.userData.base = mesh.position.clone();
+    mesh.userData.layout = p;
+    mesh.userData.startRot = new THREE.Euler();
+    mesh.userData.endRot = new THREE.Euler();
+    mesh.userData.startTime = 0;
+    mesh.userData.duration = 1;
+    mesh.userData.delay = index * 0.06;
+    mesh.userData.rolling = false;
+
+    scene.add(mesh);
+    diceMeshes.push(mesh);
+  });
+
+  if (animateIn) startDiceAnimation();
+}
+
+function createTextDie(finalWord, layout, index) {
+  const size = layout[6];
+  const visibleFaceIndex = getLandingFaceIndex(layout);
+  const allFaces = makeFaceWords(finalWord, visibleFaceIndex);
+
+  const materials = allFaces.map((faceWord) => new THREE.MeshPhysicalMaterial({
+    map: makeTextTexture(faceWord),
+    roughness: 0.48,
+    metalness: 0,
+    clearcoat: 0.10,
+    clearcoatRoughness: 0.68
+  }));
+
+  const geometry = new RoundedBoxGeometry(size, size, size, 20, size * 0.13);
+  geometry.computeVertexNormals();
+
+  const mesh = new THREE.Mesh(geometry, materials);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  mesh.userData.visibleFaceIndex = visibleFaceIndex;
+  return mesh;
+}
+
+function getLandingFaceIndex(layout) {
+  const position = new THREE.Vector3(layout[0], layout[1], layout[2]);
+  const euler = new THREE.Euler(layout[3], layout[4], layout[5]);
+  const toCamera = camera.position.clone().sub(position).normalize();
+
+  let bestIndex = 4;
+  let bestDot = -Infinity;
+
+  FACE_NORMALS.forEach((normal, index) => {
+    const worldNormal = normal.clone().applyEuler(euler).normalize();
+    const dot = worldNormal.dot(toCamera);
+    if (dot > bestDot) {
+      bestDot = dot;
+      bestIndex = index;
+    }
+  });
+
+  return bestIndex;
+}
+
+function makeFaceWords(finalWord, visibleFaceIndex) {
+  const words = [];
+  const used = new Set([finalWord]);
+
+  for (let i = 0; i < 6; i++) {
+    if (i === visibleFaceIndex) {
+      words.push(finalWord);
+    } else {
+      words.push(randomDeckWord(used));
+    }
+  }
+
+  return words;
+}
+
+function randomDeckWord(used = new Set()) {
+  if (!deck.length) return "Tattoo";
+
+  for (let attempts = 0; attempts < 50; attempts++) {
+    const word = deck[Math.floor(Math.random() * deck.length)].word || "Tattoo";
+    if (!used.has(word)) {
+      used.add(word);
+      return word;
+    }
+  }
+
+  return "Tattoo";
+}
+
+function makeTextTexture(text) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 1024;
+  const ctx = c.getContext("2d");
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
+  const bg = ctx.createLinearGradient(0, 0, 1024, 1024);
+  bg.addColorStop(0, "#fff9eb");
+  bg.addColorStop(0.62, "#eadfcc");
+  bg.addColorStop(1, "#c7bda8");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  const shine = ctx.createRadialGradient(340, 250, 60, 512, 512, 780);
+  shine.addColorStop(0, "rgba(255,255,255,.14)");
+  shine.addColorStop(1, "rgba(0,0,0,.05)");
+  ctx.fillStyle = shine;
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  // Rotate canvas content so final visible face is upright in the fixed 3D landing pose.
+  ctx.save();
+  ctx.translate(512, 512);
+  ctx.rotate(Math.PI);
+  drawDiceText(ctx, text);
+  ctx.restore();
+
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 8;
+  return tex;
+}
+
+function drawDiceText(ctx, text) {
+  const raw = String(text || "Roll").trim();
+  const lines = buildTextLines(raw);
+  const maxWidth = 720;
+  const maxHeight = 620;
+
+  let fontSize = estimateFontSize(lines);
+  fontSize = fitFontSize(ctx, lines, fontSize, maxWidth, maxHeight);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#111";
+  ctx.strokeStyle = "rgba(255,255,255,.16)";
+  ctx.lineWidth = Math.max(2, fontSize * 0.018);
+  ctx.font = `900 ${fontSize}px "Arial Rounded MT Bold", "Arial Rounded MT", Arial, sans-serif`;
+
+  const lineHeight = fontSize * 0.94;
+  const totalHeight = (lines.length - 1) * lineHeight;
+  const startY = -totalHeight / 2;
+
+  lines.forEach((line, index) => {
+    const y = startY + index * lineHeight;
+    ctx.strokeText(line, 0, y);
+    ctx.fillText(line, 0, y);
+  });
+}
+
+function buildTextLines(text) {
+  const parts = text.split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return parts.length ? parts : ["Roll"];
+
+  // Multi-word subjects: each word on its own line, as requested.
+  return parts;
+}
+
+function estimateFontSize(lines) {
+  const longest = lines.reduce((a, b) => a.length >= b.length ? a : b, "");
+  let fontSize = 218;
+
+  if (longest.length >= 16) fontSize = 72;
+  else if (longest.length >= 14) fontSize = 84;
+  else if (longest.length >= 12) fontSize = 98;
+  else if (longest.length >= 10) fontSize = 116;
+  else if (longest.length >= 8) fontSize = 140;
+  else if (longest.length >= 6) fontSize = 170;
+  else if (longest.length >= 5) fontSize = 194;
+
+  if (lines.length >= 2) fontSize = Math.min(fontSize, 154);
+  if (lines.length >= 3) fontSize = Math.min(fontSize, 116);
+  if (lines.length >= 4) fontSize = Math.min(fontSize, 86);
+
+  return fontSize;
+}
+
+function fitFontSize(ctx, lines, startSize, maxWidth, maxHeight) {
+  let size = startSize;
+
+  while (size > 42) {
+    ctx.font = `900 ${size}px "Arial Rounded MT Bold", "Arial Rounded MT", Arial, sans-serif`;
+
+    const widest = Math.max(...lines.map(line => ctx.measureText(line).width));
+    const height = lines.length * size * 0.94;
+
+    if (widest <= maxWidth && height <= maxHeight) return size;
+    size -= 4;
+  }
+
+  return size;
+}
+
+
+function validateDeckScores() {
+  const missing = deck.filter(item => !Object.prototype.hasOwnProperty.call(item, "score"));
+  const invalid = deck.filter(item => ![0, 1, 2, 3].includes(Number(item.score)));
+
+  if (missing.length || invalid.length) {
+    console.warn("Deck score check failed", {
+      missing: missing.map(item => item.word),
+      invalid: invalid.map(item => ({ word: item.word, score: item.score }))
+    });
+  } else {
+    console.info("Deck score check OK: every subject has score 0-3.");
+  }
 }
 
 async function loadDeck() {
@@ -55,24 +387,90 @@ async function roll(options = { countIt: true }) {
   if (!deck.length || rollInProgress) return;
 
   rollInProgress = true;
-  result.classList.add("rolling");
   rollButton.classList.add("rolling");
+  hiddenMessageEl.classList.remove("show");
 
-  let ticks = 0;
-  const interval = setInterval(() => {
-    result.textContent = makeRoll(wordCount).join(" - ");
-    ticks++;
+  currentRoll = makeRoll(wordCount);
+  renderDice(currentRoll, true);
 
-    if (ticks >= 12) {
-      clearInterval(interval);
-      result.textContent = makeRoll(wordCount).join(" - ");
-      result.classList.remove("rolling");
-      rollButton.classList.remove("rolling");
-      rollInProgress = false;
+  setTimeout(() => {
+    rollButton.classList.remove("rolling");
+    rollInProgress = false;
 
-      if (options.countIt) incrementCounter();
+    if (options.countIt) incrementCounter();
+  }, 1280);
+}
+
+function startDiceAnimation() {
+  const now = performance.now() / 1000;
+
+  diceMeshes.forEach((die, index) => {
+    const p = die.userData.layout;
+
+    die.userData.startTime = now;
+    die.userData.duration = 1.0 + index * 0.08;
+    die.userData.delay = index * 0.055;
+    die.userData.rolling = true;
+    die.userData.startRot.copy(die.rotation);
+    die.userData.endRot.set(
+      p[3] + 4 * Math.PI * 2,
+      p[4] + 4 * Math.PI * 2,
+      p[5] + 2 * Math.PI * 2
+    );
+  });
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  const t = performance.now() / 1000;
+
+  diceMeshes.forEach(die => {
+    const u = die.userData;
+    if (!u.rolling) return;
+
+    const p = Math.min(Math.max((t - u.startTime - u.delay) / u.duration, 0), 1);
+    if (p <= 0) return;
+
+    const e = easeInOutCubic(p);
+
+    die.rotation.x = lerp(u.startRot.x, u.endRot.x, e);
+    die.rotation.y = lerp(u.startRot.y, u.endRot.y, e);
+    die.rotation.z = lerp(u.startRot.z, u.endRot.z, e);
+
+    const lift = Math.sin(p * Math.PI) * 0.24 + Math.sin(p * Math.PI * 2) * (1 - p) * 0.04;
+    die.position.y = u.base.y + Math.max(0, lift);
+    die.position.x = u.base.x + Math.sin(p * Math.PI * 2.5) * (1 - p) * 0.04;
+
+    if (p >= 1) {
+      u.rolling = false;
+      const l = u.layout;
+      die.rotation.set(l[3], l[4], l[5]);
+      die.position.copy(u.base);
     }
-  }, 65);
+  });
+
+  renderer.render(scene, camera);
+}
+
+function resizeRenderer() {
+  if (!renderer || !sceneWrap) return;
+
+  const width = sceneWrap.clientWidth || window.innerWidth;
+  const height = sceneWrap.clientHeight || 300;
+
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+
+  if (width >= 900) {
+    camera.position.z = 7.55;
+    camera.position.y = 7.25;
+  } else {
+    camera.position.z = 6.85;
+    camera.position.y = 6.75;
+  }
+
+  camera.lookAt(0, -0.62, 0);
+  camera.updateProjectionMatrix();
 }
 
 function makeRoll(count) {
@@ -94,7 +492,6 @@ function makeRoll(count) {
 
   return chosen.length ? chosen : ["Roll again"];
 }
-
 
 function requirementsMet(item, chosenWords) {
   if (!Array.isArray(item.requires) || item.requires.length === 0) return true;
@@ -119,6 +516,7 @@ function weightedPick(items) {
     roll -= Number(item.weight || 1);
     if (roll <= 0) return item;
   }
+
   return items[items.length - 1];
 }
 
@@ -133,9 +531,9 @@ function registerSecretInput(value) {
 }
 
 function showHiddenMessage() {
-  result.classList.remove("rolling");
   rollButton.classList.remove("rolling");
-  result.textContent = HIDDEN_MESSAGE;
+  hiddenMessageEl.textContent = "Keep Drawing!";
+  hiddenMessageEl.classList.add("show");
 }
 
 async function loadCounter() {
@@ -202,4 +600,14 @@ function renderCounter(count) {
 
 function formatNumber(number) {
   return new Intl.NumberFormat("en-US").format(Number(number || 0));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function easeInOutCubic(x) {
+  return x < 0.5
+    ? 4 * x * x * x
+    : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }

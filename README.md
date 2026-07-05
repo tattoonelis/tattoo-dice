@@ -1,53 +1,15 @@
-# Tattoo Dice v1.5.2
+# Tattoo Dice v1.6.5 Score + Keep Drawing Check
 
-Supabase counter release.
+Checks/fixes:
+- Exact v1.5.3 deck copied back in.
+- Score/puntentelling is present in classic.json.
+- Every deck item is checked for score 0-3 on startup.
+- Secret code remains 3,3,2,2,1,1 (`332211`).
+- Keep Drawing appears in red over the dice as an overlay layer.
+- Overlay z-index raised to 30 so it sits clearly above the WebGL dice.
 
-Changes from v1.5:
-- Cleaner Supabase counter handling.
-- No Netlify Blobs.
-- No Netlify Functions needed.
-- Counter falls back cleanly if Supabase is temporarily unreachable.
-- Header sits a little lower.
-- Space between logo and slogan is smaller.
-
-Before deploying:
-Run this SQL in Supabase if you have not already done so:
-
-alter table roll_counter enable row level security;
-
-drop policy if exists "Anyone can read roll counter" on roll_counter;
-
-create policy "Anyone can read roll counter"
-on roll_counter
-for select
-to anon
-using (true);
-
-create or replace function increment_roll_counter()
-returns bigint
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  new_total bigint;
-begin
-  update roll_counter
-  set total = total + 1
-  where id = 1
-  returning total into new_total;
-
-  return coalesce(new_total, 0);
-end;
-$$;
-
-grant execute on function increment_roll_counter() to anon;
-
-
-v1.5.2: Only lowered the logo slightly and made the slogan a touch smaller.
-
-
-v1.5.3:
-- Fixed Beer → Bear.
-- Crystal Ball can only roll when Wizard is already in the same result.
-- No new words added.
+Deck verification:
+- Items: 86
+- Score counts: {0: 14, 1: 26, 2: 15, 3: 31}
+- Missing score: 0
+- Invalid score: 0
