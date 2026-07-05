@@ -1,9 +1,8 @@
-# Tattoo Dice v1.6.6 Depth + Shadow Fix
+# Tattoo Dice v1.6.7 Final Polish
 
-Fixes:
-- Removed the depthTest/depthWrite layer hack that made the front die look transparent.
-- Rear dice should no longer show through the front die.
-- Side/rear dice no longer cast shadows onto the main/front die.
-- Main/front die remains visually in front and can cast shadow.
-- Light source adjusted toward the front/top for more logical shadow direction.
-- Keep Drawing, scores, v1.5.3 deck/rules remain included.
+Changes:
+- 2-dice mode is now centered as a pair.
+- Keep Drawing now adds a fading dark layer between dice and red text, leaving dice about 20% visible.
+- Added homescreen/PWA app icons with a dice icon style.
+- Added apple-touch-icon and manifest icons.
+- Scores, Keep Drawing code, app lock, 3D text dice remain included.

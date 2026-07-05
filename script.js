@@ -12,6 +12,7 @@ const rollButton = document.getElementById("rollButton");
 const diceOptions = document.querySelectorAll(".dice-option");
 const counterEl = document.getElementById("counter");
 const sceneWrap = document.getElementById("sceneWrap");
+const diceStageEl = document.getElementById("diceStage3d");
 const hiddenMessageEl = document.getElementById("hiddenMessage");
 
 const SECRET_CODE = "332211";
@@ -23,16 +24,14 @@ let diceMeshes = [];
 
 const layouts = {
   1: [
-    // main/result die
     [0.00, -0.24, 0.34, -0.82, 0.10, 0.00, 2.42]
   ],
   2: [
-    // main in center/front, support to the right/back
-    [0.00, -0.30, 0.42, -0.82, 0.10, 0.00, 2.08],
-    [1.88, -0.08, -0.58, -0.78, -0.34, 0.12, 1.72]
+    // Two dice centered as a pair around the middle.
+    [-0.92, -0.30, 0.38, -0.82, 0.20, -0.06, 1.92],
+    [ 0.92, -0.08, -0.52, -0.78,-0.28,  0.10, 1.72]
   ],
   3: [
-    // main in center/front, detail/effect behind as lower visual layer
     [0.00, -0.34, 0.56, -0.82, 0.10, 0.00, 2.06],
     [-2.06, -0.04, -0.66, -0.78, 0.36, -0.13, 1.66],
     [ 2.06, -0.04, -0.66, -0.78,-0.36,  0.13, 1.66]
@@ -82,6 +81,7 @@ async function init() {
   rollButton.addEventListener("click", () => {
     hiddenActive = false;
     hiddenMessageEl.classList.remove("show");
+    if (diceStageEl) diceStageEl.classList.remove("keep-active");
     roll({ countIt: true });
   });
 
@@ -387,6 +387,7 @@ async function roll(options = { countIt: true }) {
   rollInProgress = true;
   rollButton.classList.add("rolling");
   hiddenMessageEl.classList.remove("show");
+  if (diceStageEl) diceStageEl.classList.remove("keep-active");
 
   currentRoll = makeRoll(wordCount);
   renderDice(currentRoll, true);
@@ -531,6 +532,7 @@ function registerSecretInput(value) {
 function showHiddenMessage() {
   rollButton.classList.remove("rolling");
   hiddenMessageEl.textContent = "Keep Drawing!";
+  if (diceStageEl) diceStageEl.classList.add("keep-active");
   hiddenMessageEl.classList.add("show");
 }
 
