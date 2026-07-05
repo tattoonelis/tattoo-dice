@@ -386,7 +386,13 @@ async function roll(options = { countIt: true }) {
   if (!deck.length || rollInProgress) return;
 
   rollInProgress = true;
+  hiddenActive = false;
   rollButton.classList.add("rolling");
+
+  // Reset Keep Drawing overlay on the next roll.
+  // The fade layer transitions out via CSS so brightness returns smoothly.
+  hiddenMessageEl.classList.remove("show");
+  if (screenFade) screenFade.classList.remove("show");
   hiddenMessageEl.classList.remove("show");
   
 
