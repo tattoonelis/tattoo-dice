@@ -110,18 +110,18 @@ function setupThree() {
   scene.add(new THREE.AmbientLight(0xffffff, 1.82));
 
   const key = new THREE.DirectionalLight(0xfff4dd, 2.15);
-  key.position.set(-4.2, 7.4, 5.4);
+  key.position.set(-2.2, 8.2, 7.8);
   key.castShadow = true;
   key.shadow.mapSize.set(2048, 2048);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xe6efff, 0.42);
-  fill.position.set(4.5, 4.6, 3.0);
+  const fill = new THREE.DirectionalLight(0xe6efff, 0.36);
+  fill.position.set(4.5, 4.6, 2.4);
   scene.add(fill);
 
   floor = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 12),
-    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.30 })
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.24 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -1.58;
@@ -149,20 +149,9 @@ function renderDice(words, animateIn = false) {
   words.forEach((word, index) => {
     const p = layout[index];
     const mesh = createTextDie(word, p, index);
-
-    // Photoshop-like layer trick:
-    // index 0 is the main subject. It is rendered in front so it cannot visually disappear behind side dice.
-    if (index === 0) {
-      mesh.renderOrder = 10;
-      if (Array.isArray(mesh.material)) {
-        mesh.material.forEach(mat => {
-          mat.depthTest = false;
-          mat.depthWrite = false;
-        });
-      }
-    } else {
-      mesh.renderOrder = 1;
-    }
+    // Keep normal 3D depth behavior. The main die is already physically in front.
+    // No depthTest hack, because that caused rear dice to show through.
+    mesh.renderOrder = index === 0 ? 2 : 1;
 
     mesh.position.set(p[0], p[1], p[2]);
     mesh.rotation.set(p[3], p[4], p[5]);
@@ -174,6 +163,11 @@ function renderDice(words, animateIn = false) {
     mesh.userData.duration = 1;
     mesh.userData.delay = index * 0.06;
     mesh.userData.rolling = false;
+
+    // Shadow layering:
+    // main/front die casts shadow; rear/side dice do not cast onto the main die.
+    mesh.castShadow = index === 0;
+    mesh.receiveShadow = true;
 
     scene.add(mesh);
     diceMeshes.push(mesh);
@@ -192,7 +186,11 @@ function createTextDie(finalWord, layout, index) {
     roughness: 0.48,
     metalness: 0,
     clearcoat: 0.10,
-    clearcoatRoughness: 0.68
+    clearcoatRoughness: 0.68,
+    transparent: false,
+    opacity: 1,
+    depthTest: true,
+    depthWrite: true
   }));
 
   const geometry = new RoundedBoxGeometry(size, size, size, 20, size * 0.13);

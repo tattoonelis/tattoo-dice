@@ -1,15 +1,9 @@
-# Tattoo Dice v1.6.5 Score + Keep Drawing Check
+# Tattoo Dice v1.6.6 Depth + Shadow Fix
 
-Checks/fixes:
-- Exact v1.5.3 deck copied back in.
-- Score/puntentelling is present in classic.json.
-- Every deck item is checked for score 0-3 on startup.
-- Secret code remains 3,3,2,2,1,1 (`332211`).
-- Keep Drawing appears in red over the dice as an overlay layer.
-- Overlay z-index raised to 30 so it sits clearly above the WebGL dice.
-
-Deck verification:
-- Items: 86
-- Score counts: {0: 14, 1: 26, 2: 15, 3: 31}
-- Missing score: 0
-- Invalid score: 0
+Fixes:
+- Removed the depthTest/depthWrite layer hack that made the front die look transparent.
+- Rear dice should no longer show through the front die.
+- Side/rear dice no longer cast shadows onto the main/front die.
+- Main/front die remains visually in front and can cast shadow.
+- Light source adjusted toward the front/top for more logical shadow direction.
+- Keep Drawing, scores, v1.5.3 deck/rules remain included.
