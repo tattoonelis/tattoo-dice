@@ -283,10 +283,9 @@ function makeTextTexture(text) {
   ctx.lineWidth = 18;
   ctx.strokeRect(42, 42, 940, 940);
 
-  // Rotate canvas content so final visible face is upright in the fixed 3D landing pose.
+  // Draw upright text for the current final landing/render pose.
   ctx.save();
   ctx.translate(512, 512);
-  ctx.rotate(Math.PI);
   drawDiceText(ctx, text);
   ctx.restore();
 
