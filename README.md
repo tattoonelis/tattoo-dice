@@ -1,7 +1,8 @@
-# Tattoo Dice v1.7.1 Text Upright Fix
+# Tattoo Dice v1.7.2 Landscape Adaptive
 
-Fix:
-- Dice text orientation corrected so the landing face is upright again.
-- No changes to the improved realistic dice rendering.
-- No changes to Keep Drawing 1% logic.
-- No changes to physics/layout.
+Update:
+- Added adaptive landscape mode for phone/tablet rotation.
+- Header, tagline, controls, roll button and footer scale down in landscape.
+- Dice remain visually important and centered.
+- Camera adjusts in landscape to avoid overlapping/stacking.
+- Portrait experience remains unchanged.
