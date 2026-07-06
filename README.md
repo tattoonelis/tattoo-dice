@@ -1,8 +1,8 @@
-# Tattoo Dice v1.7.2 Landscape Adaptive
+# Tattoo Dice v1.7.3 Landscape Two Column
 
 Update:
-- Added adaptive landscape mode for phone/tablet rotation.
-- Header, tagline, controls, roll button and footer scale down in landscape.
-- Dice remain visually important and centered.
-- Camera adjusts in landscape to avoid overlapping/stacking.
-- Portrait experience remains unchanged.
+- Landscape phone/tablet mode now uses its own two-column layout.
+- Dice area on the left, controls and ROLL button on the right.
+- Header/footer stay readable without stacking over the dice.
+- Dice remain prominent.
+- Portrait mode remains unchanged.
