@@ -483,25 +483,19 @@ function resizeRenderer() {
 
   const width = sceneWrap.clientWidth || window.innerWidth;
   const height = sceneWrap.clientHeight || 300;
-  const isLandscape = width > height;
 
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
 
-  if (isLandscape && height < 620) {
-    camera.position.z = 7.75;
-    camera.position.y = 7.35;
-    camera.lookAt(0, -0.60, 0);
-  } else if (width >= 900) {
+  if (width >= 900) {
     camera.position.z = 7.55;
     camera.position.y = 7.25;
-    camera.lookAt(0, -0.62, 0);
   } else {
     camera.position.z = 6.85;
     camera.position.y = 6.75;
-    camera.lookAt(0, -0.62, 0);
   }
 
+  camera.lookAt(0, -0.62, 0);
   camera.updateProjectionMatrix();
 }
 

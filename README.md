@@ -1,8 +1,14 @@
-# Tattoo Dice v1.7.2 Landscape Adaptive
+# Tattoo Dice v1.8.1 Stable
 
-Update:
-- Added adaptive landscape mode for phone/tablet rotation.
-- Header, tagline, controls, roll button and footer scale down in landscape.
-- Dice remain visually important and centered.
-- Camera adjusts in landscape to avoid overlapping/stacking.
-- Portrait experience remains unchanged.
+Dit is een exacte herverpakking van de stabiele v1.7.1 Text Upright Fix.
+
+Functioneel is niets aangepast:
+- dezelfde roll-engine
+- dezelfde dobbelsteenrendering
+- dezelfde animaties
+- dezelfde Keep Drawing-logica
+- dezelfde layout
+- dezelfde onderwerpenlijst
+- dezelfde teksten en oriëntatie
+
+Alleen het versienummer en de release-naam zijn gewijzigd.
