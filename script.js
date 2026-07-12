@@ -483,46 +483,155 @@ function resizeRenderer() {
 
   const width = sceneWrap.clientWidth || window.innerWidth;
   const height = sceneWrap.clientHeight || 300;
-  const isLandscape = width > height;
 
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
 
-  if (isLandscape && height < 620) {
-    camera.position.z = 6.55;
-    camera.position.y = 6.65;
-    camera.lookAt(0, -0.58, 0);
-  } else if (width >= 900) {
+  if (width >= 900) {
     camera.position.z = 7.55;
     camera.position.y = 7.25;
-    camera.lookAt(0, -0.62, 0);
   } else {
     camera.position.z = 6.85;
     camera.position.y = 6.75;
-    camera.lookAt(0, -0.62, 0);
   }
 
+  camera.lookAt(0, -0.62, 0);
   camera.updateProjectionMatrix();
 }
 
+// Curated category engine.
+//
+// Score pools:
+// - Score 1 is selected with 2/3 probability.
+// - Score 2 is selected with 1/3 probability.
+//
+// Category formulas:
+// 1 die: Main
+// 2 dice: 67% Main + Main, otherwise Main + a supporting role
+// 3 dice: mostly two Mains plus Connector / Support / Background
+//
+// A subject can belong to multiple categories, but remains one unique object.
+// Its candidate weight is divided by the number of categories it belongs to,
+// preventing multi-category entries from gaining duplicate-list advantage.
+
+const SCORE_ONE_CHANCE = 2 / 3;
+
+const TWO_DICE_FORMULAS = [
+  { chance: 0.67, roles: ["main", "main"] },
+  { chance: 0.11, roles: ["main", "connector"] },
+  { chance: 0.11, roles: ["main", "support"] },
+  { chance: 0.11, roles: ["main", "background"] }
+];
+
+const THREE_DICE_FORMULAS = [
+  { chance: 0.50, roles: ["main", "main", "support"] },
+  { chance: 0.20, roles: ["main", "main", "connector"] },
+  { chance: 0.15, roles: ["main", "main", "background"] },
+  { chance: 0.10, roles: ["main", "support", "background"] },
+  { chance: 0.05, roles: ["main", "connector", "background"] }
+];
+
 function makeRoll(count) {
-  const plan = count === 1 ? ["main"] : count === 2 ? ["main", "detail"] : ["main", "detail", "effect"];
-  const chosen = [];
+  const roles = chooseRollFormula(count);
+  const chosenItems = [];
   const chosenWords = new Set();
   const usedFamilies = new Set();
 
-  for (const slot of plan) {
-    let picked = pickForSlot(slot, usedFamilies, chosenWords);
-    if (!picked && slot === "effect") picked = pickForSlot("detail", usedFamilies, chosenWords);
-    if (!picked && slot === "detail") picked = pickForSlot("main", usedFamilies, chosenWords);
+  for (const role of roles) {
+    let picked = pickForCategory(role, chosenItems, chosenWords, usedFamilies);
+
+    // Controlled fallbacks keep a roll working if a category is temporarily exhausted.
+    if (!picked && role !== "support") {
+      picked = pickForCategory("support", chosenItems, chosenWords, usedFamilies);
+    }
+    if (!picked && role !== "connector") {
+      picked = pickForCategory("connector", chosenItems, chosenWords, usedFamilies);
+    }
+    if (!picked && role !== "background") {
+      picked = pickForCategory("background", chosenItems, chosenWords, usedFamilies);
+    }
+    if (!picked && role !== "main") {
+      picked = pickForCategory("main", chosenItems, chosenWords, usedFamilies);
+    }
+    if (!picked) {
+      picked = pickFromUniqueDeck(chosenItems, chosenWords, usedFamilies);
+    }
     if (!picked) continue;
 
-    chosen.push(picked.word);
+    chosenItems.push(picked);
     chosenWords.add(picked.word);
     usedFamilies.add(getFamily(picked));
   }
 
-  return chosen.length ? chosen : ["Roll again"];
+  return chosenItems.length
+    ? chosenItems.map(item => item.word)
+    : ["Roll again"];
+}
+
+function chooseRollFormula(count) {
+  if (count === 1) return ["main"];
+  if (count === 2) return weightedFormulaPick(TWO_DICE_FORMULAS);
+  return weightedFormulaPick(THREE_DICE_FORMULAS);
+}
+
+function weightedFormulaPick(formulas) {
+  let roll = Math.random();
+  for (const formula of formulas) {
+    roll -= formula.chance;
+    if (roll <= 0) return [...formula.roles];
+  }
+  return [...formulas[formulas.length - 1].roles];
+}
+
+function pickForCategory(category, chosenItems, chosenWords, usedFamilies) {
+  const baseOptions = deck.filter(item =>
+    Array.isArray(item.categories) &&
+    item.categories.includes(category) &&
+    !chosenWords.has(item.word) &&
+    !usedFamilies.has(getFamily(item)) &&
+    requirementsMet(item, chosenWords) &&
+    isCompatibleWithChosen(item, chosenItems)
+  );
+
+  if (!baseOptions.length) return null;
+
+  const desiredScore = Math.random() < SCORE_ONE_CHANCE ? 1 : 2;
+  const desiredPool = baseOptions.filter(item => Number(item.score) === desiredScore);
+  const fallbackPool = baseOptions.filter(item => Number(item.score) !== desiredScore);
+  const options = desiredPool.length ? desiredPool : fallbackPool;
+
+  return weightedUniqueCategoryPick(options);
+}
+
+function pickFromUniqueDeck(chosenItems, chosenWords, usedFamilies) {
+  const options = deck.filter(item =>
+    !chosenWords.has(item.word) &&
+    !usedFamilies.has(getFamily(item)) &&
+    requirementsMet(item, chosenWords) &&
+    isCompatibleWithChosen(item, chosenItems)
+  );
+  if (!options.length) return null;
+
+  const desiredScore = Math.random() < SCORE_ONE_CHANCE ? 1 : 2;
+  const desiredPool = options.filter(item => Number(item.score) === desiredScore);
+  return weightedUniqueCategoryPick(desiredPool.length ? desiredPool : options);
+}
+
+function weightedUniqueCategoryPick(items) {
+  // A multi-category item is not copied into multiple arrays.
+  // Dividing by categoryCount offsets the extra eligibility it gets.
+  const total = items.reduce((sum, item) => {
+    const categoryCount = Math.max(1, Number(item.categoryCount || item.categories?.length || 1));
+    return sum + (1 / categoryCount);
+  }, 0);
+
+  let roll = Math.random() * total;
+  for (const item of items) {
+    const categoryCount = Math.max(1, Number(item.categoryCount || item.categories?.length || 1));
+    roll -= 1 / categoryCount;
+    if (roll <= 0) return item;
+  }
+  return items[items.length - 1];
 }
 
 function requirementsMet(item, chosenWords) {
@@ -530,26 +639,22 @@ function requirementsMet(item, chosenWords) {
   return item.requires.every(requiredWord => chosenWords.has(requiredWord));
 }
 
-function pickForSlot(slot, usedFamilies, chosenWords = new Set()) {
-  const options = deck.filter(item => item.slot === slot && !usedFamilies.has(getFamily(item)) && requirementsMet(item, chosenWords));
-  if (!options.length) return null;
-  return weightedPick(options);
+function isCompatibleWithChosen(candidate, chosenItems) {
+  return chosenItems.every(chosen => {
+    // Wing + any bird is excluded in both directions.
+    if (
+      (candidate.word === "Wing" && getFamily(chosen) === "bird") ||
+      (chosen.word === "Wing" && getFamily(candidate) === "bird")
+    ) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 function getFamily(item) {
   return item.family || item.word.toLowerCase().replace(/\s+/g, "-");
-}
-
-function weightedPick(items) {
-  const total = items.reduce((sum, item) => sum + Number(item.weight || 1), 0);
-  let roll = Math.random() * total;
-
-  for (const item of items) {
-    roll -= Number(item.weight || 1);
-    if (roll <= 0) return item;
-  }
-
-  return items[items.length - 1];
 }
 
 function registerSecretInput(value) {

@@ -1,8 +1,18 @@
-# Tattoo Dice v1.7.3 Landscape Two Column
+# Tattoo Dice v1.8.0 – Curated Engine
 
-Update:
-- Landscape phone/tablet mode now uses its own two-column layout.
-- Dice area on the left, controls and ROLL button on the right.
-- Header/footer stay readable without stacking over the dice.
-- Dice remain prominent.
-- Portrait mode remains unchanged.
+Deze versie gebruikt de ingevulde curatielijst daadwerkelijk in de roll-engine.
+
+## Inhoud
+- 81 volledig ingevulde onderwerpen.
+- Niet of onvolledig ingevulde onderwerpen zijn uitgesloten.
+- Rollen: main, connector, support en background.
+- Score 1 heeft 66,6% kans; score 2 heeft 33,3% kans.
+- Onderwerpen blijven unieke objecten wanneer ze meerdere categorieën hebben.
+- Een onderwerp kan nooit tweemaal in dezelfde roll vallen.
+- Family-regels en requirements blijven actief.
+- Wing kan nooit samen met een onderwerp uit de bird-family vallen.
+
+## Roll-formules
+- 1 dobbelsteen: Main.
+- 2 dobbelstenen: meestal Main + Main.
+- 3 dobbelstenen: meestal twee Mains plus Support, Connector of Background.
