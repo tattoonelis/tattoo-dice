@@ -16,6 +16,9 @@ const sceneWrap = document.getElementById("sceneWrap");
 const diceStageEl = document.getElementById("diceStage3d");
 const hiddenMessageEl = document.getElementById("hiddenMessage");
 const screenFade = document.getElementById("screenFade");
+const themeButton = document.getElementById("themeButton");
+const themeModal = document.getElementById("themeModal");
+const introGateEl = document.getElementById("introGate");
 
 const SECRET_CODE = "332211";
 const KEEP_DRAWING_CHANCE = 0.01;
@@ -23,6 +26,14 @@ const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
 let scene, camera, renderer, floor;
+let introStarted = false;
+let introActive = false;
+let introStartTime = 0;
+let introDuration = 1.78;
+let introResolve = null;
+let introTargetRect = null;
+let introStartTop = 0;
+let introAirDice = [];
 let diceMeshes = [];
 
 const layouts = {
@@ -54,16 +65,32 @@ const FACE_NORMALS = [
 
 init();
 
+
+function setThemeModalState(open) {
+  if (!themeModal) return;
+  themeModal.classList.toggle("open", open);
+  themeModal.setAttribute("aria-hidden", String(!open));
+  document.body.classList.toggle("theme-modal-open", open);
+}
+
 async function init() {
   lockInterface();
   setupThree();
 
   await loadDeck();
   validateDeckScores();
-  currentRoll = makeRoll(wordCount);
+
+  // Preload the exact first result and all materials while the intro text is visible.
+  wordCount = 3;
+  currentRoll = makeRoll(3);
   renderDice(currentRoll, false);
+  renderer.compile(scene, camera);
+  renderer.render(scene, camera);
 
   await loadCounter();
+  await waitForIntroTap();
+  await playIntroRoll();
+  await incrementCounter();
 
   diceOptions.forEach(button => {
     button.addEventListener("click", () => {
@@ -83,11 +110,162 @@ async function init() {
   rollButton.addEventListener("click", () => {
     hiddenActive = false;
     hiddenMessageEl.classList.remove("show");
-    
+
     roll({ countIt: true });
   });
 
+  if (themeButton && themeModal) {
+    themeButton.addEventListener("pointerup", event => {
+      event.preventDefault();
+      event.stopPropagation();
+      setThemeModalState(true);
+    }, { passive: false });
+
+    themeModal.querySelectorAll("[data-close-theme]").forEach(element => {
+      element.addEventListener("pointerup", event => {
+        event.preventDefault();
+        setThemeModalState(false);
+      }, { passive: false });
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") setThemeModalState(false);
+    });
+  }
+
   window.addEventListener("resize", resizeRenderer);
+}
+
+function waitForIntroTap() {
+  if (!introGateEl) return Promise.resolve();
+
+  return new Promise(resolve => {
+    const begin = event => {
+      if (introStarted) return;
+      if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+
+      event.preventDefault();
+      introStarted = true;
+      introGateEl.removeEventListener("pointerup", begin);
+      introGateEl.removeEventListener("click", begin);
+      introGateEl.removeEventListener("keydown", begin);
+      resolve();
+    };
+
+    introGateEl.addEventListener("pointerup", begin, { passive: false });
+    introGateEl.addEventListener("click", begin, { passive: false });
+    introGateEl.addEventListener("keydown", begin);
+  });
+}
+
+function playIntroRoll() {
+  if (!diceMeshes.length || !introGateEl) {
+    sceneWrap.classList.remove("intro-hidden");
+    introGateEl?.remove();
+    return Promise.resolve();
+  }
+
+  introTargetRect = sceneWrap.getBoundingClientRect();
+  introStartTop = -introTargetRect.height - 26;
+  document.body.classList.add("intro-running");
+
+  sceneWrap.classList.add("intro-moving");
+  sceneWrap.style.left = `${introTargetRect.left}px`;
+  sceneWrap.style.top = `${introStartTop}px`;
+  sceneWrap.style.width = `${introTargetRect.width}px`;
+  sceneWrap.style.height = `${introTargetRect.height}px`;
+  sceneWrap.classList.remove("intro-hidden");
+
+  introAirDice = [];
+
+  diceMeshes.forEach((die, index) => {
+    const layout = die.userData.layout;
+    const targetPosition = new THREE.Vector3(layout[0], layout[1], layout[2]);
+    const targetRotation = new THREE.Euler(layout[3], layout[4], layout[5]);
+
+    die.userData.introTargetPosition = targetPosition.clone();
+    die.userData.introTargetRotation = targetRotation.clone();
+    die.userData.introPhysicsStrength =
+      (index === 0 ? 0.76 : 0.58) * (0.95 + Math.random() * 0.10);
+    die.userData.introImpactDelay = index * (0.028 + Math.random() * 0.015);
+    die.userData.introLanded = false;
+
+    // Stable landing dice remain hidden until contact.
+    die.position.copy(targetPosition);
+    die.rotation.copy(targetRotation);
+    die.scale.set(1, 1, 1);
+    die.visible = false;
+    die.userData.rolling = false;
+
+    // Temporary airborne clone: animation A.
+    const airDie = die.clone();
+    airDie.geometry = die.geometry;
+    airDie.material = die.material;
+    airDie.visible = true;
+    airDie.position.copy(targetPosition);
+    airDie.scale.set(1, 1, 1);
+    airDie.renderOrder = die.renderOrder;
+    airDie.castShadow = die.castShadow;
+    airDie.receiveShadow = die.receiveShadow;
+
+    // Whole rotations ensure exact matching orientation at contact.
+    const turnsX = index === 0 ? 4 : 3 + index;
+    const turnsY = index === 0 ? 2 : 1 + index;
+    const turnsZ = index === 0 ? 1 : index;
+
+    airDie.userData.startRotation = new THREE.Euler(
+      targetRotation.x - turnsX * Math.PI * 2,
+      targetRotation.y - turnsY * Math.PI * 2,
+      targetRotation.z - turnsZ * Math.PI * 2
+    );
+    airDie.userData.targetRotation = targetRotation.clone();
+    airDie.userData.impactStart = 0.60 + die.userData.introImpactDelay;
+    airDie.rotation.copy(airDie.userData.startRotation);
+
+    scene.add(airDie);
+    introAirDice.push(airDie);
+  });
+
+  introGateEl.classList.add("starting");
+  introStartTime = performance.now() / 1000;
+  introActive = true;
+
+  return new Promise(resolve => {
+    introResolve = resolve;
+  });
+}
+
+function finishIntroRoll() {
+  introActive = false;
+
+  introAirDice.forEach(airDie => {
+    scene.remove(airDie);
+  });
+  introAirDice = [];
+
+  diceMeshes.forEach(die => {
+    die.visible = true;
+    die.position.copy(die.userData.introTargetPosition);
+    die.rotation.copy(die.userData.introTargetRotation);
+    die.scale.set(1, 1, 1);
+    die.userData.base.copy(die.userData.introTargetPosition);
+    die.userData.introLanded = true;
+  });
+
+  sceneWrap.style.left = "";
+  sceneWrap.style.top = "";
+  sceneWrap.style.width = "";
+  sceneWrap.style.height = "";
+  sceneWrap.classList.remove("intro-moving", "intro-hidden");
+  document.body.classList.remove("intro-running");
+  resizeRenderer();
+
+  introGateEl.classList.add("finished");
+  setTimeout(() => introGateEl.remove(), 170);
+
+  const resolve = introResolve;
+  introResolve = null;
+  resolve?.();
 }
 
 function lockInterface() {
@@ -432,10 +610,12 @@ function startDiceAnimation() {
 
   diceMeshes.forEach((die, index) => {
     const p = die.userData.layout;
+    const strengthVariation = 0.94 + Math.random() * 0.12;
+    const timingVariation = (Math.random() - 0.5) * 0.06;
 
     die.userData.startTime = now;
-    die.userData.duration = 1.0 + index * 0.08;
-    die.userData.delay = index * 0.055;
+    die.userData.duration = 1.34 + index * 0.07 + timingVariation;
+    die.userData.delay = index * (0.045 + Math.random() * 0.018);
     die.userData.rolling = true;
     die.userData.startRot.copy(die.rotation);
     die.userData.endRot.set(
@@ -443,37 +623,216 @@ function startDiceAnimation() {
       p[4] + 4 * Math.PI * 2,
       p[5] + 2 * Math.PI * 2
     );
+
+    die.userData.physicsStrength =
+      (index === 0 ? 0.72 : 0.54) * strengthVariation;
+    die.userData.wobbleAmplitude =
+      (index === 0 ? 0.085 : 0.065) * (0.9 + Math.random() * 0.2);
+    die.userData.wobbleFrequency = 10.5 + Math.random() * 2.2;
+    die.userData.wobblePhase = Math.random() * Math.PI * 2;
   });
 }
+
+function landingBounce(progress, strength = 0.54) {
+  // Three distinct impacts with diminishing energy.
+  if (progress < 0.58) {
+    const air = progress / 0.58;
+    return Math.sin(air * Math.PI) * strength * 0.86;
+  }
+
+  if (progress < 0.77) {
+    const bounce1 = (progress - 0.58) / 0.19;
+    return Math.sin(bounce1 * Math.PI) * strength * 0.72;
+  }
+
+  if (progress < 0.91) {
+    const bounce2 = (progress - 0.77) / 0.14;
+    return Math.sin(bounce2 * Math.PI) * strength * 0.36;
+  }
+
+  const bounce3 = Math.min((progress - 0.91) / 0.09, 1);
+  return Math.sin(bounce3 * Math.PI) * strength * 0.14;
+}
+
+function landingSquash(progress, index = 0) {
+  const impact1 = Math.exp(-Math.pow((progress - 0.58) / 0.020, 2));
+  const impact2 = Math.exp(-Math.pow((progress - 0.77) / 0.017, 2));
+  const impact3 = Math.exp(-Math.pow((progress - 0.91) / 0.013, 2));
+
+  const amount = (
+    impact1 * 0.075 +
+    impact2 * 0.034 +
+    impact3 * 0.014
+  ) * (index === 0 ? 1 : 0.84);
+
+  return {
+    y: 1 - amount,
+    xz: 1 + amount * 0.64
+  };
+}
+
+function dampedWobble(progress, amplitude, frequency, phase) {
+  // Only start after the main travel phase, then quickly lose energy.
+  const start = 0.66;
+  if (progress <= start) return 0;
+  const local = (progress - start) / (1 - start);
+  const damping = Math.exp(-4.8 * local);
+  return Math.sin(local * frequency + phase) * amplitude * damping;
+}
+
 
 function animate() {
   requestAnimationFrame(animate);
   const t = performance.now() / 1000;
 
-  diceMeshes.forEach(die => {
-    const u = die.userData;
-    if (!u.rolling) return;
+  if (introActive) {
+    const progress = Math.min(
+      Math.max((t - introStartTime) / introDuration, 0),
+      1
+    );
 
-    const p = Math.min(Math.max((t - u.startTime - u.delay) / u.duration, 0), 1);
-    if (p <= 0) return;
+    // Shared canvas falls into the exact final stage rectangle.
+    const fallPhase = Math.min(progress / 0.60, 1);
+    const gravityDrop = fallPhase * fallPhase;
+    const currentTop = lerp(
+      introStartTop,
+      introTargetRect.top,
+      gravityDrop
+    );
+    sceneWrap.style.top = `${currentTop}px`;
+    sceneWrap.style.left = `${introTargetRect.left}px`;
 
-    const e = easeInOutCubic(p);
+    // ANIMATION A: temporary airborne dice spin only while falling.
+    introAirDice.forEach((airDie, index) => {
+      const impactStart = airDie.userData.impactStart;
+      const targetRotation = airDie.userData.targetRotation;
 
-    die.rotation.x = lerp(u.startRot.x, u.endRot.x, e);
-    die.rotation.y = lerp(u.startRot.y, u.endRot.y, e);
-    die.rotation.z = lerp(u.startRot.z, u.endRot.z, e);
+      if (progress < impactStart) {
+        const airProgress = Math.min(progress / impactStart, 1);
+        const spinEase = easeInOutCubic(airProgress);
 
-    const lift = Math.sin(p * Math.PI) * 0.24 + Math.sin(p * Math.PI * 2) * (1 - p) * 0.04;
-    die.position.y = u.base.y + Math.max(0, lift);
-    die.position.x = u.base.x + Math.sin(p * Math.PI * 2.5) * (1 - p) * 0.04;
+        airDie.rotation.x = lerp(
+          airDie.userData.startRotation.x,
+          targetRotation.x,
+          spinEase
+        );
+        airDie.rotation.y = lerp(
+          airDie.userData.startRotation.y,
+          targetRotation.y,
+          spinEase
+        );
+        airDie.rotation.z = lerp(
+          airDie.userData.startRotation.z,
+          targetRotation.z,
+          spinEase
+        );
+      } else if (airDie.visible) {
+        // Exact handoff at contact.
+        airDie.rotation.copy(targetRotation);
+        airDie.visible = false;
 
-    if (p >= 1) {
-      u.rolling = false;
-      const l = u.layout;
-      die.rotation.set(l[3], l[4], l[5]);
-      die.position.copy(u.base);
+        const landingDie = diceMeshes[index];
+        landingDie.visible = true;
+        landingDie.position.copy(landingDie.userData.introTargetPosition);
+        landingDie.rotation.copy(landingDie.userData.introTargetRotation);
+        landingDie.scale.set(1, 1, 1);
+        landingDie.userData.introLanded = true;
+      }
+    });
+
+    // ANIMATION B: real stable dice bounce with rotation fully locked.
+    diceMeshes.forEach((die, index) => {
+      if (!die.userData.introLanded) return;
+
+      const impactStart = introAirDice[index].userData.impactStart;
+      const localImpact = Math.min(
+        Math.max((progress - impactStart) / (1 - impactStart), 0),
+        1
+      );
+
+      let bounce;
+      if (localImpact < 0.64) {
+        const firstBounce = localImpact / 0.64;
+        bounce = Math.sin(firstBounce * Math.PI) *
+          die.userData.introPhysicsStrength * 0.74;
+      } else {
+        const secondBounce = (localImpact - 0.64) / 0.36;
+        bounce = Math.sin(secondBounce * Math.PI) *
+          die.userData.introPhysicsStrength * 0.27;
+      }
+
+      const impactOne = Math.exp(
+        -Math.pow((localImpact - 0.015) / 0.026, 2)
+      );
+      const impactTwo = Math.exp(
+        -Math.pow((localImpact - 0.65) / 0.022, 2)
+      );
+      const amount = (
+        impactOne * 0.076 +
+        impactTwo * 0.026
+      ) * (index === 0 ? 1 : 0.86);
+
+      const squashY = 1 - amount;
+      const squashXZ = 1 + amount * 0.62;
+
+      die.position.x = die.userData.introTargetPosition.x;
+      die.position.y = die.userData.introTargetPosition.y + bounce;
+      die.position.z = die.userData.introTargetPosition.z;
+
+      // Hard lock: no spin, wobble or interpolation after contact.
+      die.rotation.copy(die.userData.introTargetRotation);
+      die.scale.set(squashXZ, squashY, squashXZ);
+    });
+
+    if (progress >= 1) {
+      finishIntroRoll();
     }
-  });
+  } else {
+    // Existing normal ROLL animation remains unchanged.
+    diceMeshes.forEach(die => {
+      const u = die.userData;
+      if (!u.rolling) return;
+
+      const p = Math.min(
+        Math.max((t - u.startTime - u.delay) / u.duration, 0),
+        1
+      );
+      if (p <= 0) return;
+
+      const e = easeInOutCubic(p);
+
+      die.rotation.x = lerp(u.startRot.x, u.endRot.x, e);
+      die.rotation.y = lerp(u.startRot.y, u.endRot.y, e);
+      die.rotation.z = lerp(u.startRot.z, u.endRot.z, e);
+
+      const index = diceMeshes.indexOf(die);
+      const bounce = landingBounce(p, u.physicsStrength);
+      const squash = landingSquash(p, index);
+      const wobble = dampedWobble(
+        p,
+        u.wobbleAmplitude,
+        u.wobbleFrequency,
+        u.wobblePhase
+      );
+
+      die.position.y = u.base.y + bounce;
+      die.position.x = u.base.x +
+        Math.sin(p * Math.PI * 2.7 + index * 0.55) *
+        (1 - p) * 0.048;
+
+      die.rotation.x += wobble;
+      die.rotation.z -= wobble * 0.72;
+      die.scale.set(squash.xz, squash.y, squash.xz);
+
+      if (p >= 1) {
+        u.rolling = false;
+        const l = u.layout;
+        die.rotation.set(l[3], l[4], l[5]);
+        die.position.copy(u.base);
+        die.scale.set(1, 1, 1);
+      }
+    });
+  }
 
   renderer.render(scene, camera);
 }
@@ -638,6 +997,14 @@ function formatNumber(number) {
 
 function lerp(a, b, t) {
   return a + (b - a) * t;
+}
+
+function easeOutQuart(x) {
+  return 1 - Math.pow(1 - x, 4);
+}
+
+function smoothStep(x) {
+  return x * x * (3 - 2 * x);
 }
 
 function easeInOutCubic(x) {

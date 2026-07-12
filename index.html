@@ -26,22 +26,29 @@
 <body>
   <main class="app">
     <section class="stage">
-      <h1>Tattoo Dice</h1>
+      <div class="app-header">
+        <h1>Tattoo Dice</h1>
+      </div>
       <div class="tagline">Stop scrolling. Start rolling.</div>
       <div class="dice-stage-3d" id="diceStage3d">
-        <div id="sceneWrap" aria-label="Tattoo dice result"></div>
+        <div id="sceneWrap" class="intro-hidden" aria-label="Tattoo dice result"></div>
         <div class="hidden-message" id="hiddenMessage">Keep Drawing!</div>
       </div>
       <div class="controls">
         <div class="dice-select" aria-label="Aantal woorden">
-          <button class="dice-option" data-count="1" aria-label="1 woord"><span class="mini-die"><span class="pip center"></span></span><span class="dice-number">1</span></button>
-          <button class="dice-option" data-count="2" aria-label="2 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip top-right"></span></span><span class="dice-number">2</span></button>
-          <button class="dice-option active" data-count="3" aria-label="3 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip center"></span><span class="pip top-right"></span></span><span class="dice-number">3</span></button>
+          <button class="dice-option" data-count="1" aria-label="1 woord"><span class="mini-die"><span class="pip center"></span></span></button>
+          <button class="dice-option" data-count="2" aria-label="2 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip top-right"></span></span></button>
+          <button class="dice-option active" data-count="3" aria-label="3 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip center"></span><span class="pip top-right"></span></span></button>
         </div>
-        <button class="roll-button" id="rollButton" aria-label="Roll tattoo dice">
-          <span class="cube" aria-hidden="true"><span class="pip p1"></span><span class="pip p2"></span><span class="pip p3"></span><span class="pip p4"></span><span class="pip p5"></span><span class="pip p6"></span></span>
-          <span>ROLL</span>
-        </button>
+        
+        <div class="action-row">
+          <button class="theme-button" id="themeButton" type="button" aria-haspopup="dialog">
+            <span>THEME</span>
+          </button>
+          <button class="roll-button" id="rollButton" aria-label="Roll tattoo dice">
+            <span>ROLL</span>
+          </button>
+        </div>
       </div>
     </section>
     <footer class="footer">
@@ -49,6 +56,23 @@
       <div class="counter" id="counter" aria-live="polite"></div>
     </footer>
   </main>
+
+  <div class="intro-gate" id="introGate" role="button" tabindex="0" aria-label="Tap to start">
+    <div class="intro-shade"></div>
+    <div class="intro-message">Tap to start</div>
+  </div>
+
+  <div class="theme-modal" id="themeModal" aria-hidden="true">
+    <div class="theme-modal-backdrop" data-close-theme></div>
+    <section class="theme-modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
+      <button class="theme-modal-close" type="button" aria-label="Close theme menu" data-close-theme>×</button>
+      <h2 id="themeModalTitle">Theme</h2>
+      <button class="theme-choice active" type="button" aria-pressed="true">
+        <span>Classic</span>
+      </button>
+      <div class="theme-coming-soon">Coming soon</div>
+    </section>
+  </div>
   <script type="module" src="/script.js"></script>
   <div id="screenFade" class="screen-fade"></div>
 </body>
