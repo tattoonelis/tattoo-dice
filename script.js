@@ -489,9 +489,9 @@ function resizeRenderer() {
   camera.aspect = width / height;
 
   if (isLandscape && height < 620) {
-    camera.position.z = 6.55;
-    camera.position.y = 6.65;
-    camera.lookAt(0, -0.58, 0);
+    camera.position.z = 7.75;
+    camera.position.y = 7.35;
+    camera.lookAt(0, -0.60, 0);
   } else if (width >= 900) {
     camera.position.z = 7.55;
     camera.position.y = 7.25;
