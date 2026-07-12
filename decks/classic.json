@@ -2,209 +2,155 @@
   {
     "word": "8 Ball",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "8-ball",
-    "requires": []
+    "weight": 2,
+    "slot": "main",
+    "family": "8-ball"
   },
   {
     "word": "Ace of Spades",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "cards",
-    "requires": []
+    "weight": 2,
+    "slot": "main",
+    "family": "cards"
   },
   {
     "word": "Anchor",
     "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "anchor",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "anchor"
   },
   {
     "word": "Angel",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "angel",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "angel"
   },
   {
     "word": "Axe",
     "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "weapon",
-    "requires": []
+    "weight": 6,
+    "slot": "detail",
+    "family": "weapon"
   },
   {
-    "word": "Bamboo",
-    "score": 1,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "bamboe",
-    "requires": []
+    "word": "Bamboe",
+    "score": 0,
+    "weight": 0.25,
+    "slot": "detail",
+    "family": "bamboe"
   },
   {
     "word": "Barbed Wire",
-    "score": 2,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "barbed-wire",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "barbed-wire"
+  },
+  {
+    "word": "Battle Royale",
+    "score": 0,
+    "weight": 0.25,
+    "slot": "detail",
+    "family": "battle-royale"
   },
   {
     "word": "Bear",
     "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "bear",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "bear"
   },
   {
     "word": "Blood",
     "score": 2,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "effect",
-    "requires": []
+    "weight": 6,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Boobs",
-    "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "boobs",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "boobs"
   },
   {
     "word": "Butterfly",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "butterfly",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "butterfly"
   },
   {
     "word": "Cards",
-    "score": 2,
-    "categories": [
-      "support",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "cards",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "cards"
+  },
+  {
+    "word": "Cartoon",
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "cartoon"
   },
   {
     "word": "Cat",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "feline",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "feline"
   },
   {
     "word": "Chain",
-    "score": 2,
-    "categories": [
-      "connector"
-    ],
-    "categoryCount": 1,
-    "family": "chain",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "chain"
   },
   {
     "word": "Cherry",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "floral",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "floral"
   },
   {
     "word": "Chrysanthemum",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "floral",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "floral"
   },
   {
     "word": "Clown",
     "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "clown",
-    "requires": []
+    "weight": 6,
+    "slot": "main",
+    "family": "clown"
   },
   {
     "word": "Cobra",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "snake",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "snake"
   },
   {
     "word": "Cross",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "cross",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "cross"
   },
   {
     "word": "Crystal Ball",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
+    "weight": 2,
+    "slot": "main",
     "family": "crystal-ball",
     "requires": [
       "Wizard"
@@ -212,633 +158,450 @@
   },
   {
     "word": "Dagger",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "weapon",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "weapon"
   },
   {
     "word": "Demon",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "demon",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "demon"
   },
   {
     "word": "Devil",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "devil",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "devil"
   },
   {
     "word": "Dragon",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "dragon",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "dragon"
   },
   {
     "word": "Eagle",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "bird",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "bird"
   },
   {
     "word": "Evil Clown",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "clown",
-    "requires": []
+    "score": 2,
+    "weight": 6,
+    "slot": "main",
+    "family": "clown"
   },
   {
     "word": "Eye",
     "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "eye",
-    "requires": []
+    "weight": 6,
+    "slot": "detail",
+    "family": "eye"
+  },
+  {
+    "word": "Fan",
+    "score": 0,
+    "weight": 0.25,
+    "slot": "detail",
+    "family": "fan"
   },
   {
     "word": "Fire",
     "score": 2,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "effect",
-    "requires": []
+    "weight": 6,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Flames",
-    "score": 2,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "effect",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Flowers",
-    "score": 2,
-    "categories": [
-      "connector",
-      "support",
-      "background"
-    ],
-    "categoryCount": 3,
-    "family": "floral",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "floral"
   },
   {
     "word": "Frog",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "frog",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "frog"
   },
   {
     "word": "Geisha",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "lady",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "lady"
   },
   {
     "word": "Gorilla",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "gorilla",
-    "requires": []
+    "score": 2,
+    "weight": 6,
+    "slot": "main",
+    "family": "gorilla"
   },
   {
     "word": "Grim Reaper",
     "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "grim-reaper",
-    "requires": []
+    "weight": 6,
+    "slot": "main",
+    "family": "grim-reaper"
   },
   {
     "word": "Hannya",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "hannya",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "hannya"
   },
   {
     "word": "Hat",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "hat",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "hat"
   },
   {
     "word": "Heart",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "heart",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "heart"
   },
   {
     "word": "Helmet",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "helmet",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "helmet"
   },
   {
     "word": "Lady Head",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "lady",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "lady"
   },
   {
     "word": "Lightning",
-    "score": 2,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "effect",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Lion",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "feline",
-    "requires": []
+    "score": 2,
+    "weight": 6,
+    "slot": "main",
+    "family": "feline"
   },
   {
     "word": "Lotus",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "floral",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "floral"
   },
   {
     "word": "Mace",
     "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "weapon",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "weapon"
   },
   {
     "word": "Mask",
     "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "mask",
-    "requires": []
+    "weight": 6,
+    "slot": "main",
+    "family": "mask"
+  },
+  {
+    "word": "Mermaid",
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "mermaid"
   },
   {
     "word": "Moon",
     "score": 1,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "moon",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "moon"
   },
   {
     "word": "Mountain",
-    "score": 1,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "mountain",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "mountain"
   },
   {
     "word": "Oni",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "oni",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "oni"
   },
   {
     "word": "Panther",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "feline",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "feline"
   },
   {
     "word": "Parrot",
     "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "bird",
-    "requires": []
+    "weight": 2,
+    "slot": "main",
+    "family": "bird"
   },
   {
     "word": "Peony",
     "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "floral",
-    "requires": []
+    "weight": 6,
+    "slot": "detail",
+    "family": "floral"
   },
   {
     "word": "Pig",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "pig",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "pig"
   },
   {
     "word": "Pile of Skulls",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "skull",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "skull"
   },
   {
     "word": "Pin-up",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "lady",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "lady"
   },
   {
     "word": "Pistols",
-    "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "weapon",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "detail",
+    "family": "weapon"
   },
   {
     "word": "Ram",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "ram",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "ram"
   },
   {
     "word": "Raven",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "bird",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "bird"
   },
   {
     "word": "Rope",
     "score": 1,
-    "categories": [
-      "connector"
-    ],
-    "categoryCount": 1,
-    "family": "rope",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "rope"
   },
   {
     "word": "Rose",
-    "score": 2,
-    "categories": [
-      "main",
-      "connector",
-      "support",
-      "background"
-    ],
-    "categoryCount": 4,
-    "family": "floral",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "floral"
   },
   {
     "word": "Sacred Heart",
     "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "heart",
-    "requires": []
+    "weight": 6,
+    "slot": "main",
+    "family": "heart"
   },
   {
     "word": "Scorpion",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "scorpion",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "scorpion"
   },
   {
     "word": "Shark",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "shark",
-    "requires": []
+    "score": 2,
+    "weight": 6,
+    "slot": "main",
+    "family": "shark"
   },
   {
     "word": "Shield",
     "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "shield",
-    "requires": []
+    "weight": 2,
+    "slot": "detail",
+    "family": "shield"
   },
   {
     "word": "Skin Rip",
     "score": 2,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "effect",
-    "requires": []
+    "weight": 6,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Skull",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "skull",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "skull"
   },
   {
     "word": "Smoke",
-    "score": 2,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "effect",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Snake",
-    "score": 2,
-    "categories": [
-      "main",
-      "connector",
-      "support"
-    ],
-    "categoryCount": 3,
-    "family": "snake",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "snake"
+  },
+  {
+    "word": "Snake Head",
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "snake"
   },
   {
     "word": "Spider",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "spider",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "spider"
   },
   {
     "word": "Spider Web",
     "score": 2,
-    "categories": [
-      "connector",
-      "background"
-    ],
-    "categoryCount": 2,
-    "family": "spider",
-    "requires": []
+    "weight": 6,
+    "slot": "detail",
+    "family": "spider"
   },
   {
     "word": "Sun",
     "score": 1,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "sun",
-    "requires": []
+    "weight": 2,
+    "slot": "main",
+    "family": "sun"
   },
   {
     "word": "Swallow",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "bird",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "bird"
   },
   {
     "word": "Sword",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "weapon",
-    "requires": []
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
+    "family": "weapon"
   },
   {
     "word": "Tiger",
-    "score": 2,
-    "categories": [
-      "main",
-      "support"
-    ],
-    "categoryCount": 2,
-    "family": "feline",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "feline"
   },
   {
     "word": "Tribal",
-    "score": 2,
-    "categories": [
-      "main",
-      "connector",
-      "support",
-      "background"
-    ],
-    "categoryCount": 4,
-    "family": "tribal",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "tribal"
   },
   {
     "word": "Vampire",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "vampire",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "vampire"
   },
   {
     "word": "Viking",
-    "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "viking",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "main",
+    "family": "viking"
   },
   {
     "word": "Water",
-    "score": 1,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "effect",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Waves",
-    "score": 1,
-    "categories": [
-      "background"
-    ],
-    "categoryCount": 1,
-    "family": "effect",
-    "requires": []
+    "score": 0,
+    "weight": 0.25,
+    "slot": "effect",
+    "family": "effect"
   },
   {
     "word": "Wing",
-    "score": 1,
-    "categories": [
-      "support"
-    ],
-    "categoryCount": 1,
-    "family": "wing",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "wing"
   },
   {
     "word": "Wizard",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "wizard",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "wizard"
   },
   {
     "word": "Wolf",
-    "score": 2,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "wolf",
-    "requires": []
+    "score": 3,
+    "weight": 12,
+    "slot": "main",
+    "family": "wolf"
   },
   {
     "word": "Yin Yang",
     "score": 1,
-    "categories": [
-      "main"
-    ],
-    "categoryCount": 1,
-    "family": "yin-yang",
-    "requires": []
+    "weight": 2,
+    "slot": "main",
+    "family": "yin-yang"
   }
 ]
