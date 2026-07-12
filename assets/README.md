@@ -1,0 +1,8 @@
+# Tattoo Dice v1.7.3 Landscape Two Column
+
+Update:
+- Landscape phone/tablet mode now uses its own two-column layout.
+- Dice area on the left, controls and ROLL button on the right.
+- Header/footer stay readable without stacking over the dice.
+- Dice remain prominent.
+- Portrait mode remains unchanged.
