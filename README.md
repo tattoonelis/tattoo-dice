@@ -1,14 +1,8 @@
-# Tattoo Dice v1.8.1 Stable
+# Tattoo Dice v1.9.0 Landscape Two Column
 
-Dit is een exacte herverpakking van de stabiele v1.7.1 Text Upright Fix.
-
-Functioneel is niets aangepast:
-- dezelfde roll-engine
-- dezelfde dobbelsteenrendering
-- dezelfde animaties
-- dezelfde Keep Drawing-logica
-- dezelfde layout
-- dezelfde onderwerpenlijst
-- dezelfde teksten en oriëntatie
-
-Alleen het versienummer en de release-naam zijn gewijzigd.
+Update:
+- Landscape phone/tablet mode now uses its own two-column layout.
+- Dice area on the left, controls and ROLL button on the right.
+- Header/footer stay readable without stacking over the dice.
+- Dice remain prominent.
+- Portrait mode remains unchanged.
