@@ -1,0 +1,86 @@
+8 Ball — 1 — main
+Ace of Spades — 1 — main
+Anchor — 1 — detail
+Angel — 1 — main
+Axe — 2 — detail
+Bamboe — 0 — detail
+Barbed Wire — 3 — detail
+Battle Royale — 0 — detail
+Beer — 1 — detail
+Blood — 2 — effect
+Boobs — 0 — main
+Butterfly — 3 — main
+Cards — 1 — main
+Cartoon — 1 — main
+Cat — 1 — main
+Chain — 3 — detail
+Cherry — 1 — detail
+Chrysanthemum — 1 — detail
+Clown — 2 — main
+Cobra — 3 — main
+Cross — 1 — main
+Crystal Ball — 1 — main
+Dagger — 3 — main
+Demon — 3 — main
+Devil — 3 — main
+Dragon — 3 — main
+Eagle — 3 — main
+Evil Clown — 2 — main
+Eye — 2 — detail
+Fan — 0 — detail
+Fire — 2 — effect
+Flames — 3 — effect
+Flowers — 3 — main
+Frog — 0 — main
+Geisha — 3 — main
+Gorilla — 2 — main
+Grim Reaper — 2 — main
+Hannya — 3 — main
+Hat — 1 — detail
+Heart — 3 — main
+Helmet — 1 — detail
+Lady Head — 3 — main
+Lightning — 3 — effect
+Lion — 2 — main
+Lotus — 1 — detail
+Mace — 1 — detail
+Mask — 2 — main
+Mermaid — 1 — main
+Moon — 1 — detail
+Mountain — 0 — main
+Oni — 3 — main
+Panther — 3 — main
+Parrot — 1 — main
+Peony — 2 — detail
+Pig — 0 — main
+Pile of Skulls — 1 — main
+Pin-up — 3 — main
+Pistols — 0 — detail
+Ram — 0 — main
+Raven — 0 — main
+Rope — 1 — detail
+Rose — 3 — main
+Sacred Heart — 2 — main
+Scorpion — 3 — main
+Shark — 2 — main
+Shield — 1 — detail
+Skin Rip — 2 — effect
+Skull — 3 — main
+Smoke — 1 — effect
+Snake — 3 — main
+Snake Head — 3 — main
+Spider — 3 — main
+Spider Web — 2 — detail
+Sun — 1 — main
+Swallow — 3 — main
+Sword — 1 — detail
+Tiger — 3 — main
+Tribal — 3 — main
+Vampire — 0 — main
+Viking — 0 — main
+Water — 0 — effect
+Waves — 0 — effect
+Wing — 3 — detail
+Wizard — 3 — main
+Wolf — 3 — main
+Yin Yang — 1 — main
