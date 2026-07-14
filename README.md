@@ -1,9 +1,11 @@
-# Tattoo Dice v3.1.1 – Fantasy PIN Session Only
+# Tattoo Dice v3.1.2 – Direct Fantasy + Dynamic Labels
 
-Changes:
-- Added spacing between Classic and Fantasy in the Theme menu, matching the Main selector spacing.
-- Fantasy unlock is no longer stored locally.
-- The 2311 PIN is required every time the user enters Fantasy.
-- No Fantasy unlock state is persisted.
-- Existing counter persistence remains untouched.
-- All other Classic, Fantasy, Main, Theme, animation, formula and UI behavior remains unchanged.
+- Correct PIN 2311 immediately switches to Fantasy.
+- PIN and Theme popups close automatically.
+- Fantasy dice drop immediately from above.
+- Theme button shows Classic or Fantasy.
+- Main button shows Random or the selected Main.
+- Theme/Main text is half-size and centered.
+- ROLL keeps its original larger font.
+- Returning to Classic resets temporary Fantasy access.
+- Everything else remains unchanged.

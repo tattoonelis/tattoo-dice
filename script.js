@@ -126,6 +126,19 @@ function updatePinDisplay() {
   });
 }
 
+function updateActionButtonLabels() {
+  const themeLabel = themeButton?.querySelector("span");
+  const mainLabel = mainButton?.querySelector("span");
+
+  if (themeLabel) {
+    themeLabel.textContent = activeTheme === "fantasy" ? "Fantasy" : "Classic";
+  }
+
+  if (mainLabel) {
+    mainLabel.textContent = selectedMain || "Random";
+  }
+}
+
 function updateThemeMenu() {
   if (!classicThemeChoice || !fantasyThemeChoice) return;
 
@@ -136,6 +149,7 @@ function updateThemeMenu() {
   fantasyThemeChoice.classList.toggle("locked", !fantasyUnlocked);
   fantasyThemeChoice.setAttribute("aria-pressed", String(activeTheme === "fantasy"));
   fantasyThemeLabel.textContent = fantasyUnlocked ? "Fantasy" : "Fantasy 🔒";
+  updateActionButtonLabels();
 }
 
 function mainStorageKey(theme = activeTheme) {
@@ -147,6 +161,7 @@ function loadStoredMain() {
     ? localStorage.getItem("tattooDiceSelectedMain")
     : null;
   selectedMain = localStorage.getItem(mainStorageKey()) || fallback || "Random";
+  updateActionButtonLabels();
 }
 
 async function selectTheme(themeName) {
@@ -160,6 +175,7 @@ async function selectTheme(themeName) {
   }
 
   activeTheme = themeName;
+  if (activeTheme === "classic") fantasyUnlocked = false;
   localStorage.setItem("tattooDiceActiveTheme", activeTheme);
   themeSelectionChanged = activeTheme !== themeSelectionAtOpen;
 
@@ -172,6 +188,7 @@ async function selectTheme(themeName) {
   renderDice(currentRoll, false);
   updateThemeMenu();
   updateMainSelectionGlow();
+  updateActionButtonLabels();
 }
 
 
@@ -231,6 +248,7 @@ function buildMainMenu() {
   if (selectedMain !== "Random" && !mainWords.includes(selectedMain)) {
     selectedMain = "Random";
     localStorage.setItem("tattooDiceSelectedMain", selectedMain);
+    updateActionButtonLabels();
   }
 
   mainChoiceList.innerHTML = "";
@@ -252,6 +270,7 @@ function buildMainMenu() {
         localStorage.setItem("tattooDiceSelectedMain", selectedMain);
       }
       updateMainSelectionGlow();
+      updateActionButtonLabels();
 
       mainChoiceList.querySelectorAll(".main-choice").forEach(choice => {
         const active = choice.dataset.main === selectedMain;
@@ -324,6 +343,7 @@ async function init() {
   setupThree();
   loadStoredMain();
   updateThemeMenu();
+  updateActionButtonLabels();
 
   await loadDeck();
   validateDeckScores();
@@ -416,9 +436,10 @@ async function init() {
       if (pinInput.length === 4) {
         if (pinInput === FANTASY_UNLOCK_CODE) {
           fantasyUnlocked = true;
-          
-          updateThemeMenu();
+          await selectTheme("fantasy");
           setPinModalState(false);
+          setThemeModalState(false);
+          updateActionButtonLabels();
         } else {
           pinInput = "";
           updatePinDisplay();

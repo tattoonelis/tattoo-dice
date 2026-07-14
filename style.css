@@ -1928,3 +1928,24 @@ h1{
 .theme-modal-card h2 + .theme-choice{
   margin-top:0!important;
 }
+
+/* v3.1.2 dynamic action labels */
+.action-row .theme-button,
+.action-row .main-button{
+  font-size:clamp(11px,2.15vw,15px)!important;
+  line-height:1.05!important;
+  padding-inline:8px!important;
+  text-align:center!important;
+}
+.action-row .theme-button span,
+.action-row .main-button span{
+  display:block!important;
+  width:100%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  text-align:center!important;
+}
+.action-row .roll-button{
+  font-size:clamp(16px,4.25vw,27px)!important;
+}
