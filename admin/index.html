@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <title>Tattoo Dice Admin</title>
+  <link rel="icon" href="../assets/favicon.png">
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">Tattoo Dice</p>
+        <h1>Admin Ranking</h1>
+        <p class="tagline">Train the formula. One roll at a time.</p>
+      </div>
+      <a class="back-link" href="../">Back to app</a>
+    </header>
+
+    <section class="panel controls-panel" aria-label="Roll controls">
+      <div class="control-grid">
+        <label>
+          <span>Theme</span>
+          <select id="themeSelect">
+            <option value="classic">Classic</option>
+            <option value="fantasy">Fantasy</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Dice</span>
+          <select id="diceCount">
+            <option value="1">1 die</option>
+            <option value="2">2 dice</option>
+            <option value="3" selected>3 dice</option>
+          </select>
+        </label>
+
+        <label class="main-control">
+          <span>Main</span>
+          <select id="mainSelect">
+            <option value="Random">Random</option>
+          </select>
+        </label>
+      </div>
+
+      <button id="rollButton" class="roll-button" type="button">ROLL</button>
+    </section>
+
+    <section class="panel ranking-panel">
+      <div class="result-meta">
+        <span id="resultTheme">Classic</span>
+        <span id="resultCount">3 dice</span>
+      </div>
+
+      <div id="resultWords" class="result-words" aria-live="polite">
+        <div class="word-card">Ready</div>
+        <div class="word-card">to</div>
+        <div class="word-card">roll</div>
+      </div>
+
+      <div class="rating-title">How does this combination feel?</div>
+      <div class="rating-row" role="group" aria-label="Rate outcome">
+        <button class="rating-button positive" data-rating="up" type="button" aria-label="Thumbs up">👍</button>
+        <button class="rating-button neutral active" data-rating="open" type="button" aria-label="Leave open">—</button>
+        <button class="rating-button negative" data-rating="down" type="button" aria-label="Thumbs down">👎</button>
+      </div>
+
+      <label class="notes-label">
+        <span>Note <small>(especially useful when it does not work)</small></span>
+        <textarea id="noteInput" maxlength="1000" placeholder="What works, or why does it fail?"></textarea>
+      </label>
+
+      <div class="save-row">
+        <button id="saveButton" class="save-button" type="button">SAVE & NEXT</button>
+        <button id="skipButton" class="secondary-button" type="button">NEXT WITHOUT SAVING</button>
+      </div>
+
+      <div id="statusMessage" class="status-message" role="status"></div>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel stats-panel">
+        <div class="section-heading">
+          <h2>Session</h2>
+          <button id="refreshButton" class="small-button" type="button">Refresh</button>
+        </div>
+        <div class="stat-grid">
+          <div><strong id="totalRatings">0</strong><span>ratings</span></div>
+          <div><strong id="upRatings">0</strong><span>positive</span></div>
+          <div><strong id="downRatings">0</strong><span>negative</span></div>
+          <div><strong id="openRatings">0</strong><span>open</span></div>
+        </div>
+      </article>
+
+      <article class="panel leaderboard-panel">
+        <div class="section-heading">
+          <h2>Combination Rankings</h2>
+          <div class="heading-actions">
+            <button id="exportButton" class="small-button" type="button">Export CSV</button>
+          </div>
+        </div>
+        <p class="explanation">
+          Every judgement is stored separately. Repeated combinations are grouped here.
+          Positive and negative votes are compared; ties remain open.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Combination</th>
+                <th>Theme</th>
+                <th>👍</th>
+                <th>👎</th>
+                <th>Open</th>
+                <th>Verdict</th>
+                <th>Net</th>
+              </tr>
+            </thead>
+            <tbody id="rankingBody">
+              <tr><td colspan="7" class="empty-cell">No saved rankings yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="panel recent-panel">
+        <div class="section-heading">
+          <h2>Recent Notes</h2>
+        </div>
+        <div id="recentList" class="recent-list">
+          <p class="empty-cell">No notes yet.</p>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>

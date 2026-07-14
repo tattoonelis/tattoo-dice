@@ -176,6 +176,12 @@ async function selectTheme(themeName) {
 
   activeTheme = themeName;
   if (activeTheme === "classic") fantasyUnlocked = false;
+
+  selectedMain = "Random";
+  localStorage.setItem("tattooDiceSelectedMain", selectedMain);
+  localStorage.setItem(mainStorageKey(activeTheme), selectedMain);
+  updateActionButtonLabels();
+
   localStorage.setItem("tattooDiceActiveTheme", activeTheme);
   themeSelectionChanged = activeTheme !== themeSelectionAtOpen;
 
@@ -277,6 +283,10 @@ function buildMainMenu() {
         choice.classList.toggle("active", active);
         choice.setAttribute("aria-pressed", String(active));
       });
+
+      mainSelectionChanged = true;
+      setMainModalState(false);
+
     });
 
     mainChoiceList.appendChild(button);

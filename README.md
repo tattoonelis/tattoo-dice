@@ -1,11 +1,12 @@
-# Tattoo Dice v3.1.2 – Direct Fantasy + Dynamic Labels
+# Tattoo Dice v3.1.3 – Auto Roll + Main Reset
 
-- Correct PIN 2311 immediately switches to Fantasy.
-- PIN and Theme popups close automatically.
-- Fantasy dice drop immediately from above.
-- Theme button shows Classic or Fantasy.
-- Main button shows Random or the selected Main.
-- Theme/Main text is half-size and centered.
-- ROLL keeps its original larger font.
-- Returning to Classic resets temporary Fantasy access.
+- Selecting a Main immediately closes the Main menu.
+- A fresh roll starts immediately after the Main selection.
+- Switching Theme resets Main to Random.
+- The Main button updates immediately.
 - Everything else remains unchanged.
+
+
+## Admin Ranking Beta
+
+A separate ranking interface is included at `/admin/`. See `admin/README.md` and run `admin/setup.sql` in Supabase for shared storage.
