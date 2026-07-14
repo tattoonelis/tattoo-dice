@@ -9,7 +9,7 @@
     "standalone",
     "fullscreen"
   ],
-  "orientation": "landscape",
+  "orientation": "portrait",
   "background_color": "#050505",
   "theme_color": "#050505",
   "icons": [

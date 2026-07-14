@@ -1,3 +1,5 @@
+import { initAdminDice, setAdminDiceDeck, showAdminDice } from "./admin-dice.js";
+
 function initAdminPwa(){
   if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
   const standalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
@@ -24,6 +26,8 @@ const themeSelect = document.getElementById("themeSelect");
 const diceCount = document.getElementById("diceCount");
 const mainSelect = document.getElementById("mainSelect");
 const rollButton = document.getElementById("rollButton");
+const rejectButton = document.getElementById("rejectButton");
+const approveButton = document.getElementById("approveButton");
 const resultWords = document.getElementById("resultWords");
 const resultTheme = document.getElementById("resultTheme");
 const resultCount = document.getElementById("resultCount");
@@ -46,6 +50,7 @@ const adminPinGate = document.getElementById("adminPinGate");
 const adminPinDisplay = document.getElementById("adminPinDisplay");
 const adminPinKeypad = document.getElementById("adminPinKeypad");
 const adminPinStatus = document.getElementById("adminPinStatus");
+const adminDiceScene = document.getElementById("adminDiceScene");
 
 
 initAdminPin();
@@ -53,6 +58,10 @@ initAdminPin();
 
 function initAdminPin(){
   initAdminPwa();
+  if(adminDiceScene && !adminDiceScene.dataset.ready){
+    initAdminDice(adminDiceScene);
+    adminDiceScene.dataset.ready = "true";
+  }
   updateAdminPinDisplay();
 
   adminPinKeypad?.addEventListener("click", event => {
@@ -116,11 +125,12 @@ async function init(){
 function bindEvents(){
   themeSelect.addEventListener("change", async () => {
     await loadDeck();
+    updateProgress();
     roll();
   });
   diceCount.addEventListener("change", roll);
   mainSelect.addEventListener("change", roll);
-  rollButton.addEventListener("click", roll);
+  rollButton?.addEventListener("click", roll);
 
   document.querySelectorAll("[data-rating]").forEach(button => {
     button.addEventListener("click", () => {
@@ -131,12 +141,18 @@ function bindEvents(){
     });
   });
 
-  saveButton.addEventListener("click", saveCurrent);
-  skipButton.addEventListener("click", roll);
+  saveButton?.addEventListener("click", saveCurrent);
+  skipButton?.addEventListener("click", roll);
   refreshButton.addEventListener("click", refreshRecords);
+  rejectButton?.addEventListener("click", () => saveVerdict("down"));
+  approveButton?.addEventListener("click", () => saveVerdict("up"));
   exportButton.addEventListener("click", exportCsv);
   statsToggle?.addEventListener("click",()=>setStatsDrawer(true));
   statsDrawer?.querySelectorAll("[data-close-stats]").forEach(el=>el.addEventListener("click",()=>setStatsDrawer(false)));
+  rankingBody?.addEventListener("click", event => {
+    const button = event.target.closest("[data-delete-key]");
+    if(button) deleteRanking(button.dataset.deleteKey);
+  });
 }
 
 async function loadDeck(){
@@ -144,6 +160,7 @@ async function loadDeck(){
   const response = await fetch(`../decks/${theme}.json`, {cache:"no-store"});
   if(!response.ok) throw new Error(`Could not load ${theme} deck.`);
   deck = await response.json();
+  setAdminDiceDeck(deck);
 
   // Accept either explicit weight or derive it from score.
   deck = deck.map(item => ({
@@ -171,7 +188,7 @@ function roll(){
   currentRoll = makeRoll(count);
   renderRoll();
   noteInput.value = "";
-  setRating("open");
+  selectedRating = "open";
   setStatus("");
 }
 
@@ -246,8 +263,7 @@ function weightedChoice(items){
 
 function renderRoll(){
   const words = currentRoll.map(item => item.word);
-  resultWords.className = `result-words count-${words.length}`;
-  resultWords.innerHTML = words.map(word => `<div class="flat-word">${escapeHtml(word)}</div>`).join("");
+  showAdminDice(words, true);
   resultTheme.textContent = capitalise(themeSelect.value);
   resultCount.textContent = `${words.length} ${words.length === 1 ? "die" : "dice"}`;
 }
@@ -257,6 +273,11 @@ function setRating(rating){
   document.querySelectorAll("[data-rating]").forEach(button => {
     button.classList.toggle("active", button.dataset.rating === rating);
   });
+}
+
+async function saveVerdict(rating){
+  selectedRating = rating;
+  await saveCurrent();
 }
 
 async function saveCurrent(){
@@ -274,7 +295,7 @@ async function saveCurrent(){
     user_agent: navigator.userAgent.slice(0,500)
   };
 
-  saveButton.disabled = true;
+  if(saveButton) saveButton.disabled = true;
   setStatus("Saving…");
 
   try{
@@ -286,7 +307,7 @@ async function saveCurrent(){
     saveLocal(record);
     setStatus("Saved locally. Run admin/setup.sql in Supabase for shared storage.","error");
   }finally{
-    saveButton.disabled = false;
+    if(saveButton) saveButton.disabled = false;
     await refreshRecords();
     setTimeout(roll,260);
   }
@@ -377,9 +398,10 @@ function renderDashboard(){
         <td>${group.open}</td>
         <td class="verdict-${group.verdict}">${verdictLabel(group.verdict)}</td>
         <td>${group.net > 0 ? "+" : ""}${group.net}</td>
+        <td><button class="delete-ranking-button" type="button" data-delete-key="${escapeHtml(group.key)}" aria-label="Delete ranking">×</button></td>
       </tr>
     `).join("")
-    : '<tr><td colspan="7" class="empty-cell">No saved rankings yet.</td></tr>';
+    : '<tr><td colspan="8" class="empty-cell">No saved rankings yet.</td></tr>';
 
   const notes = records.filter(item => item.note).slice(0,30);
   recentList.innerHTML = notes.length
@@ -394,6 +416,44 @@ function renderDashboard(){
 
   if(storageMode === "local"){
     setStatus("Local fallback active. Shared cross-device storage needs the included Supabase SQL.","error");
+  }
+}
+
+
+async function deleteRanking(combinationKey){
+  if(!combinationKey) return;
+  if(!window.confirm("Delete this complete ranking and all votes for it?")) return;
+
+  setStatus("Deleting ranking…");
+
+  try{
+    if(storageMode === "supabase"){
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/${TABLE}?combination_key=eq.${encodeURIComponent(combinationKey)}`,
+        {
+          method:"DELETE",
+          headers:{
+            apikey:SUPABASE_KEY,
+            authorization:`Bearer ${SUPABASE_KEY}`,
+            Prefer:"return=minimal"
+          }
+        }
+      );
+      if(!response.ok) throw new Error(await response.text());
+    }else{
+      const remaining = loadLocal().filter(item =>
+        (item.combination_key || canonicalKey(item.theme,item.words || [])) !== combinationKey
+      );
+      localStorage.setItem("tattooDiceAdminRankings",JSON.stringify(remaining));
+    }
+
+    records = records.filter(item =>
+      (item.combination_key || canonicalKey(item.theme,item.words || [])) !== combinationKey
+    );
+    renderDashboard();
+    setStatus("Ranking deleted.","success");
+  }catch(error){
+    setStatus("Could not delete. Run the updated admin/setup.sql once in Supabase.","error");
   }
 }
 

@@ -73,3 +73,47 @@ On iPhone:
 5. Open **Dice Admin** from the new icon.
 
 It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
+
+
+## v3.2.4
+- Landscape-only mobile experience with rotate-device screen in portrait.
+- All rating controls fit in one fixed screen.
+- One full-width porcelain result bar replaces separate cards.
+- Compact, aligned controls and rating panel.
+- Open green progress meter with percentage centered over it.
+
+
+## v3.3.0 rebuild
+- Rebuilt the admin as a focused one-screen training game.
+- All existing PIN, Supabase, ranking, notes, export and stats features remain.
+- Compact porcelain dice-slab keeps the Tattoo Dice feel without dominating the screen.
+- Theme progress switches immediately between Classic and Fantasy.
+- Goal remains 3000 ratings per theme.
+
+
+## v3.4.0 portrait rebuild
+- Admin is portrait-only on mobile.
+- Desktop renders the same portrait app inside a centered phone-width frame with black side bars.
+- Landscape shows a rotate-device message.
+- Existing PIN, Supabase, stats, notes, CSV and progress features remain.
+
+
+## v3.5.0
+- Removed separate Roll, Skip and neutral-rating controls from the main flow.
+- Animated Tattoo Dice-style dice return to the center stage.
+- F*CK NO and H*LL YES save the rating and immediately generate the next roll.
+- All existing PIN, Supabase, stats, notes, progress and export features remain.
+
+
+## v3.5.1
+- Dice now roll in place instead of falling in from above.
+- Removed the redundant combination question.
+- Fixed note-field and verdict-button overlap.
+- Preserved all PIN, Supabase, stats, progress, notes and export functionality.
+
+
+## v3.5.3
+- Fixed the missing Admin WebGL dice initialization.
+- Added a delete button to Combination Rankings.
+- Deleting a ranking removes every stored vote for that combination.
+- Run the updated `admin/setup.sql` once more in Supabase to enable deletes.

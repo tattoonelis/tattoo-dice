@@ -13,8 +13,24 @@
   <meta name="apple-mobile-web-app-title" content="Dice Admin">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./admin.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body class="admin-locked">
+  <div id="rotateAdminOverlay" class="rotate-admin-overlay" aria-hidden="true">
+    <div class="rotate-admin-card">
+      <div class="rotate-admin-icon">↻</div>
+      <h2>Rotate your device</h2>
+      <p>Dice Admin is designed for portrait mode.</p>
+    </div>
+  </div>
+
   <div class="admin-pin-gate" id="adminPinGate" aria-hidden="false">
     <div class="admin-pin-backdrop"></div>
     <section class="admin-pin-card" role="dialog" aria-modal="true" aria-labelledby="adminPinTitle">
@@ -47,22 +63,137 @@
   <div id="installHint" class="install-hint" hidden>
     Add this page to your Home Screen, then open <strong>Dice Admin</strong> from the new icon.
   </div>
-  <main class="admin-shell game-shell">
-<header class="admin-header compact-header"><div><p class="eyebrow">Tattoo Dice</p><h1>Admin Ranking</h1></div><div class="header-actions"><button id="statsToggle" class="header-button">Stats</button><a class="back-link" href="../">Back</a></div></header>
-<section class="panel game-panel">
-<div class="top-controls">
-<label><span>Theme</span><select id="themeSelect"><option value="classic">Classic</option><option value="fantasy">Fantasy</option></select></label>
-<label><span>Dice</span><select id="diceCount"><option value="1">1 die</option><option value="2">2 dice</option><option value="3" selected>3 dice</option></select></label>
-<label><span>Main</span><select id="mainSelect"><option value="Random">Random</option></select></label>
-<button id="rollButton" class="roll-button">ROLL</button>
+  <div class="desktop-stage">
+  <main class="admin-shell portrait-shell">
+    <header class="portrait-header centered-header">
+      <button id="statsToggle" class="icon-button" type="button">STATS</button>
+
+      <div class="portrait-brand">
+        <p class="eyebrow">Tattoo Dice</p>
+        <h1>Admin Ranking</h1>
+      </div>
+
+      <a class="icon-button icon-link" href="../">BACK</a>
+    </header>
+
+    <section class="portrait-card vote-card">
+      <div class="compact-controls centered-controls">
+        <label>
+          <span>Theme</span>
+          <select id="themeSelect">
+            <option value="classic">Classic</option>
+            <option value="fantasy">Fantasy</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Dice</span>
+          <select id="diceCount">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Main</span>
+          <select id="mainSelect">
+            <option value="Random">Random</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="result-meta centered-meta">
+        <span id="resultTheme">Classic</span>
+        <span id="resultCount">3 dice</span>
+      </div>
+
+      <section class="dice-stage" aria-live="polite">
+        <div id="adminDiceScene" class="admin-dice-scene" aria-label="Tattoo Dice result"></div>
+      </section>
+
+      <section class="portrait-judge centered-judge">
+<label class="notes-label centered-note">
+          <span>Note <small>(optional)</small></span>
+          <textarea id="noteInput" maxlength="1000" placeholder="Why does it work — or why not?"></textarea>
+        </label>
+
+        <div class="verdict-actions">
+          <button id="rejectButton" class="verdict-button verdict-no" type="button">F*CK NO</button>
+          <button id="approveButton" class="verdict-button verdict-yes" type="button">H*LL YES</button>
+        </div>
+
+        <div id="statusMessage" class="status-message" role="status"></div>
+      </section>
+
+      <footer class="portrait-progress">
+        <div class="progress-heading">
+          <span id="progressTheme">Classic progress</span>
+          <small><span id="progressCount">0</span> / 3000</small>
+        </div>
+        <div class="progress-track">
+          <div id="progressFill" class="progress-fill"></div>
+          <strong id="progressPercent">0.0%</strong>
+        </div>
+      </footer>
+    </section>
+  </main>
 </div>
-<div class="game-content">
-<section class="roll-stage"><div class="stage-meta"><span id="resultTheme">Classic</span><span id="resultCount">3 dice</span></div><div id="resultWords" class="flat-results"><div class="flat-word">Ready</div><div class="flat-word">to</div><div class="flat-word">roll</div></div></section>
-<section class="judge-panel"><p class="judge-question">How does this combination feel?</p><div class="rating-row"><button class="rating-button positive" data-rating="up">👍</button><button class="rating-button neutral active" data-rating="open">—</button><button class="rating-button negative" data-rating="down">👎</button></div><label class="notes-label"><span>Note <small>(optional)</small></span><textarea id="noteInput" maxlength="1000" placeholder="What works, or why does it fail?"></textarea></label><div class="save-row"><button id="saveButton" class="save-button">SAVE & NEXT</button><button id="skipButton" class="secondary-button">SKIP</button></div><div id="statusMessage" class="status-message"></div></section>
-</div>
-<footer class="progress-footer"><div class="progress-label"><span id="progressTheme">Classic progress</span><strong id="progressPercent">0%</strong></div><div class="progress-track"><div id="progressFill" class="progress-fill"></div></div><small><span id="progressCount">0</span> / 3000 rated</small></footer>
-</section></main>
-<aside id="statsDrawer" class="stats-drawer" aria-hidden="true"><div class="stats-backdrop" data-close-stats></div><section class="stats-sheet"><div class="section-heading"><h2>Statistics</h2><button class="small-button" data-close-stats>Close</button></div><div class="stat-grid"><div><strong id="totalRatings">0</strong><span>ratings</span></div><div><strong id="upRatings">0</strong><span>positive</span></div><div><strong id="downRatings">0</strong><span>negative</span></div><div><strong id="openRatings">0</strong><span>open</span></div></div><div class="section-heading drawer-heading"><h2>Combination Rankings</h2><div><button id="refreshButton" class="small-button">Refresh</button><button id="exportButton" class="small-button">Export CSV</button></div></div><div class="table-wrap"><table><thead><tr><th>Combination</th><th>Theme</th><th>👍</th><th>👎</th><th>Open</th><th>Verdict</th><th>Net</th></tr></thead><tbody id="rankingBody"><tr><td colspan="7" class="empty-cell">No saved rankings yet.</td></tr></tbody></table></div><div class="section-heading drawer-heading"><h2>Recent Notes</h2></div><div id="recentList" class="recent-list"><p class="empty-cell">No notes yet.</p></div></section></aside>
+
+<aside id="statsDrawer" class="stats-drawer" aria-hidden="true">
+  <div class="stats-backdrop" data-close-stats></div>
+  <section class="stats-sheet">
+    <header class="stats-header">
+      <div>
+        <p class="eyebrow">Tattoo Dice</p>
+        <h2>Training Data</h2>
+      </div>
+      <button class="icon-button" data-close-stats type="button">CLOSE</button>
+    </header>
+
+    <div class="stat-grid">
+      <div><strong id="totalRatings">0</strong><span>ratings</span></div>
+      <div><strong id="upRatings">0</strong><span>positive</span></div>
+      <div><strong id="downRatings">0</strong><span>negative</span></div>
+      <div><strong id="openRatings">0</strong><span>open</span></div>
+    </div>
+
+    <div class="stats-toolbar">
+      <h3>Combination Rankings</h3>
+      <div>
+        <button id="refreshButton" class="small-button" type="button">Refresh</button>
+        <button id="exportButton" class="small-button" type="button">Export CSV</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Combination</th>
+            <th>Theme</th>
+            <th>👍</th>
+            <th>👎</th>
+            <th>Open</th>
+            <th>Verdict</th>
+            <th>Net</th>
+              <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody">
+          <tr><td colspan="8" class="empty-cell">No saved rankings yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="stats-toolbar notes-toolbar">
+      <h3>Recent Notes</h3>
+    </div>
+    <div id="recentList" class="recent-list">
+      <p class="empty-cell">No notes yet.</p>
+    </div>
+  </section>
+</aside>
 
   <script type="module" src="./admin.js"></script>
 </body>

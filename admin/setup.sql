@@ -41,3 +41,11 @@ using (true);
 
 -- Optional: the page does not update or delete records.
 -- Keep update/delete unavailable for the public anon key.
+
+
+drop policy if exists "Public admin ranking delete" on public.admin_rankings;
+create policy "Public admin ranking delete"
+on public.admin_rankings
+for delete
+to anon
+using (true);
