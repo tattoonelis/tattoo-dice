@@ -1,12 +1,26 @@
-# Tattoo Dice v3.0.0 – Portrait Lock
+# Tattoo Dice v2.6.1 – Two-Phase Intro
 
-Gebaseerd op Main Selector Test v3.
+Gebaseerd op v2.6.0 Top Drop Physics.
 
-Aangepast:
-- PWA manifest staat op portrait-primary;
-- ondersteunde browsers krijgen een native orientation-lock request;
-- iOS/Safari fallback toont in landscape een duidelijke rotate-screen overlay;
-- de oude landscape-interface wordt daardoor niet meer gebruikt;
-- op extra kleine iPhones worden de hoofddobbelstenen in standalone/PWA-modus iets kleiner geschaald om afsnijden te voorkomen.
+De openingsanimatie bestaat nu uit twee strikt gescheiden fases:
 
-Alle overige functies uit Main Selector Test v3 blijven intact.
+1. Valfase
+- dobbelstenen vallen van boven binnen;
+- alleen tijdens deze fase draaien/spinnen ze;
+- iedere steen heeft een eigen organische rotatie.
+
+2. Landingsfase
+- vanaf het eerste tafelcontact stopt alle spin volledig;
+- daarna volgt één duidelijke bounce;
+- daarna één kleinere tweede bounce;
+- pas na de bounces wordt rustig naar de exacte vaste eindhouding bewogen.
+
+Verder niets gewijzigd:
+- normale ROLL;
+- UI/layout;
+- formule en onderwerpenlijst;
+- secret code;
+- Keep Drawing;
+- counter;
+- theme-popup;
+- portrait en landscape.

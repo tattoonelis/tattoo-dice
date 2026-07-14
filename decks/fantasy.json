@@ -1,0 +1,1498 @@
+[
+  {
+    "word": "Ancient Tree",
+    "score": 1,
+    "weight": 2,
+    "family": "ancient-tree",
+    "slot": "detail"
+  },
+  {
+    "word": "Ancient Tree",
+    "score": 1,
+    "weight": 2,
+    "family": "ancient-tree",
+    "slot": "effect"
+  },
+  {
+    "word": "Animal Skull",
+    "score": 1,
+    "weight": 2,
+    "family": "animal-skull",
+    "slot": "detail"
+  },
+  {
+    "word": "Archer",
+    "score": 1,
+    "weight": 2,
+    "family": "archer",
+    "slot": "main"
+  },
+  {
+    "word": "Armor",
+    "score": 1,
+    "weight": 2,
+    "family": "armor",
+    "slot": "detail"
+  },
+  {
+    "word": "Arrow",
+    "score": 2,
+    "weight": 6,
+    "family": "arrow",
+    "slot": "detail"
+  },
+  {
+    "word": "Arrow",
+    "score": 2,
+    "weight": 6,
+    "family": "arrow",
+    "slot": "effect"
+  },
+  {
+    "word": "Barbed Wire",
+    "score": 3,
+    "weight": 12,
+    "family": "barbed-wire",
+    "slot": "detail"
+  },
+  {
+    "word": "Barbed Wire",
+    "score": 3,
+    "weight": 12,
+    "family": "barbed-wire",
+    "slot": "effect"
+  },
+  {
+    "word": "Bat",
+    "score": 2,
+    "weight": 6,
+    "family": "bat",
+    "slot": "detail"
+  },
+  {
+    "word": "Bat",
+    "score": 2,
+    "weight": 6,
+    "family": "bat",
+    "slot": "effect"
+  },
+  {
+    "word": "Battle Axe",
+    "score": 1,
+    "weight": 2,
+    "family": "battle-axe",
+    "slot": "detail"
+  },
+  {
+    "word": "Bear",
+    "score": 1,
+    "weight": 2,
+    "family": "bear",
+    "slot": "detail"
+  },
+  {
+    "word": "Bell",
+    "score": 1,
+    "weight": 2,
+    "family": "bell",
+    "slot": "detail"
+  },
+  {
+    "word": "Black Cat",
+    "score": 2,
+    "weight": 6,
+    "family": "black-cat",
+    "slot": "main"
+  },
+  {
+    "word": "Black Cat",
+    "score": 2,
+    "weight": 6,
+    "family": "black-cat",
+    "slot": "detail"
+  },
+  {
+    "word": "Blood",
+    "score": 2,
+    "weight": 6,
+    "family": "blood",
+    "slot": "detail"
+  },
+  {
+    "word": "Blood",
+    "score": 2,
+    "weight": 6,
+    "family": "blood",
+    "slot": "effect"
+  },
+  {
+    "word": "Boar",
+    "score": 2,
+    "weight": 6,
+    "family": "boar",
+    "slot": "main"
+  },
+  {
+    "word": "Bones",
+    "score": 2,
+    "weight": 6,
+    "family": "bones",
+    "slot": "detail"
+  },
+  {
+    "word": "Bones",
+    "score": 2,
+    "weight": 6,
+    "family": "bones",
+    "slot": "effect"
+  },
+  {
+    "word": "Boot",
+    "score": 0,
+    "weight": 0.25,
+    "family": "boot",
+    "slot": "detail"
+  },
+  {
+    "word": "Bow",
+    "score": 1,
+    "weight": 2,
+    "family": "bow",
+    "slot": "detail"
+  },
+  {
+    "word": "Branches",
+    "score": 2,
+    "weight": 6,
+    "family": "branches",
+    "slot": "detail"
+  },
+  {
+    "word": "Branches",
+    "score": 2,
+    "weight": 6,
+    "family": "branches",
+    "slot": "effect"
+  },
+  {
+    "word": "Bull",
+    "score": 2,
+    "weight": 6,
+    "family": "bull",
+    "slot": "main"
+  },
+  {
+    "word": "Butterfly",
+    "score": 3,
+    "weight": 12,
+    "family": "butterfly",
+    "slot": "main"
+  },
+  {
+    "word": "Butterfly",
+    "score": 3,
+    "weight": 12,
+    "family": "butterfly",
+    "slot": "detail"
+  },
+  {
+    "word": "Butterfly",
+    "score": 3,
+    "weight": 12,
+    "family": "butterfly",
+    "slot": "effect"
+  },
+  {
+    "word": "Candle",
+    "score": 2,
+    "weight": 6,
+    "family": "candle",
+    "slot": "detail"
+  },
+  {
+    "word": "Chain",
+    "score": 3,
+    "weight": 12,
+    "family": "chain",
+    "slot": "detail"
+  },
+  {
+    "word": "Chain",
+    "score": 3,
+    "weight": 12,
+    "family": "chain",
+    "slot": "effect"
+  },
+  {
+    "word": "Chainmail",
+    "score": 1,
+    "weight": 2,
+    "family": "chainmail",
+    "slot": "detail"
+  },
+  {
+    "word": "Chrysanthemum",
+    "score": 1,
+    "weight": 2,
+    "family": "floral",
+    "slot": "detail"
+  },
+  {
+    "word": "Claw",
+    "score": 2,
+    "weight": 6,
+    "family": "claw",
+    "slot": "detail"
+  },
+  {
+    "word": "Cloak",
+    "score": 1,
+    "weight": 2,
+    "family": "cloak",
+    "slot": "detail"
+  },
+  {
+    "word": "Cloud",
+    "score": 2,
+    "weight": 6,
+    "family": "cloud",
+    "slot": "detail"
+  },
+  {
+    "word": "Cloud",
+    "score": 2,
+    "weight": 6,
+    "family": "cloud",
+    "slot": "effect"
+  },
+  {
+    "word": "Cobra",
+    "score": 3,
+    "weight": 12,
+    "family": "snake",
+    "slot": "main"
+  },
+  {
+    "word": "Cobra",
+    "score": 3,
+    "weight": 12,
+    "family": "snake",
+    "slot": "detail"
+  },
+  {
+    "word": "Coffin",
+    "score": 1,
+    "weight": 2,
+    "family": "coffin",
+    "slot": "detail"
+  },
+  {
+    "word": "Comet",
+    "score": 1,
+    "weight": 2,
+    "family": "comet",
+    "slot": "detail"
+  },
+  {
+    "word": "Comet",
+    "score": 1,
+    "weight": 2,
+    "family": "comet",
+    "slot": "effect"
+  },
+  {
+    "word": "Compass",
+    "score": 1,
+    "weight": 2,
+    "family": "compass",
+    "slot": "detail"
+  },
+  {
+    "word": "Crescent Moon",
+    "score": 2,
+    "weight": 6,
+    "family": "crescent-moon",
+    "slot": "detail"
+  },
+  {
+    "word": "Cross",
+    "score": 1,
+    "weight": 2,
+    "family": "cross",
+    "slot": "main"
+  },
+  {
+    "word": "Cross",
+    "score": 1,
+    "weight": 2,
+    "family": "cross",
+    "slot": "detail"
+  },
+  {
+    "word": "Crow",
+    "score": 2,
+    "weight": 6,
+    "family": "crow",
+    "slot": "main"
+  },
+  {
+    "word": "Crow",
+    "score": 2,
+    "weight": 6,
+    "family": "crow",
+    "slot": "detail"
+  },
+  {
+    "word": "Crown",
+    "score": 1,
+    "weight": 2,
+    "family": "crown",
+    "slot": "detail"
+  },
+  {
+    "word": "Crystal Ball",
+    "score": 1,
+    "weight": 2,
+    "family": "crystal-ball",
+    "slot": "detail"
+  },
+  {
+    "word": "Dagger",
+    "score": 3,
+    "weight": 12,
+    "family": "weapon",
+    "slot": "main"
+  },
+  {
+    "word": "Dagger",
+    "score": 3,
+    "weight": 12,
+    "family": "weapon",
+    "slot": "detail"
+  },
+  {
+    "word": "Dead Tree",
+    "score": 1,
+    "weight": 2,
+    "family": "dead-tree",
+    "slot": "detail"
+  },
+  {
+    "word": "Demon",
+    "score": 3,
+    "weight": 12,
+    "family": "demon",
+    "slot": "main"
+  },
+  {
+    "word": "Demon",
+    "score": 3,
+    "weight": 12,
+    "family": "demon",
+    "slot": "detail"
+  },
+  {
+    "word": "Devil",
+    "score": 3,
+    "weight": 12,
+    "family": "devil",
+    "slot": "main"
+  },
+  {
+    "word": "Devil",
+    "score": 3,
+    "weight": 12,
+    "family": "devil",
+    "slot": "detail"
+  },
+  {
+    "word": "Dove",
+    "score": 2,
+    "weight": 6,
+    "family": "dove",
+    "slot": "detail"
+  },
+  {
+    "word": "Dragon",
+    "score": 3,
+    "weight": 12,
+    "family": "dragon",
+    "slot": "main"
+  },
+  {
+    "word": "Dragon",
+    "score": 3,
+    "weight": 12,
+    "family": "dragon",
+    "slot": "detail"
+  },
+  {
+    "word": "Dragon Skull",
+    "score": 2,
+    "weight": 6,
+    "family": "dragon-skull",
+    "slot": "main"
+  },
+  {
+    "word": "Eagle",
+    "score": 3,
+    "weight": 12,
+    "family": "bird",
+    "slot": "main"
+  },
+  {
+    "word": "Eagle",
+    "score": 3,
+    "weight": 12,
+    "family": "bird",
+    "slot": "detail"
+  },
+  {
+    "word": "Elf",
+    "score": 1,
+    "weight": 2,
+    "family": "elf",
+    "slot": "main"
+  },
+  {
+    "word": "Executioner",
+    "score": 2,
+    "weight": 6,
+    "family": "executioner",
+    "slot": "main"
+  },
+  {
+    "word": "Eye",
+    "score": 2,
+    "weight": 6,
+    "family": "eye",
+    "slot": "detail"
+  },
+  {
+    "word": "Eye",
+    "score": 2,
+    "weight": 6,
+    "family": "eye",
+    "slot": "effect"
+  },
+  {
+    "word": "Fairy",
+    "score": 1,
+    "weight": 2,
+    "family": "fairy",
+    "slot": "main"
+  },
+  {
+    "word": "Falcon",
+    "score": 1,
+    "weight": 2,
+    "family": "falcon",
+    "slot": "main"
+  },
+  {
+    "word": "Falling Leaves",
+    "score": 1,
+    "weight": 2,
+    "family": "falling-leaves",
+    "slot": "detail"
+  },
+  {
+    "word": "Falling Leaves",
+    "score": 1,
+    "weight": 2,
+    "family": "falling-leaves",
+    "slot": "effect"
+  },
+  {
+    "word": "Fang",
+    "score": 1,
+    "weight": 2,
+    "family": "fang",
+    "slot": "detail"
+  },
+  {
+    "word": "Fire",
+    "score": 2,
+    "weight": 6,
+    "family": "fire",
+    "slot": "detail"
+  },
+  {
+    "word": "Fire",
+    "score": 2,
+    "weight": 6,
+    "family": "fire",
+    "slot": "effect"
+  },
+  {
+    "word": "Flames",
+    "score": 3,
+    "weight": 12,
+    "family": "flames",
+    "slot": "detail"
+  },
+  {
+    "word": "Flames",
+    "score": 3,
+    "weight": 12,
+    "family": "flames",
+    "slot": "effect"
+  },
+  {
+    "word": "Flying Bats",
+    "score": 1,
+    "weight": 2,
+    "family": "flying-bats",
+    "slot": "detail"
+  },
+  {
+    "word": "Flying Bats",
+    "score": 1,
+    "weight": 2,
+    "family": "flying-bats",
+    "slot": "effect"
+  },
+  {
+    "word": "Fog",
+    "score": 1,
+    "weight": 2,
+    "family": "fog",
+    "slot": "effect"
+  },
+  {
+    "word": "Forest",
+    "score": 1,
+    "weight": 2,
+    "family": "forest",
+    "slot": "detail"
+  },
+  {
+    "word": "Fortune Teller",
+    "score": 2,
+    "weight": 6,
+    "family": "fortune-teller",
+    "slot": "main"
+  },
+  {
+    "word": "Fox",
+    "score": 2,
+    "weight": 6,
+    "family": "fox",
+    "slot": "main"
+  },
+  {
+    "word": "Frog",
+    "score": 1,
+    "weight": 2,
+    "family": "frog",
+    "slot": "main"
+  },
+  {
+    "word": "Frog",
+    "score": 1,
+    "weight": 2,
+    "family": "frog",
+    "slot": "detail"
+  },
+  {
+    "word": "Full Moon",
+    "score": 1,
+    "weight": 2,
+    "family": "full-moon",
+    "slot": "detail"
+  },
+  {
+    "word": "Full Moon",
+    "score": 1,
+    "weight": 2,
+    "family": "full-moon",
+    "slot": "effect"
+  },
+  {
+    "word": "Gargoyle",
+    "score": 0,
+    "weight": 0.25,
+    "family": "gargoyle",
+    "slot": "detail"
+  },
+  {
+    "word": "Gauntlet",
+    "score": 1,
+    "weight": 2,
+    "family": "gauntlet",
+    "slot": "main"
+  },
+  {
+    "word": "Gauntlet",
+    "score": 1,
+    "weight": 2,
+    "family": "gauntlet",
+    "slot": "detail"
+  },
+  {
+    "word": "Ghost",
+    "score": 1,
+    "weight": 2,
+    "family": "ghost",
+    "slot": "detail"
+  },
+  {
+    "word": "Goat",
+    "score": 2,
+    "weight": 6,
+    "family": "goat",
+    "slot": "main"
+  },
+  {
+    "word": "Gravestone",
+    "score": 1,
+    "weight": 2,
+    "family": "gravestone",
+    "slot": "detail"
+  },
+  {
+    "word": "Griffin",
+    "score": 1,
+    "weight": 2,
+    "family": "griffin",
+    "slot": "main"
+  },
+  {
+    "word": "Hawk",
+    "score": 2,
+    "weight": 6,
+    "family": "hawk",
+    "slot": "main"
+  },
+  {
+    "word": "Heart",
+    "score": 3,
+    "weight": 12,
+    "family": "heart",
+    "slot": "main"
+  },
+  {
+    "word": "Heart",
+    "score": 3,
+    "weight": 12,
+    "family": "heart",
+    "slot": "detail"
+  },
+  {
+    "word": "Hellhound",
+    "score": 2,
+    "weight": 6,
+    "family": "hellhound",
+    "slot": "main"
+  },
+  {
+    "word": "Helmet",
+    "score": 1,
+    "weight": 2,
+    "family": "helmet",
+    "slot": "detail"
+  },
+  {
+    "word": "Horse",
+    "score": 3,
+    "weight": 12,
+    "family": "horse",
+    "slot": "main"
+  },
+  {
+    "word": "Hourglass",
+    "score": 1,
+    "weight": 2,
+    "family": "hourglass",
+    "slot": "detail"
+  },
+  {
+    "word": "Jester",
+    "score": 3,
+    "weight": 12,
+    "family": "jester",
+    "slot": "main"
+  },
+  {
+    "word": "Jester",
+    "score": 3,
+    "weight": 12,
+    "family": "jester",
+    "slot": "detail"
+  },
+  {
+    "word": "King",
+    "score": 2,
+    "weight": 6,
+    "family": "king",
+    "slot": "main"
+  },
+  {
+    "word": "Knight",
+    "score": 2,
+    "weight": 6,
+    "family": "knight",
+    "slot": "main"
+  },
+  {
+    "word": "Lady Head",
+    "score": 3,
+    "weight": 12,
+    "family": "lady",
+    "slot": "main"
+  },
+  {
+    "word": "Lantern",
+    "score": 1,
+    "weight": 2,
+    "family": "lantern",
+    "slot": "detail"
+  },
+  {
+    "word": "Leopard",
+    "score": 3,
+    "weight": 12,
+    "family": "leopard",
+    "slot": "main"
+  },
+  {
+    "word": "Leopard",
+    "score": 3,
+    "weight": 12,
+    "family": "leopard",
+    "slot": "detail"
+  },
+  {
+    "word": "Lightning",
+    "score": 3,
+    "weight": 12,
+    "family": "lightning",
+    "slot": "detail"
+  },
+  {
+    "word": "Lightning",
+    "score": 3,
+    "weight": 12,
+    "family": "lightning",
+    "slot": "effect"
+  },
+  {
+    "word": "Lion",
+    "score": 2,
+    "weight": 6,
+    "family": "feline",
+    "slot": "main"
+  },
+  {
+    "word": "Lizard",
+    "score": 1,
+    "weight": 2,
+    "family": "lizard",
+    "slot": "detail"
+  },
+  {
+    "word": "Lotus",
+    "score": 1,
+    "weight": 2,
+    "family": "floral",
+    "slot": "detail"
+  },
+  {
+    "word": "Mace",
+    "score": 1,
+    "weight": 2,
+    "family": "weapon",
+    "slot": "detail"
+  },
+  {
+    "word": "Magic Dust",
+    "score": 1,
+    "weight": 2,
+    "family": "magic-dust",
+    "slot": "detail"
+  },
+  {
+    "word": "Magic Dust",
+    "score": 1,
+    "weight": 2,
+    "family": "magic-dust",
+    "slot": "effect"
+  },
+  {
+    "word": "Mask",
+    "score": 2,
+    "weight": 6,
+    "family": "mask",
+    "slot": "main"
+  },
+  {
+    "word": "Mermaid",
+    "score": 1,
+    "weight": 2,
+    "family": "mermaid",
+    "slot": "main"
+  },
+  {
+    "word": "Meteor",
+    "score": 1,
+    "weight": 2,
+    "family": "meteor",
+    "slot": "detail"
+  },
+  {
+    "word": "Meteor",
+    "score": 1,
+    "weight": 2,
+    "family": "meteor",
+    "slot": "effect"
+  },
+  {
+    "word": "Mirror",
+    "score": 1,
+    "weight": 2,
+    "family": "mirror",
+    "slot": "detail"
+  },
+  {
+    "word": "Mist",
+    "score": 1,
+    "weight": 2,
+    "family": "mist",
+    "slot": "detail"
+  },
+  {
+    "word": "Mist",
+    "score": 1,
+    "weight": 2,
+    "family": "mist",
+    "slot": "effect"
+  },
+  {
+    "word": "Moon",
+    "score": 1,
+    "weight": 2,
+    "family": "moon",
+    "slot": "detail"
+  },
+  {
+    "word": "Morning Star",
+    "score": 1,
+    "weight": 2,
+    "family": "morning-star",
+    "slot": "detail"
+  },
+  {
+    "word": "Moth",
+    "score": 0,
+    "weight": 0.25,
+    "family": "moth",
+    "slot": "detail"
+  },
+  {
+    "word": "Mountain",
+    "score": 0,
+    "weight": 0.25,
+    "family": "mountain",
+    "slot": "detail"
+  },
+  {
+    "word": "Mouse",
+    "score": 1,
+    "weight": 2,
+    "family": "mouse",
+    "slot": "detail"
+  },
+  {
+    "word": "Mushroom",
+    "score": 1,
+    "weight": 2,
+    "family": "mushroom",
+    "slot": "detail"
+  },
+  {
+    "word": "Oak Leaf",
+    "score": 1,
+    "weight": 2,
+    "family": "oak-leaf",
+    "slot": "detail"
+  },
+  {
+    "word": "Oak Leaf",
+    "score": 1,
+    "weight": 2,
+    "family": "oak-leaf",
+    "slot": "effect"
+  },
+  {
+    "word": "Owl",
+    "score": 2,
+    "weight": 6,
+    "family": "owl",
+    "slot": "main"
+  },
+  {
+    "word": "Owl",
+    "score": 2,
+    "weight": 6,
+    "family": "owl",
+    "slot": "detail"
+  },
+  {
+    "word": "Panther",
+    "score": 3,
+    "weight": 12,
+    "family": "feline",
+    "slot": "main"
+  },
+  {
+    "word": "Panther",
+    "score": 3,
+    "weight": 12,
+    "family": "feline",
+    "slot": "detail"
+  },
+  {
+    "word": "Pegasus",
+    "score": 1,
+    "weight": 2,
+    "family": "pegasus",
+    "slot": "main"
+  },
+  {
+    "word": "Peony",
+    "score": 2,
+    "weight": 6,
+    "family": "floral",
+    "slot": "detail"
+  },
+  {
+    "word": "Phoenix",
+    "score": 1,
+    "weight": 2,
+    "family": "phoenix",
+    "slot": "main"
+  },
+  {
+    "word": "Pile of Skulls",
+    "score": 1,
+    "weight": 2,
+    "family": "skull",
+    "slot": "main"
+  },
+  {
+    "word": "Pile of Skulls",
+    "score": 1,
+    "weight": 2,
+    "family": "skull",
+    "slot": "detail"
+  },
+  {
+    "word": "Pile of Skulls",
+    "score": 1,
+    "weight": 2,
+    "family": "skull",
+    "slot": "effect"
+  },
+  {
+    "word": "Plague Doctor",
+    "score": 1,
+    "weight": 2,
+    "family": "plague-doctor",
+    "slot": "main"
+  },
+  {
+    "word": "Portal",
+    "score": 1,
+    "weight": 2,
+    "family": "portal",
+    "slot": "detail"
+  },
+  {
+    "word": "Portal",
+    "score": 1,
+    "weight": 2,
+    "family": "portal",
+    "slot": "effect"
+  },
+  {
+    "word": "Potion",
+    "score": 0,
+    "weight": 0.25,
+    "family": "potion",
+    "slot": "detail"
+  },
+  {
+    "word": "Queen",
+    "score": 2,
+    "weight": 6,
+    "family": "queen",
+    "slot": "main"
+  },
+  {
+    "word": "Rabbit",
+    "score": 1,
+    "weight": 2,
+    "family": "rabbit",
+    "slot": "detail"
+  },
+  {
+    "word": "Ram",
+    "score": 1,
+    "weight": 2,
+    "family": "ram",
+    "slot": "main"
+  },
+  {
+    "word": "Ram Skull",
+    "score": 1,
+    "weight": 2,
+    "family": "ram-skull",
+    "slot": "main"
+  },
+  {
+    "word": "Rat",
+    "score": 2,
+    "weight": 6,
+    "family": "rat",
+    "slot": "main"
+  },
+  {
+    "word": "Rat",
+    "score": 2,
+    "weight": 6,
+    "family": "rat",
+    "slot": "detail"
+  },
+  {
+    "word": "Raven",
+    "score": 1,
+    "weight": 2,
+    "family": "bird",
+    "slot": "main"
+  },
+  {
+    "word": "Rooster",
+    "score": 1,
+    "weight": 2,
+    "family": "rooster",
+    "slot": "main"
+  },
+  {
+    "word": "Rose",
+    "score": 3,
+    "weight": 12,
+    "family": "floral",
+    "slot": "main"
+  },
+  {
+    "word": "Rose",
+    "score": 3,
+    "weight": 12,
+    "family": "floral",
+    "slot": "detail"
+  },
+  {
+    "word": "Rose",
+    "score": 3,
+    "weight": 12,
+    "family": "floral",
+    "slot": "effect"
+  },
+  {
+    "word": "Sacred Heart",
+    "score": 2,
+    "weight": 6,
+    "family": "heart",
+    "slot": "main"
+  },
+  {
+    "word": "Scimitar",
+    "score": 2,
+    "weight": 6,
+    "family": "scimitar",
+    "slot": "main"
+  },
+  {
+    "word": "Scimitar",
+    "score": 2,
+    "weight": 6,
+    "family": "scimitar",
+    "slot": "detail"
+  },
+  {
+    "word": "Scorpion",
+    "score": 3,
+    "weight": 12,
+    "family": "scorpion",
+    "slot": "main"
+  },
+  {
+    "word": "Scorpion",
+    "score": 3,
+    "weight": 12,
+    "family": "scorpion",
+    "slot": "detail"
+  },
+  {
+    "word": "Sea Dragon",
+    "score": 2,
+    "weight": 6,
+    "family": "sea-dragon",
+    "slot": "main"
+  },
+  {
+    "word": "Sea Dragon",
+    "score": 2,
+    "weight": 6,
+    "family": "sea-dragon",
+    "slot": "detail"
+  },
+  {
+    "word": "Shark",
+    "score": 2,
+    "weight": 6,
+    "family": "shark",
+    "slot": "main"
+  },
+  {
+    "word": "Shield",
+    "score": 1,
+    "weight": 2,
+    "family": "shield",
+    "slot": "detail"
+  },
+  {
+    "word": "Skeleton",
+    "score": 3,
+    "weight": 12,
+    "family": "skeleton",
+    "slot": "main"
+  },
+  {
+    "word": "Skeleton",
+    "score": 3,
+    "weight": 12,
+    "family": "skeleton",
+    "slot": "detail"
+  },
+  {
+    "word": "Skeleton Hand",
+    "score": 3,
+    "weight": 12,
+    "family": "skeleton-hand",
+    "slot": "main"
+  },
+  {
+    "word": "Skull",
+    "score": 3,
+    "weight": 12,
+    "family": "skull",
+    "slot": "main"
+  },
+  {
+    "word": "Skull",
+    "score": 3,
+    "weight": 12,
+    "family": "skull",
+    "slot": "detail"
+  },
+  {
+    "word": "Skull",
+    "score": 3,
+    "weight": 12,
+    "family": "skull",
+    "slot": "effect"
+  },
+  {
+    "word": "Smoke",
+    "score": 1,
+    "weight": 2,
+    "family": "smoke",
+    "slot": "detail"
+  },
+  {
+    "word": "Smoke",
+    "score": 1,
+    "weight": 2,
+    "family": "smoke",
+    "slot": "effect"
+  },
+  {
+    "word": "Snake",
+    "score": 3,
+    "weight": 12,
+    "family": "snake",
+    "slot": "main"
+  },
+  {
+    "word": "Snake",
+    "score": 3,
+    "weight": 12,
+    "family": "snake",
+    "slot": "detail"
+  },
+  {
+    "word": "Sorcerer",
+    "score": 2,
+    "weight": 6,
+    "family": "sorcerer",
+    "slot": "main"
+  },
+  {
+    "word": "Sparkles",
+    "score": 1,
+    "weight": 2,
+    "family": "sparkles",
+    "slot": "detail"
+  },
+  {
+    "word": "Sparkles",
+    "score": 1,
+    "weight": 2,
+    "family": "sparkles",
+    "slot": "effect"
+  },
+  {
+    "word": "Spear",
+    "score": 1,
+    "weight": 2,
+    "family": "spear",
+    "slot": "detail"
+  },
+  {
+    "word": "Spell Book",
+    "score": 1,
+    "weight": 2,
+    "family": "spell-book",
+    "slot": "detail"
+  },
+  {
+    "word": "Spider",
+    "score": 3,
+    "weight": 12,
+    "family": "spider",
+    "slot": "main"
+  },
+  {
+    "word": "Spider",
+    "score": 3,
+    "weight": 12,
+    "family": "spider",
+    "slot": "detail"
+  },
+  {
+    "word": "Spider Web",
+    "score": 2,
+    "weight": 6,
+    "family": "spider",
+    "slot": "detail"
+  },
+  {
+    "word": "Spider Web",
+    "score": 2,
+    "weight": 6,
+    "family": "spider",
+    "slot": "effect"
+  },
+  {
+    "word": "Stars",
+    "score": 2,
+    "weight": 6,
+    "family": "stars",
+    "slot": "effect"
+  },
+  {
+    "word": "Sun",
+    "score": 1,
+    "weight": 2,
+    "family": "sun",
+    "slot": "detail"
+  },
+  {
+    "word": "Sun",
+    "score": 1,
+    "weight": 2,
+    "family": "sun",
+    "slot": "effect"
+  },
+  {
+    "word": "Sunflower",
+    "score": 1,
+    "weight": 2,
+    "family": "sunflower",
+    "slot": "main"
+  },
+  {
+    "word": "Sunflower",
+    "score": 1,
+    "weight": 2,
+    "family": "sunflower",
+    "slot": "detail"
+  },
+  {
+    "word": "Swan",
+    "score": 0,
+    "weight": 0.25,
+    "family": "swan",
+    "slot": "main"
+  },
+  {
+    "word": "Sword",
+    "score": 1,
+    "weight": 2,
+    "family": "weapon",
+    "slot": "detail"
+  },
+  {
+    "word": "Thorns",
+    "score": 1,
+    "weight": 2,
+    "family": "thorns",
+    "slot": "detail"
+  },
+  {
+    "word": "Tiger",
+    "score": 3,
+    "weight": 12,
+    "family": "feline",
+    "slot": "main"
+  },
+  {
+    "word": "Tiger",
+    "score": 3,
+    "weight": 12,
+    "family": "feline",
+    "slot": "detail"
+  },
+  {
+    "word": "Torch",
+    "score": 1,
+    "weight": 2,
+    "family": "torch",
+    "slot": "detail"
+  },
+  {
+    "word": "Unicorn",
+    "score": 2,
+    "weight": 6,
+    "family": "unicorn",
+    "slot": "main"
+  },
+  {
+    "word": "Vulture",
+    "score": 2,
+    "weight": 6,
+    "family": "vulture",
+    "slot": "main"
+  },
+  {
+    "word": "Water",
+    "score": 1,
+    "weight": 2,
+    "family": "water",
+    "slot": "effect"
+  },
+  {
+    "word": "Werewolf",
+    "score": 0,
+    "weight": 0.25,
+    "family": "werewolf",
+    "slot": "main"
+  },
+  {
+    "word": "Wing",
+    "score": 2,
+    "weight": 6,
+    "family": "wing",
+    "blockedWith": [
+      "Bat",
+      "Butterfly",
+      "Crow",
+      "Dove",
+      "Dragon",
+      "Eagle",
+      "Fairy",
+      "Falcon",
+      "Flying Bats",
+      "Griffin",
+      "Hawk",
+      "Owl",
+      "Pegasus",
+      "Phoenix",
+      "Raven",
+      "Sea Dragon",
+      "Swan",
+      "Vulture"
+    ],
+    "slot": "detail"
+  },
+  {
+    "word": "Wing",
+    "score": 2,
+    "weight": 6,
+    "family": "wing",
+    "blockedWith": [
+      "Bat",
+      "Butterfly",
+      "Crow",
+      "Dove",
+      "Dragon",
+      "Eagle",
+      "Fairy",
+      "Falcon",
+      "Flying Bats",
+      "Griffin",
+      "Hawk",
+      "Owl",
+      "Pegasus",
+      "Phoenix",
+      "Raven",
+      "Sea Dragon",
+      "Swan",
+      "Vulture"
+    ],
+    "slot": "effect"
+  },
+  {
+    "word": "Witch",
+    "score": 3,
+    "weight": 12,
+    "family": "witch",
+    "slot": "main"
+  },
+  {
+    "word": "Witch Head",
+    "score": 1,
+    "weight": 2,
+    "family": "witch-head",
+    "slot": "main"
+  },
+  {
+    "word": "Wizard",
+    "score": 3,
+    "weight": 12,
+    "family": "wizard",
+    "slot": "main"
+  },
+  {
+    "word": "Wizard Head",
+    "score": 1,
+    "weight": 2,
+    "family": "wizard-head",
+    "slot": "main"
+  },
+  {
+    "word": "Wolf",
+    "score": 3,
+    "weight": 12,
+    "family": "wolf",
+    "slot": "main"
+  },
+  {
+    "word": "Wolf",
+    "score": 3,
+    "weight": 12,
+    "family": "wolf",
+    "slot": "detail"
+  }
+]

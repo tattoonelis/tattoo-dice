@@ -8,8 +8,14 @@ let hiddenActive = false;
 let rollInProgress = false;
 let currentRoll = [];
 let lastRollWasKeepDrawing = false;
-let selectedMain = localStorage.getItem("tattooDiceSelectedMain") || "Random";
+let activeTheme = localStorage.getItem("tattooDiceActiveTheme") || "classic";
+let fantasyUnlocked = false;
+if (activeTheme === "fantasy" && !fantasyUnlocked) activeTheme = "classic";
+let selectedMain = "Random";
 let mainSelectionAtOpen = selectedMain;
+let themeSelectionAtOpen = activeTheme;
+let themeSelectionChanged = false;
+let pinInput = "";
 let mainSelectionChanged = false;
 let mainDropActive = false;
 let mainDropStartTime = 0;
@@ -27,12 +33,19 @@ const hiddenMessageEl = document.getElementById("hiddenMessage");
 const screenFade = document.getElementById("screenFade");
 const themeButton = document.getElementById("themeButton");
 const themeModal = document.getElementById("themeModal");
+const classicThemeChoice = document.getElementById("classicThemeChoice");
+const fantasyThemeChoice = document.getElementById("fantasyThemeChoice");
+const fantasyThemeLabel = document.getElementById("fantasyThemeLabel");
+const pinModal = document.getElementById("pinModal");
+const pinDisplay = document.getElementById("pinDisplay");
+const pinKeypad = document.getElementById("pinKeypad");
 const mainButton = document.getElementById("mainButton");
 const mainModal = document.getElementById("mainModal");
 const mainChoiceList = document.getElementById("mainChoiceList");
 const introGateEl = document.getElementById("introGate");
 
 const SECRET_CODE = "332211";
+const FANTASY_UNLOCK_CODE = "2311";
 const KEEP_DRAWING_CHANCE = 0.01;
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
@@ -81,15 +94,84 @@ init();
 function setThemeModalState(open) {
   if (!themeModal) return;
   const wasOpen = themeModal.classList.contains("open");
+
+  if (open) {
+    themeSelectionAtOpen = activeTheme;
+    themeSelectionChanged = false;
+    updateThemeMenu();
+  }
+
   themeModal.classList.toggle("open", open);
   themeModal.setAttribute("aria-hidden", String(!open));
   document.body.classList.toggle("theme-modal-open", open);
 
-  if (open) themeModalWasOpen = true;
-  if (!open && wasOpen && themeModalWasOpen && !introActive && !rollInProgress) {
-    themeModalWasOpen = false;
-    replayCurrentDiceFromTop();
+  if (!open && wasOpen && themeSelectionChanged && !introActive && !rollInProgress) {
+    playTopDrop(false);
   }
+}
+
+function setPinModalState(open) {
+  if (!pinModal) return;
+  pinInput = "";
+  updatePinDisplay();
+  pinModal.classList.toggle("open", open);
+  pinModal.setAttribute("aria-hidden", String(!open));
+  document.body.classList.toggle("pin-modal-open", open);
+}
+
+function updatePinDisplay() {
+  if (!pinDisplay) return;
+  [...pinDisplay.children].forEach((dot, index) => {
+    dot.classList.toggle("filled", index < pinInput.length);
+  });
+}
+
+function updateThemeMenu() {
+  if (!classicThemeChoice || !fantasyThemeChoice) return;
+
+  classicThemeChoice.classList.toggle("active", activeTheme === "classic");
+  classicThemeChoice.setAttribute("aria-pressed", String(activeTheme === "classic"));
+
+  fantasyThemeChoice.classList.toggle("active", activeTheme === "fantasy");
+  fantasyThemeChoice.classList.toggle("locked", !fantasyUnlocked);
+  fantasyThemeChoice.setAttribute("aria-pressed", String(activeTheme === "fantasy"));
+  fantasyThemeLabel.textContent = fantasyUnlocked ? "Fantasy" : "Fantasy 🔒";
+}
+
+function mainStorageKey(theme = activeTheme) {
+  return `tattooDiceSelectedMain_${theme}`;
+}
+
+function loadStoredMain() {
+  const fallback = activeTheme === "classic"
+    ? localStorage.getItem("tattooDiceSelectedMain")
+    : null;
+  selectedMain = localStorage.getItem(mainStorageKey()) || fallback || "Random";
+}
+
+async function selectTheme(themeName) {
+  if (themeName === "fantasy" && !fantasyUnlocked) {
+    setPinModalState(true);
+    return;
+  }
+  if (themeName === activeTheme) {
+    updateThemeMenu();
+    return;
+  }
+
+  activeTheme = themeName;
+  localStorage.setItem("tattooDiceActiveTheme", activeTheme);
+  themeSelectionChanged = activeTheme !== themeSelectionAtOpen;
+
+  loadStoredMain();
+  await loadDeck();
+  validateDeckScores();
+  buildMainMenu();
+
+  currentRoll = makeRoll(wordCount);
+  renderDice(currentRoll, false);
+  updateThemeMenu();
+  updateMainSelectionGlow();
 }
 
 
@@ -165,7 +247,10 @@ function buildMainMenu() {
     button.addEventListener("click", () => {
       selectedMain = word;
       mainSelectionChanged = selectedMain !== mainSelectionAtOpen;
-      localStorage.setItem("tattooDiceSelectedMain", selectedMain);
+      localStorage.setItem(mainStorageKey(), selectedMain);
+      if (activeTheme === "classic") {
+        localStorage.setItem("tattooDiceSelectedMain", selectedMain);
+      }
       updateMainSelectionGlow();
 
       mainChoiceList.querySelectorAll(".main-choice").forEach(choice => {
@@ -237,6 +322,8 @@ async function init() {
   lockInterface();
   requestPortraitLock();
   setupThree();
+  loadStoredMain();
+  updateThemeMenu();
 
   await loadDeck();
   validateDeckScores();
@@ -291,10 +378,59 @@ async function init() {
       }, { passive: false });
     });
 
+    classicThemeChoice?.addEventListener("pointerup", event => {
+      event.preventDefault();
+      selectTheme("classic");
+    }, { passive: false });
+
+    fantasyThemeChoice?.addEventListener("pointerup", event => {
+      event.preventDefault();
+      selectTheme("fantasy");
+    }, { passive: false });
+
+    pinModal?.querySelectorAll("[data-close-pin]").forEach(element => {
+      element.addEventListener("pointerup", event => {
+        event.preventDefault();
+        setPinModalState(false);
+      }, { passive: false });
+    });
+
+    pinKeypad?.addEventListener("pointerup", async event => {
+      const digitButton = event.target.closest("[data-pin-digit]");
+      const clearButton = event.target.closest("[data-pin-clear]");
+      const backspaceButton = event.target.closest("[data-pin-backspace]");
+      if (!digitButton && !clearButton && !backspaceButton) return;
+
+      event.preventDefault();
+
+      if (clearButton) {
+        pinInput = "";
+      } else if (backspaceButton) {
+        pinInput = pinInput.slice(0, -1);
+      } else if (pinInput.length < 4) {
+        pinInput += digitButton.dataset.pinDigit;
+      }
+
+      updatePinDisplay();
+
+      if (pinInput.length === 4) {
+        if (pinInput === FANTASY_UNLOCK_CODE) {
+          fantasyUnlocked = true;
+          
+          updateThemeMenu();
+          setPinModalState(false);
+        } else {
+          pinInput = "";
+          updatePinDisplay();
+        }
+      }
+    }, { passive: false });
+
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") {
         setThemeModalState(false);
         setMainModalState(false);
+        setPinModalState(false);
       }
     });
   }
@@ -457,7 +593,7 @@ function finishIntroRoll() {
 
 function lockInterface() {
   document.addEventListener("touchmove", event => {
-    if (event.target.closest(".main-choice-list")) return;
+    if (event.target.closest(".main-choice-list, .pin-keypad, .theme-modal-card")) return;
     event.preventDefault();
   }, { passive: false });
   document.addEventListener("selectstart", event => event.preventDefault());
@@ -756,7 +892,7 @@ function validateDeckScores() {
 
 async function loadDeck() {
   try {
-    const response = await fetch("/decks/classic.json", { cache: "no-store" });
+    const response = await fetch(`/decks/${activeTheme}.json`, { cache: "no-store" });
     if (!response.ok) throw new Error("Deck request failed");
     deck = await response.json();
   } catch (error) {
@@ -1164,8 +1300,20 @@ function requirementsMet(item, chosenWords) {
   return item.requires.every(requiredWord => chosenWords.has(requiredWord));
 }
 
+function compatibilityMet(item, chosenWords) {
+  if (chosenWords.has(item.word)) return false;
+  if (!Array.isArray(item.blockedWith) || item.blockedWith.length === 0) return true;
+  return !item.blockedWith.some(blockedWord => chosenWords.has(blockedWord));
+}
+
 function pickForSlot(slot, usedFamilies, chosenWords = new Set()) {
-  const options = deck.filter(item => item.slot === slot && !usedFamilies.has(getFamily(item)) && requirementsMet(item, chosenWords));
+  const options = deck.filter(item =>
+    item.slot === slot &&
+    !chosenWords.has(item.word) &&
+    !usedFamilies.has(getFamily(item)) &&
+    requirementsMet(item, chosenWords) &&
+    compatibilityMet(item, chosenWords)
+  );
   if (!options.length) return null;
   return weightedPick(options);
 }

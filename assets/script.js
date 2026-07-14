@@ -8,15 +8,6 @@ let hiddenActive = false;
 let rollInProgress = false;
 let currentRoll = [];
 let lastRollWasKeepDrawing = false;
-let selectedMain = localStorage.getItem("tattooDiceSelectedMain") || "Random";
-let mainSelectionAtOpen = selectedMain;
-let mainSelectionChanged = false;
-let mainDropActive = false;
-let mainDropStartTime = 0;
-let mainDropDuration = 1.25;
-let introIsStartup = true;
-let themeModalWasOpen = false;
-let mainGlowLight = null;
 
 const rollButton = document.getElementById("rollButton");
 const diceOptions = document.querySelectorAll(".dice-option");
@@ -27,9 +18,6 @@ const hiddenMessageEl = document.getElementById("hiddenMessage");
 const screenFade = document.getElementById("screenFade");
 const themeButton = document.getElementById("themeButton");
 const themeModal = document.getElementById("themeModal");
-const mainButton = document.getElementById("mainButton");
-const mainModal = document.getElementById("mainModal");
-const mainChoiceList = document.getElementById("mainChoiceList");
 const introGateEl = document.getElementById("introGate");
 
 const SECRET_CODE = "332211";
@@ -45,7 +33,6 @@ let introDuration = 1.78;
 let introResolve = null;
 let introTargetRect = null;
 let introStartTop = 0;
-let introAirDice = [];
 let diceMeshes = [];
 
 const layouts = {
@@ -80,168 +67,17 @@ init();
 
 function setThemeModalState(open) {
   if (!themeModal) return;
-  const wasOpen = themeModal.classList.contains("open");
   themeModal.classList.toggle("open", open);
   themeModal.setAttribute("aria-hidden", String(!open));
   document.body.classList.toggle("theme-modal-open", open);
-
-  if (open) themeModalWasOpen = true;
-  if (!open && wasOpen && themeModalWasOpen && !introActive && !rollInProgress) {
-    themeModalWasOpen = false;
-    replayCurrentDiceFromTop();
-  }
-}
-
-
-function setMainModalState(open) {
-  if (!mainModal) return;
-
-  if (open) {
-    mainSelectionAtOpen = selectedMain;
-    mainSelectionChanged = false;
-  }
-
-  mainModal.classList.toggle("open", open);
-  mainModal.setAttribute("aria-hidden", String(!open));
-  document.body.classList.toggle("main-modal-open", open);
-
-  if (!open && mainSelectionChanged && selectedMain !== mainSelectionAtOpen) {
-    applyMainSelectionDrop();
-  }
-}
-
-function updateMainSelectionGlow() {
-  const active = selectedMain !== "Random";
-  diceStageEl?.classList.toggle("main-selected", active);
-
-  if (mainGlowLight) {
-    mainGlowLight.intensity = active ? 1.05 : 0;
-  }
-
-  diceMeshes.forEach((mesh, index) => {
-    if (!Array.isArray(mesh.material)) return;
-
-    mesh.material.forEach(material => {
-      if (!material || !("emissive" in material)) return;
-
-      if (active && index === 0) {
-        material.emissive.setHex(0x32c878);
-        material.emissiveIntensity = 0.34;
-      } else {
-        material.emissive.setHex(0x000000);
-        material.emissiveIntensity = 0;
-      }
-      material.needsUpdate = true;
-    });
-  });
-}
-
-function buildMainMenu() {
-  if (!mainChoiceList) return;
-
-  const mainWords = [...new Set(
-    deck
-      .filter(item => item.slot === "main" && Number(item.score || 0) >= 3)
-      .map(item => item.word)
-      .filter(Boolean)
-  )].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
-
-  if (selectedMain !== "Random" && !mainWords.includes(selectedMain)) {
-    selectedMain = "Random";
-    localStorage.setItem("tattooDiceSelectedMain", selectedMain);
-  }
-
-  mainChoiceList.innerHTML = "";
-
-  ["Random", ...mainWords].forEach(word => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "main-choice";
-    button.textContent = word;
-    button.dataset.main = word;
-    button.classList.toggle("active", word === selectedMain);
-    button.setAttribute("aria-pressed", String(word === selectedMain));
-
-    button.addEventListener("click", () => {
-      selectedMain = word;
-      mainSelectionChanged = selectedMain !== mainSelectionAtOpen;
-      localStorage.setItem("tattooDiceSelectedMain", selectedMain);
-      updateMainSelectionGlow();
-
-      mainChoiceList.querySelectorAll(".main-choice").forEach(choice => {
-        const active = choice.dataset.main === selectedMain;
-        choice.classList.toggle("active", active);
-        choice.setAttribute("aria-pressed", String(active));
-      });
-    });
-
-    mainChoiceList.appendChild(button);
-  });
-}
-
-function applyMainSelectionDrop() {
-  if (!deck.length || rollInProgress || introActive) return;
-
-  hiddenActive = false;
-  hiddenMessageEl.classList.remove("show");
-  if (screenFade) screenFade.classList.remove("show");
-
-  currentRoll = makeRoll(wordCount);
-  renderDice(currentRoll, false);
-  playTopDrop(false);
-}
-
-function replayCurrentDiceFromTop() {
-  if (!deck.length || rollInProgress || introActive) return;
-  renderDice(currentRoll, false);
-  playTopDrop(false);
-}
-
-function startMainDropAnimation() {
-  const now = performance.now() / 1000;
-  mainDropStartTime = now;
-  mainDropActive = true;
-
-  diceMeshes.forEach((die, index) => {
-    const layout = die.userData.layout;
-    die.userData.dropTargetPosition = new THREE.Vector3(layout[0], layout[1], layout[2]);
-    die.userData.dropTargetRotation = new THREE.Euler(layout[3], layout[4], layout[5]);
-    die.userData.dropStartY = layout[1] + 6.2 + index * 0.55;
-    die.userData.dropImpact = 0.54 + index * 0.035;
-    die.userData.dropStrength = index === 0 ? 0.68 : 0.50;
-
-    die.position.set(layout[0], die.userData.dropStartY, layout[2]);
-    die.rotation.set(
-      layout[3] - Math.PI * 4,
-      layout[4] - Math.PI * 2,
-      layout[5] - Math.PI * 2
-    );
-    die.scale.set(1, 1, 1);
-    die.userData.rolling = false;
-  });
-}
-
-
-async function requestPortraitLock() {
-  try {
-    if (screen.orientation?.lock) {
-      await screen.orientation.lock("portrait-primary");
-    }
-  } catch (error) {
-    // Browsers such as iOS Safari may ignore orientation locking.
-    // The CSS portrait-lock overlay remains the fallback.
-  }
 }
 
 async function init() {
   lockInterface();
-  requestPortraitLock();
   setupThree();
 
   await loadDeck();
   validateDeckScores();
-  buildMainMenu();
-  updateMainSelectionGlow();
 
   // Preload the exact first result and all materials while the intro text is visible.
   wordCount = 3;
@@ -292,25 +128,7 @@ async function init() {
     });
 
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape") {
-        setThemeModalState(false);
-        setMainModalState(false);
-      }
-    });
-  }
-
-  if (mainButton && mainModal) {
-    mainButton.addEventListener("pointerup", event => {
-      event.preventDefault();
-      event.stopPropagation();
-      setMainModalState(true);
-    }, { passive: false });
-
-    mainModal.querySelectorAll("[data-close-main]").forEach(element => {
-      element.addEventListener("pointerup", event => {
-        event.preventDefault();
-        setMainModalState(false);
-      }, { passive: false });
+      if (event.key === "Escape") setThemeModalState(false);
     });
   }
 
@@ -340,21 +158,17 @@ function waitForIntroTap() {
 }
 
 function playIntroRoll() {
-  return playTopDrop(true);
-}
-
-function playTopDrop(isStartup = false) {
-  if (!diceMeshes.length || (isStartup && !introGateEl)) {
+  if (!diceMeshes.length || !introGateEl) {
     sceneWrap.classList.remove("intro-hidden");
-    if (isStartup) introGateEl?.remove();
+    introGateEl?.remove();
     return Promise.resolve();
   }
 
-  introIsStartup = isStartup;
   introTargetRect = sceneWrap.getBoundingClientRect();
   introStartTop = -introTargetRect.height - 26;
   document.body.classList.add("intro-running");
 
+  // The same stable canvas begins below the viewport at its final size.
   sceneWrap.classList.add("intro-moving");
   sceneWrap.style.left = `${introTargetRect.left}px`;
   sceneWrap.style.top = `${introStartTop}px`;
@@ -362,54 +176,38 @@ function playTopDrop(isStartup = false) {
   sceneWrap.style.height = `${introTargetRect.height}px`;
   sceneWrap.classList.remove("intro-hidden");
 
-  introAirDice = [];
-
+  // Use the real stable meshes, with their exact final pose saved.
   diceMeshes.forEach((die, index) => {
     const layout = die.userData.layout;
-    const targetPosition = new THREE.Vector3(layout[0], layout[1], layout[2]);
-    const targetRotation = new THREE.Euler(layout[3], layout[4], layout[5]);
-
-    die.userData.introTargetPosition = targetPosition.clone();
-    die.userData.introTargetRotation = targetRotation.clone();
+    die.userData.introTargetPosition = new THREE.Vector3(layout[0], layout[1], layout[2]);
+    die.userData.introTargetRotation = new THREE.Euler(layout[3], layout[4], layout[5]);
+    die.userData.introStartRotation = new THREE.Euler(
+      layout[3] - Math.PI * (3.4 + index * 0.42),
+      layout[4] + Math.PI * (2.6 + index * 0.36),
+      layout[5] - Math.PI * (1.9 + index * 0.28)
+    );
+    die.rotation.copy(die.userData.introStartRotation);
+    die.position.copy(die.userData.introTargetPosition);
+    die.userData.rolling = false;
     die.userData.introPhysicsStrength =
       (index === 0 ? 0.76 : 0.58) * (0.95 + Math.random() * 0.10);
-    die.userData.introImpactDelay = index * (0.028 + Math.random() * 0.015);
-    die.userData.introLanded = false;
 
-    die.position.copy(targetPosition);
-    die.rotation.copy(targetRotation);
-    die.scale.set(1, 1, 1);
-    die.visible = false;
-    die.userData.rolling = false;
+    // Organic angular velocity: mostly end-over-end, with smaller yaw/roll.
+    die.userData.introAngularVelocity = {
+      x: (4.6 + Math.random() * 1.4) * (Math.random() < 0.5 ? -1 : 1),
+      y: (1.0 + Math.random() * 0.9) * (Math.random() < 0.5 ? -1 : 1),
+      z: (0.7 + Math.random() * 0.8) * (Math.random() < 0.5 ? -1 : 1)
+    };
 
-    const airDie = die.clone();
-    airDie.geometry = die.geometry;
-    airDie.material = die.material;
-    airDie.visible = true;
-    airDie.position.copy(targetPosition);
-    airDie.scale.set(1, 1, 1);
-    airDie.renderOrder = die.renderOrder;
-    airDie.castShadow = die.castShadow;
-    airDie.receiveShadow = die.receiveShadow;
-
-    const turnsX = index === 0 ? 4 : 3 + index;
-    const turnsY = index === 0 ? 2 : 1 + index;
-    const turnsZ = index === 0 ? 1 : index;
-
-    airDie.userData.startRotation = new THREE.Euler(
-      targetRotation.x - turnsX * Math.PI * 2,
-      targetRotation.y - turnsY * Math.PI * 2,
-      targetRotation.z - turnsZ * Math.PI * 2
-    );
-    airDie.userData.targetRotation = targetRotation.clone();
-    airDie.userData.impactStart = 0.60 + die.userData.introImpactDelay;
-    airDie.rotation.copy(airDie.userData.startRotation);
-
-    scene.add(airDie);
-    introAirDice.push(airDie);
+    die.userData.introImpactDelay = index * (0.035 + Math.random() * 0.02);
+    die.userData.impactRotation = null;
+    die.userData.introWobbleAmplitude =
+      (index === 0 ? 0.075 : 0.055) * (0.9 + Math.random() * 0.2);
+    die.userData.introWobbleFrequency = 9.5 + Math.random() * 1.8;
+    die.userData.introWobblePhase = Math.random() * Math.PI * 2;
   });
 
-  if (isStartup) introGateEl.classList.add("starting");
+  introGateEl.classList.add("starting");
   introStartTime = performance.now() / 1000;
   introActive = true;
 
@@ -421,20 +219,15 @@ function playTopDrop(isStartup = false) {
 function finishIntroRoll() {
   introActive = false;
 
-  introAirDice.forEach(airDie => {
-    scene.remove(airDie);
-  });
-  introAirDice = [];
-
   diceMeshes.forEach(die => {
-    die.visible = true;
     die.position.copy(die.userData.introTargetPosition);
     die.rotation.copy(die.userData.introTargetRotation);
     die.scale.set(1, 1, 1);
     die.userData.base.copy(die.userData.introTargetPosition);
-    die.userData.introLanded = true;
   });
 
+  // The moving canvas is already at the exact normal rectangle.
+  // Clear inline fixed positioning without changing its visual location.
   sceneWrap.style.left = "";
   sceneWrap.style.top = "";
   sceneWrap.style.width = "";
@@ -443,12 +236,8 @@ function finishIntroRoll() {
   document.body.classList.remove("intro-running");
   resizeRenderer();
 
-  if (introIsStartup && introGateEl) {
-    introGateEl.classList.add("finished");
-    setTimeout(() => introGateEl.remove(), 170);
-  }
-  introIsStartup = false;
-  updateMainSelectionGlow();
+  introGateEl.classList.add("finished");
+  setTimeout(() => introGateEl.remove(), 170);
 
   const resolve = introResolve;
   introResolve = null;
@@ -456,10 +245,7 @@ function finishIntroRoll() {
 }
 
 function lockInterface() {
-  document.addEventListener("touchmove", event => {
-    if (event.target.closest(".main-choice-list")) return;
-    event.preventDefault();
-  }, { passive: false });
+  document.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
   document.addEventListener("selectstart", event => event.preventDefault());
   document.addEventListener("contextmenu", event => event.preventDefault());
 }
@@ -491,10 +277,6 @@ function setupThree() {
   const fill = new THREE.DirectionalLight(0xe6efff, 0.28);
   fill.position.set(4.5, 4.6, 2.4);
   scene.add(fill);
-
-  mainGlowLight = new THREE.PointLight(0x38d879, 0, 5.2, 2);
-  mainGlowLight.position.set(0, 0.25, 2.35);
-  scene.add(mainGlowLight);
 
   floor = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 12),
@@ -549,8 +331,6 @@ function renderDice(words, animateIn = false) {
     scene.add(mesh);
     diceMeshes.push(mesh);
   });
-
-  updateMainSelectionGlow();
 
   if (animateIn) startDiceAnimation();
 }
@@ -882,174 +662,126 @@ function animate() {
   const t = performance.now() / 1000;
 
   if (introActive) {
-    const progress = Math.min(
-      Math.max((t - introStartTime) / introDuration, 0),
-      1
-    );
+    const progress = Math.min(Math.max((t - introStartTime) / introDuration, 0), 1);
+    const travel = easeInOutCubic(progress);
+    const settle = smoothStep(progress);
+    const rollPhase = progress * Math.PI * 2;
 
-    // Shared canvas falls into the exact final stage rectangle.
-    const fallPhase = Math.min(progress / 0.60, 1);
+    // Move the complete transparent stable canvas from below the viewport
+    // into its exact normal location. This guarantees a seamless final frame.
+    // Fall from above with gravity-like acceleration.
+    // The canvas stops at its exact final stage position before the dice settle.
+    const fallPhase = Math.min(progress / 0.62, 1);
     const gravityDrop = fallPhase * fallPhase;
-    const currentTop = lerp(
-      introStartTop,
-      introTargetRect.top,
-      gravityDrop
-    );
+    const currentTop = lerp(introStartTop, introTargetRect.top, gravityDrop);
     sceneWrap.style.top = `${currentTop}px`;
     sceneWrap.style.left = `${introTargetRect.left}px`;
 
-    // ANIMATION A: temporary airborne dice spin only while falling.
-    introAirDice.forEach((airDie, index) => {
-      const impactStart = airDie.userData.impactStart;
-      const targetRotation = airDie.userData.targetRotation;
-
-      if (progress < impactStart) {
-        const airProgress = Math.min(progress / impactStart, 1);
-        const spinEase = easeInOutCubic(airProgress);
-
-        airDie.rotation.x = lerp(
-          airDie.userData.startRotation.x,
-          targetRotation.x,
-          spinEase
-        );
-        airDie.rotation.y = lerp(
-          airDie.userData.startRotation.y,
-          targetRotation.y,
-          spinEase
-        );
-        airDie.rotation.z = lerp(
-          airDie.userData.startRotation.z,
-          targetRotation.z,
-          spinEase
-        );
-      } else if (airDie.visible) {
-        // Exact handoff at contact.
-        airDie.rotation.copy(targetRotation);
-        airDie.visible = false;
-
-        const landingDie = diceMeshes[index];
-        landingDie.visible = true;
-        landingDie.position.copy(landingDie.userData.introTargetPosition);
-        landingDie.rotation.copy(landingDie.userData.introTargetRotation);
-        landingDie.scale.set(1, 1, 1);
-        landingDie.userData.introLanded = true;
-      }
-    });
-
-    // ANIMATION B: real stable dice bounce with rotation fully locked.
     diceMeshes.forEach((die, index) => {
-      if (!die.userData.introLanded) return;
+      const startRotation = die.userData.introStartRotation;
+      const targetRotation = die.userData.introTargetRotation;
+      const rollingWeight = 1 - settle;
 
-      const impactStart = introAirDice[index].userData.impactStart;
+      const impactStart = 0.58 + die.userData.introImpactDelay;
       const localImpact = Math.min(
         Math.max((progress - impactStart) / (1 - impactStart), 0),
         1
       );
 
-      let bounce;
-      if (localImpact < 0.64) {
-        const firstBounce = localImpact / 0.64;
-        bounce = Math.sin(firstBounce * Math.PI) *
-          die.userData.introPhysicsStrength * 0.74;
+      const angular = die.userData.introAngularVelocity;
+
+      if (progress < impactStart) {
+        // PHASE 1 — fall and tumble.
+        // Rotation is only allowed while the dice are still airborne.
+        const fallingTime = progress / Math.max(impactStart, 0.001);
+        die.rotation.x = startRotation.x + angular.x * fallingTime;
+        die.rotation.y = startRotation.y + angular.y * fallingTime;
+        die.rotation.z = startRotation.z + angular.z * fallingTime;
+
+        die.userData.impactRotation = new THREE.Euler(
+          die.rotation.x,
+          die.rotation.y,
+          die.rotation.z
+        );
       } else {
-        const secondBounce = (localImpact - 0.64) / 0.36;
-        bounce = Math.sin(secondBounce * Math.PI) *
-          die.userData.introPhysicsStrength * 0.27;
+        // PHASE 2 — impact and bounce.
+        // Absolutely no additional spin after contact with the table.
+        // The die keeps its contact orientation during both bounces,
+        // then eases cleanly into the exact stable end pose.
+        const lockRotation = die.userData.impactRotation || startRotation;
+        const settleStart = 0.54;
+        const settleProgress = localImpact <= settleStart
+          ? 0
+          : smoothStep((localImpact - settleStart) / (1 - settleStart));
+
+        die.rotation.x = lerp(
+          lockRotation.x,
+          targetRotation.x,
+          settleProgress
+        );
+        die.rotation.y = lerp(
+          lockRotation.y,
+          targetRotation.y,
+          settleProgress
+        );
+        die.rotation.z = lerp(
+          lockRotation.z,
+          targetRotation.z,
+          settleProgress
+        );
       }
 
-      const impactOne = Math.exp(
-        -Math.pow((localImpact - 0.015) / 0.026, 2)
-      );
-      const impactTwo = Math.exp(
-        -Math.pow((localImpact - 0.65) / 0.022, 2)
-      );
-      const amount = (
-        impactOne * 0.076 +
-        impactTwo * 0.026
-      ) * (index === 0 ? 1 : 0.86);
+      // A dedicated no-spin landing curve:
+      // one large bounce followed by one smaller bounce.
+      let bounce = 0;
+      let squash = { xz: 1, y: 1 };
 
-      const squashY = 1 - amount;
-      const squashXZ = 1 + amount * 0.62;
+      if (localImpact > 0) {
+        if (localImpact < 0.62) {
+          const firstBounce = localImpact / 0.62;
+          bounce = Math.sin(firstBounce * Math.PI) *
+            die.userData.introPhysicsStrength * 0.72;
+        } else {
+          const secondBounce = (localImpact - 0.62) / 0.38;
+          bounce = Math.sin(secondBounce * Math.PI) *
+            die.userData.introPhysicsStrength * 0.26;
+        }
 
-      die.position.x = die.userData.introTargetPosition.x;
+        const impactOne = Math.exp(
+          -Math.pow((localImpact - 0.02) / 0.028, 2)
+        );
+        const impactTwo = Math.exp(
+          -Math.pow((localImpact - 0.64) / 0.025, 2)
+        );
+        const amount = (
+          impactOne * 0.072 +
+          impactTwo * 0.024
+        ) * (index === 0 ? 1 : 0.86);
+
+        squash = {
+          y: 1 - amount,
+          xz: 1 + amount * 0.62
+        };
+      }
+
+      // Tiny positional separation only; no rotational wobble after impact.
+      const drift = (1 - progress) *
+        (index === 0 ? 0 : index === 1 ? -0.04 : 0.04);
+
       die.position.y = die.userData.introTargetPosition.y + bounce;
-      die.position.z = die.userData.introTargetPosition.z;
-
-      // Hard lock: no spin, wobble or interpolation after contact.
-      die.rotation.copy(die.userData.introTargetRotation);
-      die.scale.set(squashXZ, squashY, squashXZ);
+      die.position.x = die.userData.introTargetPosition.x + drift;
+      die.scale.set(squash.xz, squash.y, squash.xz);
     });
 
     if (progress >= 1) {
       finishIntroRoll();
     }
-  } else if (mainDropActive) {
-    const progress = Math.min(
-      Math.max((t - mainDropStartTime) / mainDropDuration, 0),
-      1
-    );
-
-    diceMeshes.forEach((die, index) => {
-      const impact = die.userData.dropImpact;
-      const target = die.userData.dropTargetPosition;
-      const targetRotation = die.userData.dropTargetRotation;
-
-      if (progress < impact) {
-        const air = progress / impact;
-        const gravity = air * air;
-
-        die.position.y = lerp(die.userData.dropStartY, target.y, gravity);
-        die.rotation.x = lerp(
-          targetRotation.x - Math.PI * 4,
-          targetRotation.x,
-          easeInOutCubic(air)
-        );
-        die.rotation.y = lerp(
-          targetRotation.y - Math.PI * 2,
-          targetRotation.y,
-          easeInOutCubic(air)
-        );
-        die.rotation.z = lerp(
-          targetRotation.z - Math.PI * 2,
-          targetRotation.z,
-          easeInOutCubic(air)
-        );
-      } else {
-        const landed = (progress - impact) / (1 - impact);
-        let bounce;
-
-        if (landed < 0.66) {
-          bounce = Math.sin((landed / 0.66) * Math.PI) *
-            die.userData.dropStrength * 0.72;
-        } else {
-          bounce = Math.sin(((landed - 0.66) / 0.34) * Math.PI) *
-            die.userData.dropStrength * 0.24;
-        }
-
-        die.position.set(target.x, target.y + bounce, target.z);
-        die.rotation.copy(targetRotation);
-      }
-    });
-
-    if (progress >= 1) {
-      mainDropActive = false;
-      diceMeshes.forEach(die => {
-        die.position.copy(die.userData.dropTargetPosition);
-        die.rotation.copy(die.userData.dropTargetRotation);
-        die.scale.set(1, 1, 1);
-        die.userData.base.copy(die.userData.dropTargetPosition);
-      });
-    }
   } else {
-    // Existing normal ROLL animation remains unchanged.
     diceMeshes.forEach(die => {
       const u = die.userData;
       if (!u.rolling) return;
 
-      const p = Math.min(
-        Math.max((t - u.startTime - u.delay) / u.duration, 0),
-        1
-      );
+      const p = Math.min(Math.max((t - u.startTime - u.delay) / u.duration, 0), 1);
       if (p <= 0) return;
 
       const e = easeInOutCubic(p);
@@ -1070,8 +802,7 @@ function animate() {
 
       die.position.y = u.base.y + bounce;
       die.position.x = u.base.x +
-        Math.sin(p * Math.PI * 2.7 + index * 0.55) *
-        (1 - p) * 0.048;
+        Math.sin(p * Math.PI * 2.7 + index * 0.55) * (1 - p) * 0.048;
 
       die.rotation.x += wobble;
       die.rotation.z -= wobble * 0.72;
@@ -1118,37 +849,15 @@ function resizeRenderer() {
 }
 
 function makeRoll(count) {
-  const plan = count === 1
-    ? ["main"]
-    : count === 2
-      ? ["main", "detail"]
-      : ["main", "detail", "effect"];
-
+  const plan = count === 1 ? ["main"] : count === 2 ? ["main", "detail"] : ["main", "detail", "effect"];
   const chosen = [];
   const chosenWords = new Set();
   const usedFamilies = new Set();
 
-  if (selectedMain !== "Random") {
-    const forcedMain = deck.find(
-      item => item.slot === "main" && item.word === selectedMain
-    );
-
-    if (forcedMain) {
-      chosen.push(forcedMain.word);
-      chosenWords.add(forcedMain.word);
-      usedFamilies.add(getFamily(forcedMain));
-    }
-  }
-
-  for (let index = chosen.length; index < plan.length; index++) {
-    const slot = plan[index];
+  for (const slot of plan) {
     let picked = pickForSlot(slot, usedFamilies, chosenWords);
-    if (!picked && slot === "effect") {
-      picked = pickForSlot("detail", usedFamilies, chosenWords);
-    }
-    if (!picked && slot === "detail") {
-      picked = pickForSlot("main", usedFamilies, chosenWords);
-    }
+    if (!picked && slot === "effect") picked = pickForSlot("detail", usedFamilies, chosenWords);
+    if (!picked && slot === "detail") picked = pickForSlot("main", usedFamilies, chosenWords);
     if (!picked) continue;
 
     chosen.push(picked.word);

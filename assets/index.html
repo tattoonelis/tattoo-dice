@@ -26,9 +26,7 @@
 <body>
   <main class="app">
     <section class="stage">
-      <div class="app-header">
-        <h1>Tattoo Dice</h1>
-      </div>
+      <h1>Tattoo Dice</h1>
       <div class="tagline">Stop scrolling. Start rolling.</div>
       <div class="dice-stage-3d" id="diceStage3d">
         <div id="sceneWrap" class="intro-hidden" aria-label="Tattoo dice result"></div>
@@ -47,9 +45,6 @@
           </button>
           <button class="roll-button" id="rollButton" aria-label="Roll tattoo dice">
             <span>ROLL</span>
-          </button>
-          <button class="main-button" id="mainButton" type="button" aria-haspopup="dialog">
-            <span>MAIN</span>
           </button>
         </div>
       </div>
@@ -75,23 +70,6 @@
       </button>
       <div class="theme-coming-soon">Coming soon</div>
     </section>
-  </div>
-
-  <div class="main-modal" id="mainModal" aria-hidden="true">
-    <div class="main-modal-backdrop" data-close-main></div>
-    <section class="main-modal-card" role="dialog" aria-modal="true" aria-labelledby="mainModalTitle">
-      <button class="main-modal-close" type="button" aria-label="Close main menu" data-close-main>×</button>
-      <h2 id="mainModalTitle">Main</h2>
-      <div class="main-choice-list" id="mainChoiceList"></div>
-    </section>
-  </div>
-
-  <div class="portrait-lock" id="portraitLock" aria-hidden="true">
-    <div class="portrait-lock-card">
-      <div class="portrait-lock-icon" aria-hidden="true">↻</div>
-      <div class="portrait-lock-title">Rotate your device</div>
-      <div class="portrait-lock-text">Tattoo Dice works best in portrait mode.</div>
-    </div>
   </div>
   <script type="module" src="/script.js"></script>
   <div id="screenFade" class="screen-fade"></div>

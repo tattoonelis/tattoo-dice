@@ -70,10 +70,39 @@
     <section class="theme-modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
       <button class="theme-modal-close" type="button" aria-label="Close theme menu" data-close-theme>×</button>
       <h2 id="themeModalTitle">Theme</h2>
-      <button class="theme-choice active" type="button" aria-pressed="true">
+      <button class="theme-choice active" id="classicThemeChoice" type="button" data-theme="classic" aria-pressed="true">
         <span>Classic</span>
       </button>
-      <div class="theme-coming-soon">Coming soon</div>
+      <button class="theme-choice locked" id="fantasyThemeChoice" type="button" data-theme="fantasy" aria-pressed="false">
+        <span id="fantasyThemeLabel">Fantasy 🔒</span>
+      </button>
+    </section>
+  </div>
+
+
+  <div class="pin-modal" id="pinModal" aria-hidden="true">
+    <div class="pin-modal-backdrop" data-close-pin></div>
+    <section class="pin-modal-card" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+      <button class="pin-modal-close" type="button" aria-label="Close code entry" data-close-pin>×</button>
+      <h2 id="pinModalTitle">Unlock</h2>
+      <div class="pin-subtitle">Enter the 4-digit code</div>
+      <div class="pin-display" id="pinDisplay" aria-live="polite" aria-label="Code entry">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="pin-keypad" id="pinKeypad" aria-label="Numeric keypad">
+        <button type="button" data-pin-digit="1">1</button>
+        <button type="button" data-pin-digit="2">2</button>
+        <button type="button" data-pin-digit="3">3</button>
+        <button type="button" data-pin-digit="4">4</button>
+        <button type="button" data-pin-digit="5">5</button>
+        <button type="button" data-pin-digit="6">6</button>
+        <button type="button" data-pin-digit="7">7</button>
+        <button type="button" data-pin-digit="8">8</button>
+        <button type="button" data-pin-digit="9">9</button>
+        <button type="button" class="pin-function" data-pin-clear>CLR</button>
+        <button type="button" data-pin-digit="0">0</button>
+        <button type="button" class="pin-function" data-pin-backspace>⌫</button>
+      </div>
     </section>
   </div>
 

@@ -1778,3 +1778,153 @@ h1{
     transform:scale(.94)!important;
   }
 }
+
+
+/* v3.1.0 Fantasy unlock beta */
+.theme-choice.locked{
+  opacity:.72;
+}
+.theme-choice.locked span{
+  filter:saturate(.72);
+}
+
+.pin-modal{
+  position:fixed;
+  inset:0;
+  z-index:245;
+  display:grid;
+  place-items:center;
+  padding:22px;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .22s ease,visibility .22s ease;
+}
+.pin-modal.open{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+.pin-modal-backdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(4,4,4,.82);
+  backdrop-filter:blur(4px);
+}
+.pin-modal-card{
+  position:relative;
+  z-index:1;
+  width:min(88vw,390px);
+  padding:30px 22px 24px;
+  border:2px solid var(--line);
+  border-radius:20px;
+  background:linear-gradient(180deg,#111 0%,#060606 100%);
+  color:var(--cream);
+  box-shadow:0 22px 70px rgba(0,0,0,.62),0 0 0 1px rgba(238,228,207,.08) inset;
+}
+.pin-modal-card h2{
+  margin:0;
+  text-align:center;
+  font-family:"UnifrakturCook",Georgia,serif;
+  font-size:clamp(50px,14vw,72px);
+  line-height:.86;
+}
+.pin-subtitle{
+  margin:12px 0 18px;
+  text-align:center;
+  font-family:Georgia,serif;
+  font-size:clamp(16px,4vw,21px);
+  color:var(--cream-soft);
+}
+.pin-modal-close{
+  position:absolute;
+  top:10px;
+  right:12px;
+  width:42px;
+  height:42px;
+  border:2px solid #e04438;
+  border-radius:11px;
+  color:#fff0d8;
+  background:linear-gradient(180deg,#f25a4d 0%,#df3b2f 24%,#c6241c 58%,#a71812 100%);
+  box-shadow:0 5px 14px rgba(122,15,8,.28),0 1px 0 rgba(255,240,220,.30) inset;
+  font-size:30px;
+  line-height:1;
+  cursor:pointer;
+}
+.pin-display{
+  height:58px;
+  margin:0 auto 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:18px;
+  border:2px solid #419fe8;
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(0,0,0,.24));
+  box-shadow:0 0 18px rgba(54,151,225,.22),0 1px 0 rgba(255,255,255,.10) inset;
+}
+.pin-display span{
+  width:15px;
+  height:15px;
+  border:2px solid rgba(238,228,207,.55);
+  border-radius:50%;
+  background:transparent;
+  transition:background .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+.pin-display span.filled{
+  border-color:#f2e6cf;
+  background:#f2e6cf;
+  box-shadow:0 0 12px rgba(242,230,207,.55);
+}
+.pin-keypad{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  touch-action:manipulation;
+}
+.pin-keypad button{
+  min-height:58px;
+  border:2px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.06) 22%,rgba(19,19,19,.98) 50%,#050505 100%);
+  color:var(--cream);
+  box-shadow:0 7px 18px rgba(0,0,0,.32),0 1px 0 rgba(255,255,255,.18) inset,0 0 0 1px rgba(238,228,207,.09) inset,0 -5px 12px rgba(0,0,0,.30) inset;
+  font-family:Georgia,serif;
+  font-size:clamp(24px,7vw,34px);
+  font-weight:700;
+  cursor:pointer;
+}
+.pin-keypad button:active{
+  transform:translateY(1px) scale(.98);
+  filter:brightness(1.08);
+}
+.pin-keypad .pin-function{
+  font-size:clamp(14px,4vw,19px);
+  color:var(--cream-soft);
+}
+@media (orientation:landscape) and (max-height:620px){
+  .pin-modal-card{
+    width:min(62vw,370px);
+    padding:22px 18px 18px;
+  }
+  .pin-modal-card h2{font-size:clamp(42px,11vh,62px)}
+  .pin-subtitle{margin:8px 0 12px}
+  .pin-display{height:44px;margin-bottom:12px}
+  .pin-keypad{gap:7px}
+  .pin-keypad button{min-height:42px;font-size:clamp(20px,5.5vh,28px)}
+}
+
+
+/* v3.1.1 Theme menu spacing fix */
+.theme-modal-card{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.theme-modal-card .theme-choice,
+.theme-modal-card .theme-coming-soon,
+.theme-modal-card .fantasy-theme-choice{
+  margin-top:12px!important;
+}
+.theme-modal-card h2 + .theme-choice{
+  margin-top:0!important;
+}
