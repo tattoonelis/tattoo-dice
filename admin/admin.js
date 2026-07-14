@@ -1,3 +1,10 @@
+function initAdminPwa(){
+  if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
+  const standalone=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(ios&&!standalone){const hint=document.getElementById("installHint");if(hint){hint.hidden=false;setTimeout(()=>{hint.hidden=true;},8500);}}
+}
+
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 const TABLE = "admin_rankings";
@@ -28,8 +35,6 @@ const rankingBody = document.getElementById("rankingBody");
 const recentList = document.getElementById("recentList");
 const exportButton = document.getElementById("exportButton");
 const refreshButton = document.getElementById("refreshButton");
-const dataPanelButton = document.getElementById("dataPanelButton");
-const dataDashboard = document.getElementById("dataDashboard");
 
 const adminPinGate = document.getElementById("adminPinGate");
 const adminPinDisplay = document.getElementById("adminPinDisplay");
@@ -41,6 +46,7 @@ initAdminPin();
 
 
 function initAdminPin(){
+  initAdminPwa();
   updateAdminPinDisplay();
 
   adminPinKeypad?.addEventListener("click", event => {
@@ -60,7 +66,7 @@ function initAdminPin(){
           adminPinGate.classList.add("hidden");
           adminPinGate.setAttribute("aria-hidden","true");
           adminPinStatus.textContent = "";
-
+          init();
         }else{
           adminPinStatus.textContent = "Incorrect PIN";
           setTimeout(() => {
@@ -123,7 +129,6 @@ function bindEvents(){
   skipButton.addEventListener("click", roll);
   refreshButton.addEventListener("click", refreshRecords);
   exportButton.addEventListener("click", exportCsv);
-  dataPanelButton?.addEventListener("click",()=>{const open=dataDashboard.classList.toggle("open");dataDashboard.setAttribute("aria-hidden",String(!open));dataPanelButton.textContent=open?"Close Data":"Data";});
 }
 
 async function loadDeck(){

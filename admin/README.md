@@ -60,3 +60,16 @@ the PIN if the admin area must remain private.
 
 The admin interface explicitly supports iPhone landscape mode. This does not change
 the portrait-only behavior of the public Tattoo Dice app.
+
+
+## Home Screen app behavior
+The admin has its own PWA manifest, service worker and gold-gear icon.
+
+On iPhone:
+1. Open `https://www.tattoodice.com/admin/` in Safari.
+2. Tap Share.
+3. Choose **Add to Home Screen**.
+4. Remove an older Dice Admin icon first if iOS still opens Safari tabs.
+5. Open **Dice Admin** from the new icon.
+
+It opens standalone without Safari tabs or the URL bar. Landscape is preferred.

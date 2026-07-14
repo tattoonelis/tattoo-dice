@@ -5,7 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#050505">
   <title>Tattoo Dice Admin</title>
-  <link rel="icon" href="../assets/favicon.png">
+  <link rel="icon" href="./assets/admin-icon-192.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./assets/admin-icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dice Admin">
+  <meta name="mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./admin.css">
 </head>
 <body class="admin-locked">
@@ -38,6 +44,9 @@
     </section>
   </div>
 
+  <div id="installHint" class="install-hint" hidden>
+    Add this page to your Home Screen, then open <strong>Dice Admin</strong> from the new icon.
+  </div>
   <main class="admin-shell">
     <header class="admin-header">
       <div>
@@ -45,7 +54,7 @@
         <h1>Admin Ranking</h1>
         <p class="tagline">Train the formula. One roll at a time.</p>
       </div>
-      <div class="header-actions"><button id="dataPanelButton" class="back-link" type="button">Data</button><a class="back-link" href="../">Back</a></div>
+      <a class="back-link" href="../">Back to app</a>
     </header>
 
     <section class="panel controls-panel" aria-label="Roll controls">
@@ -110,7 +119,7 @@
       <div id="statusMessage" class="status-message" role="status"></div>
     </section>
 
-    <section id="dataDashboard" class="dashboard-wrap" aria-hidden="true"><div class="dashboard-grid">
+    <section class="dashboard-grid">
       <article class="panel stats-panel">
         <div class="section-heading">
           <h2>Session</h2>
@@ -163,7 +172,7 @@
           <p class="empty-cell">No notes yet.</p>
         </div>
       </article>
-    </div></section>
+    </section>
   </main>
 
   <script type="module" src="./admin.js"></script>
