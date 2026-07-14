@@ -1,6 +1,7 @@
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 const TABLE = "admin_rankings";
+const ADMIN_PIN = "231189";
 
 const WEIGHT_BY_SCORE = {0: 0.25, 1: 2, 2: 6, 3: 12};
 
@@ -9,6 +10,8 @@ let currentRoll = [];
 let selectedRating = "open";
 let records = [];
 let storageMode = "supabase";
+let adminPinInput = "";
+let adminUnlocked = false;
 
 const themeSelect = document.getElementById("themeSelect");
 const diceCount = document.getElementById("diceCount");
@@ -25,8 +28,71 @@ const rankingBody = document.getElementById("rankingBody");
 const recentList = document.getElementById("recentList");
 const exportButton = document.getElementById("exportButton");
 const refreshButton = document.getElementById("refreshButton");
+const dataPanelButton = document.getElementById("dataPanelButton");
+const dataDashboard = document.getElementById("dataDashboard");
 
-init();
+const adminPinGate = document.getElementById("adminPinGate");
+const adminPinDisplay = document.getElementById("adminPinDisplay");
+const adminPinKeypad = document.getElementById("adminPinKeypad");
+const adminPinStatus = document.getElementById("adminPinStatus");
+
+
+initAdminPin();
+
+
+function initAdminPin(){
+  updateAdminPinDisplay();
+
+  adminPinKeypad?.addEventListener("click", event => {
+    const key = event.target.closest("[data-pin-key]");
+    const action = event.target.closest("[data-pin-action]");
+
+    if(key){
+      if(adminPinInput.length < ADMIN_PIN.length){
+        adminPinInput += key.dataset.pinKey;
+        updateAdminPinDisplay();
+      }
+
+      if(adminPinInput.length === ADMIN_PIN.length){
+        if(adminPinInput === ADMIN_PIN){
+          adminUnlocked = true;
+          document.body.classList.remove("admin-locked");
+          adminPinGate.classList.add("hidden");
+          adminPinGate.setAttribute("aria-hidden","true");
+          adminPinStatus.textContent = "";
+
+        }else{
+          adminPinStatus.textContent = "Incorrect PIN";
+          setTimeout(() => {
+            adminPinInput = "";
+            updateAdminPinDisplay();
+            adminPinStatus.textContent = "";
+          },450);
+        }
+      }
+      return;
+    }
+
+    if(action?.dataset.pinAction === "clear"){
+      adminPinInput = "";
+      adminPinStatus.textContent = "";
+      updateAdminPinDisplay();
+    }
+
+    if(action?.dataset.pinAction === "backspace"){
+      adminPinInput = adminPinInput.slice(0,-1);
+      adminPinStatus.textContent = "";
+      updateAdminPinDisplay();
+    }
+  });
+}
+
+function updateAdminPinDisplay(){
+  [...(adminPinDisplay?.children || [])].forEach((dot,index) => {
+    dot.classList.toggle("filled",index < adminPinInput.length);
+  });
+}
+
 
 async function init(){
   bindEvents();
@@ -57,6 +123,7 @@ function bindEvents(){
   skipButton.addEventListener("click", roll);
   refreshButton.addEventListener("click", refreshRecords);
   exportButton.addEventListener("click", exportCsv);
+  dataPanelButton?.addEventListener("click",()=>{const open=dataDashboard.classList.toggle("open");dataDashboard.setAttribute("aria-hidden",String(!open));dataPanelButton.textContent=open?"Close Data":"Data";});
 }
 
 async function loadDeck(){

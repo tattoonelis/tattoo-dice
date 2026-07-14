@@ -43,3 +43,20 @@ A tie remains Open.
 
 This is an admin/test interface, but it does not yet include authentication.
 Do not share the `/admin` URL publicly if only you should submit rankings.
+
+
+## Admin PIN
+
+The admin page is protected by a client-side six-digit PIN:
+
+`231189`
+
+The PIN is intentionally not stored. Reloading `/admin/` requires it again.
+
+This is a discovery deterrent, not strong server-side authentication. Do not publish
+the PIN if the admin area must remain private.
+
+## iPhone landscape
+
+The admin interface explicitly supports iPhone landscape mode. This does not change
+the portrait-only behavior of the public Tattoo Dice app.

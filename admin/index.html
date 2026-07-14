@@ -8,7 +8,36 @@
   <link rel="icon" href="../assets/favicon.png">
   <link rel="stylesheet" href="./admin.css">
 </head>
-<body>
+<body class="admin-locked">
+  <div class="admin-pin-gate" id="adminPinGate" aria-hidden="false">
+    <div class="admin-pin-backdrop"></div>
+    <section class="admin-pin-card" role="dialog" aria-modal="true" aria-labelledby="adminPinTitle">
+      <p class="eyebrow">Tattoo Dice</p>
+      <h1 id="adminPinTitle">Admin Access</h1>
+      <p class="admin-pin-copy">Enter the six-digit PIN.</p>
+
+      <div class="admin-pin-display" id="adminPinDisplay" aria-label="PIN entry">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="admin-pin-keypad" id="adminPinKeypad" aria-label="Numeric keypad">
+        <button type="button" data-pin-key="1">1</button>
+        <button type="button" data-pin-key="2">2</button>
+        <button type="button" data-pin-key="3">3</button>
+        <button type="button" data-pin-key="4">4</button>
+        <button type="button" data-pin-key="5">5</button>
+        <button type="button" data-pin-key="6">6</button>
+        <button type="button" data-pin-key="7">7</button>
+        <button type="button" data-pin-key="8">8</button>
+        <button type="button" data-pin-key="9">9</button>
+        <button type="button" class="pin-clear" data-pin-action="clear">C</button>
+        <button type="button" data-pin-key="0">0</button>
+        <button type="button" class="pin-back" data-pin-action="backspace">⌫</button>
+      </div>
+      <p class="admin-pin-status" id="adminPinStatus" role="status"></p>
+    </section>
+  </div>
+
   <main class="admin-shell">
     <header class="admin-header">
       <div>
@@ -16,7 +45,7 @@
         <h1>Admin Ranking</h1>
         <p class="tagline">Train the formula. One roll at a time.</p>
       </div>
-      <a class="back-link" href="../">Back to app</a>
+      <div class="header-actions"><button id="dataPanelButton" class="back-link" type="button">Data</button><a class="back-link" href="../">Back</a></div>
     </header>
 
     <section class="panel controls-panel" aria-label="Roll controls">
@@ -81,7 +110,7 @@
       <div id="statusMessage" class="status-message" role="status"></div>
     </section>
 
-    <section class="dashboard-grid">
+    <section id="dataDashboard" class="dashboard-wrap" aria-hidden="true"><div class="dashboard-grid">
       <article class="panel stats-panel">
         <div class="section-heading">
           <h2>Session</h2>
@@ -134,7 +163,7 @@
           <p class="empty-cell">No notes yet.</p>
         </div>
       </article>
-    </section>
+    </div></section>
   </main>
 
   <script type="module" src="./admin.js"></script>
