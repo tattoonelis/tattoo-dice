@@ -47,133 +47,22 @@
   <div id="installHint" class="install-hint" hidden>
     Add this page to your Home Screen, then open <strong>Dice Admin</strong> from the new icon.
   </div>
-  <main class="admin-shell">
-    <header class="admin-header">
-      <div>
-        <p class="eyebrow">Tattoo Dice</p>
-        <h1>Admin Ranking</h1>
-        <p class="tagline">Train the formula. One roll at a time.</p>
-      </div>
-      <a class="back-link" href="../">Back to app</a>
-    </header>
-
-    <section class="panel controls-panel" aria-label="Roll controls">
-      <div class="control-grid">
-        <label>
-          <span>Theme</span>
-          <select id="themeSelect">
-            <option value="classic">Classic</option>
-            <option value="fantasy">Fantasy</option>
-          </select>
-        </label>
-
-        <label>
-          <span>Dice</span>
-          <select id="diceCount">
-            <option value="1">1 die</option>
-            <option value="2">2 dice</option>
-            <option value="3" selected>3 dice</option>
-          </select>
-        </label>
-
-        <label class="main-control">
-          <span>Main</span>
-          <select id="mainSelect">
-            <option value="Random">Random</option>
-          </select>
-        </label>
-      </div>
-
-      <button id="rollButton" class="roll-button" type="button">ROLL</button>
-    </section>
-
-    <section class="panel ranking-panel">
-      <div class="result-meta">
-        <span id="resultTheme">Classic</span>
-        <span id="resultCount">3 dice</span>
-      </div>
-
-      <div id="resultWords" class="result-words" aria-live="polite">
-        <div class="word-card">Ready</div>
-        <div class="word-card">to</div>
-        <div class="word-card">roll</div>
-      </div>
-
-      <div class="rating-title">How does this combination feel?</div>
-      <div class="rating-row" role="group" aria-label="Rate outcome">
-        <button class="rating-button positive" data-rating="up" type="button" aria-label="Thumbs up">👍</button>
-        <button class="rating-button neutral active" data-rating="open" type="button" aria-label="Leave open">—</button>
-        <button class="rating-button negative" data-rating="down" type="button" aria-label="Thumbs down">👎</button>
-      </div>
-
-      <label class="notes-label">
-        <span>Note <small>(especially useful when it does not work)</small></span>
-        <textarea id="noteInput" maxlength="1000" placeholder="What works, or why does it fail?"></textarea>
-      </label>
-
-      <div class="save-row">
-        <button id="saveButton" class="save-button" type="button">SAVE & NEXT</button>
-        <button id="skipButton" class="secondary-button" type="button">NEXT WITHOUT SAVING</button>
-      </div>
-
-      <div id="statusMessage" class="status-message" role="status"></div>
-    </section>
-
-    <section class="dashboard-grid">
-      <article class="panel stats-panel">
-        <div class="section-heading">
-          <h2>Session</h2>
-          <button id="refreshButton" class="small-button" type="button">Refresh</button>
-        </div>
-        <div class="stat-grid">
-          <div><strong id="totalRatings">0</strong><span>ratings</span></div>
-          <div><strong id="upRatings">0</strong><span>positive</span></div>
-          <div><strong id="downRatings">0</strong><span>negative</span></div>
-          <div><strong id="openRatings">0</strong><span>open</span></div>
-        </div>
-      </article>
-
-      <article class="panel leaderboard-panel">
-        <div class="section-heading">
-          <h2>Combination Rankings</h2>
-          <div class="heading-actions">
-            <button id="exportButton" class="small-button" type="button">Export CSV</button>
-          </div>
-        </div>
-        <p class="explanation">
-          Every judgement is stored separately. Repeated combinations are grouped here.
-          Positive and negative votes are compared; ties remain open.
-        </p>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Combination</th>
-                <th>Theme</th>
-                <th>👍</th>
-                <th>👎</th>
-                <th>Open</th>
-                <th>Verdict</th>
-                <th>Net</th>
-              </tr>
-            </thead>
-            <tbody id="rankingBody">
-              <tr><td colspan="7" class="empty-cell">No saved rankings yet.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </article>
-
-      <article class="panel recent-panel">
-        <div class="section-heading">
-          <h2>Recent Notes</h2>
-        </div>
-        <div id="recentList" class="recent-list">
-          <p class="empty-cell">No notes yet.</p>
-        </div>
-      </article>
-    </section>
-  </main>
+  <main class="admin-shell game-shell">
+<header class="admin-header compact-header"><div><p class="eyebrow">Tattoo Dice</p><h1>Admin Ranking</h1></div><div class="header-actions"><button id="statsToggle" class="header-button">Stats</button><a class="back-link" href="../">Back</a></div></header>
+<section class="panel game-panel">
+<div class="top-controls">
+<label><span>Theme</span><select id="themeSelect"><option value="classic">Classic</option><option value="fantasy">Fantasy</option></select></label>
+<label><span>Dice</span><select id="diceCount"><option value="1">1 die</option><option value="2">2 dice</option><option value="3" selected>3 dice</option></select></label>
+<label><span>Main</span><select id="mainSelect"><option value="Random">Random</option></select></label>
+<button id="rollButton" class="roll-button">ROLL</button>
+</div>
+<div class="game-content">
+<section class="roll-stage"><div class="stage-meta"><span id="resultTheme">Classic</span><span id="resultCount">3 dice</span></div><div id="resultWords" class="flat-results"><div class="flat-word">Ready</div><div class="flat-word">to</div><div class="flat-word">roll</div></div></section>
+<section class="judge-panel"><p class="judge-question">How does this combination feel?</p><div class="rating-row"><button class="rating-button positive" data-rating="up">👍</button><button class="rating-button neutral active" data-rating="open">—</button><button class="rating-button negative" data-rating="down">👎</button></div><label class="notes-label"><span>Note <small>(optional)</small></span><textarea id="noteInput" maxlength="1000" placeholder="What works, or why does it fail?"></textarea></label><div class="save-row"><button id="saveButton" class="save-button">SAVE & NEXT</button><button id="skipButton" class="secondary-button">SKIP</button></div><div id="statusMessage" class="status-message"></div></section>
+</div>
+<footer class="progress-footer"><div class="progress-label"><span id="progressTheme">Classic progress</span><strong id="progressPercent">0%</strong></div><div class="progress-track"><div id="progressFill" class="progress-fill"></div></div><small><span id="progressCount">0</span> / 3000 rated</small></footer>
+</section></main>
+<aside id="statsDrawer" class="stats-drawer" aria-hidden="true"><div class="stats-backdrop" data-close-stats></div><section class="stats-sheet"><div class="section-heading"><h2>Statistics</h2><button class="small-button" data-close-stats>Close</button></div><div class="stat-grid"><div><strong id="totalRatings">0</strong><span>ratings</span></div><div><strong id="upRatings">0</strong><span>positive</span></div><div><strong id="downRatings">0</strong><span>negative</span></div><div><strong id="openRatings">0</strong><span>open</span></div></div><div class="section-heading drawer-heading"><h2>Combination Rankings</h2><div><button id="refreshButton" class="small-button">Refresh</button><button id="exportButton" class="small-button">Export CSV</button></div></div><div class="table-wrap"><table><thead><tr><th>Combination</th><th>Theme</th><th>👍</th><th>👎</th><th>Open</th><th>Verdict</th><th>Net</th></tr></thead><tbody id="rankingBody"><tr><td colspan="7" class="empty-cell">No saved rankings yet.</td></tr></tbody></table></div><div class="section-heading drawer-heading"><h2>Recent Notes</h2></div><div id="recentList" class="recent-list"><p class="empty-cell">No notes yet.</p></div></section></aside>
 
   <script type="module" src="./admin.js"></script>
 </body>

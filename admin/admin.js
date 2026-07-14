@@ -35,6 +35,12 @@ const rankingBody = document.getElementById("rankingBody");
 const recentList = document.getElementById("recentList");
 const exportButton = document.getElementById("exportButton");
 const refreshButton = document.getElementById("refreshButton");
+const statsToggle=document.getElementById("statsToggle");
+const statsDrawer=document.getElementById("statsDrawer");
+const progressTheme=document.getElementById("progressTheme");
+const progressPercent=document.getElementById("progressPercent");
+const progressFill=document.getElementById("progressFill");
+const progressCount=document.getElementById("progressCount");
 
 const adminPinGate = document.getElementById("adminPinGate");
 const adminPinDisplay = document.getElementById("adminPinDisplay");
@@ -129,6 +135,8 @@ function bindEvents(){
   skipButton.addEventListener("click", roll);
   refreshButton.addEventListener("click", refreshRecords);
   exportButton.addEventListener("click", exportCsv);
+  statsToggle?.addEventListener("click",()=>setStatsDrawer(true));
+  statsDrawer?.querySelectorAll("[data-close-stats]").forEach(el=>el.addEventListener("click",()=>setStatsDrawer(false)));
 }
 
 async function loadDeck(){
@@ -239,7 +247,7 @@ function weightedChoice(items){
 function renderRoll(){
   const words = currentRoll.map(item => item.word);
   resultWords.className = `result-words count-${words.length}`;
-  resultWords.innerHTML = words.map(word => `<div class="word-card">${escapeHtml(word)}</div>`).join("");
+  resultWords.innerHTML = words.map(word => `<div class="flat-word">${escapeHtml(word)}</div>`).join("");
   resultTheme.textContent = capitalise(themeSelect.value);
   resultCount.textContent = `${words.length} ${words.length === 1 ? "die" : "dice"}`;
 }
@@ -322,6 +330,8 @@ async function refreshRecords(){
   renderDashboard();
 }
 
+function setStatsDrawer(open){statsDrawer?.classList.toggle("open",open);statsDrawer?.setAttribute("aria-hidden",String(!open));}
+function updateProgress(){const theme=themeSelect.value;const count=records.filter(i=>i.theme===theme).length;const percent=Math.min(100,count/3000*100);progressTheme.textContent=`${capitalise(theme)} progress`;progressPercent.textContent=`${percent.toFixed(percent>=10?0:1)}%`;progressFill.style.width=`${percent}%`;progressCount.textContent=count;}
 function renderDashboard(){
   const up = records.filter(item => item.rating === "up").length;
   const down = records.filter(item => item.rating === "down").length;
@@ -331,6 +341,7 @@ function renderDashboard(){
   document.getElementById("upRatings").textContent = up;
   document.getElementById("downRatings").textContent = down;
   document.getElementById("openRatings").textContent = open;
+  updateProgress();
 
   const groups = new Map();
   records.forEach(record => {
