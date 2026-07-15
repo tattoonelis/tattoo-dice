@@ -63,6 +63,7 @@ initAdminPin();
 
 function initAdminPin(){
   initAdminPwa();
+  setMilestoneVisible(false);
   if(adminDiceScene && !adminDiceScene.dataset.ready){
     initAdminDice(adminDiceScene);
     adminDiceScene.dataset.ready = "true";
@@ -291,6 +292,8 @@ async function saveCurrent(){
   if(!currentRoll.length) return;
 
   const words = currentRoll.map(item => item.word);
+  const savedTheme = themeSelect.value;
+  const beforeThemeCount = records.filter(item => item.theme === savedTheme).length;
   const record = {
     theme: themeSelect.value,
     dice_count: words.length,
@@ -316,6 +319,8 @@ async function saveCurrent(){
   }finally{
     if(saveButton) saveButton.disabled = false;
     await refreshRecords();
+    const afterThemeCount = records.filter(item => item.theme === savedTheme).length;
+    maybeShowMilestone(savedTheme,beforeThemeCount,afterThemeCount);
     setTimeout(roll,260);
   }
 }
@@ -358,11 +363,54 @@ async function refreshRecords(){
   renderDashboard();
 }
 
-function milestoneStorageKey(theme){return `tattooDiceAdminMilestones_${theme}`;}
-function getSeenMilestones(theme){try{return new Set(JSON.parse(localStorage.getItem(milestoneStorageKey(theme))||"[]"));}catch{return new Set();}}
-function markMilestoneSeen(theme,percent){const seen=getSeenMilestones(theme);seen.add(percent);localStorage.setItem(milestoneStorageKey(theme),JSON.stringify([...seen].sort((a,b)=>a-b)));}
-function maybeShowMilestone(theme,count){if(!milestoneOverlay||count<=0)return;const percent=Math.min(100,Math.floor(count/3000*100));const reached=Math.floor(percent/5)*5;if(reached<5||!MILESTONE_MESSAGES[reached]||getSeenMilestones(theme).has(reached))return;markMilestoneSeen(theme,reached);milestonePercent.textContent=`${reached}%`;milestoneText.textContent=MILESTONE_MESSAGES[reached];milestoneOverlay.classList.add("show");milestoneOverlay.setAttribute("aria-hidden","false");}
-function hideMilestoneOverlay(){milestoneOverlay?.classList.remove("show");milestoneOverlay?.setAttribute("aria-hidden","true");}
+
+function setMilestoneVisible(visible){
+  if(!milestoneOverlay) return;
+  milestoneOverlay.hidden = !visible;
+  milestoneOverlay.classList.toggle("show",visible);
+  milestoneOverlay.setAttribute("aria-hidden",String(!visible));
+}
+
+function milestoneStorageKey(theme){
+  return `tattooDiceAdminMilestones_${theme}`;
+}
+
+function getSeenMilestones(theme){
+  try{
+    return new Set(JSON.parse(localStorage.getItem(milestoneStorageKey(theme)) || "[]"));
+  }catch{
+    return new Set();
+  }
+}
+
+function markMilestoneSeen(theme,percent){
+  const seen = getSeenMilestones(theme);
+  seen.add(percent);
+  localStorage.setItem(
+    milestoneStorageKey(theme),
+    JSON.stringify([...seen].sort((a,b) => a-b))
+  );
+}
+
+function maybeShowMilestone(theme,beforeCount,afterCount){
+  if(!milestoneOverlay || afterCount <= beforeCount) return;
+
+  const beforePercent = Math.floor((beforeCount / 3000) * 100);
+  const afterPercent = Math.min(100,Math.floor((afterCount / 3000) * 100));
+  const reached = Math.floor(afterPercent / 5) * 5;
+
+  if(reached < 5 || reached <= beforePercent || !MILESTONE_MESSAGES[reached]) return;
+  if(getSeenMilestones(theme).has(reached)) return;
+
+  markMilestoneSeen(theme,reached);
+  milestonePercent.textContent = `${reached}%`;
+  milestoneText.textContent = MILESTONE_MESSAGES[reached];
+  setMilestoneVisible(true);
+}
+
+function hideMilestoneOverlay(){
+  setMilestoneVisible(false);
+}
 
 function setStatsDrawer(open){statsDrawer?.classList.toggle("open",open);statsDrawer?.setAttribute("aria-hidden",String(!open));}
 function updateProgress(){const theme=themeSelect.value;const count=records.filter(i=>i.theme===theme).length;const percent=Math.min(100,count/3000*100);progressTheme.textContent=`${capitalise(theme)} progress`;progressPercent.textContent=`${percent.toFixed(percent>=10?0:1)}%`;progressFill.style.width=`${percent}%`;progressCount.textContent=count;}

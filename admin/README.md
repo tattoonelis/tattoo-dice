@@ -124,3 +124,9 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - Added 5% milestone overlays.
 - Public tips dismiss anywhere.
 - Run updated admin/setup.sql once.
+
+## v3.6.1
+- Milestone overlay is now hidden until an actual 5% milestone is reached.
+- Admin Ranking subtitle is forced red.
+- F*CK NO, MEH? and H*LL YES remain on one row.
+- Verified MEH save, stats and ranking support.
