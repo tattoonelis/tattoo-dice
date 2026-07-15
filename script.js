@@ -47,6 +47,7 @@ const introGateEl = document.getElementById("introGate");
 const SECRET_CODE = "332211";
 const FANTASY_UNLOCK_CODE = "2311";
 const KEEP_DRAWING_CHANCE = 0.01;
+const HIDDEN_MESSAGES = ["Keep drawing.", "Not feeling it? Roll again.", "Wrong vibe? Switch themes.", "Different theme. Different magic.", "Don’t force it. Switch themes."];
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
@@ -150,6 +151,7 @@ function updateThemeMenu() {
   fantasyThemeChoice.setAttribute("aria-pressed", String(activeTheme === "fantasy"));
   fantasyThemeLabel.textContent = fantasyUnlocked ? "Fantasy" : "Fantasy 🔒";
   updateActionButtonLabels();
+  bindGlobalHiddenMessageDismiss();
 }
 
 function mainStorageKey(theme = activeTheme) {
@@ -336,6 +338,9 @@ function startMainDropAnimation() {
 }
 
 
+function closeHiddenMessage(){if(!hiddenMessageEl)return;hiddenActive=false;hiddenMessageEl.classList.remove("show");}
+function bindGlobalHiddenMessageDismiss(){const dismiss=e=>{if(!hiddenActive)return;e.preventDefault();closeHiddenMessage();};document.addEventListener("pointerup",dismiss,{passive:false});document.addEventListener("click",dismiss);}
+
 async function requestPortraitLock() {
   try {
     if (screen.orientation?.lock) {
@@ -388,8 +393,7 @@ async function init() {
   });
 
   rollButton.addEventListener("click", () => {
-    hiddenActive = false;
-    hiddenMessageEl.classList.remove("show");
+    closeHiddenMessage();
 
     roll({ countIt: true });
   });

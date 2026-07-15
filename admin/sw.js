@@ -1,4 +1,4 @@
-const CACHE="tattoo-dice-admin-v9";
+const CACHE="tattoo-dice-admin-v10";
 const ASSETS=["/admin/","/admin/index.html","/admin/admin.css","/admin/admin.js","/admin/admin-dice.js","/admin/manifest.webmanifest","/admin/assets/admin-icon-180.png","/admin/assets/admin-icon-192.png","/admin/assets/admin-icon-512.png","/decks/classic.json","/decks/fantasy.json"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});

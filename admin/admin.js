@@ -10,6 +10,7 @@ function initAdminPwa(){
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 const TABLE = "admin_rankings";
+const MILESTONE_MESSAGES = {"5": "Nice. 5% done. We’re officially rolling.", "10": "Damn son. 10% done. Keep going.", "15": "15%. Your taste is becoming data.", "20": "20% done. This formula is getting smarter.", "25": "Quarter done. Not bad, tattoo wizard.", "30": "30%. You’re cooking now.", "35": "35% done. Bad rolls are getting nervous.", "40": "40%. The deck is starting to fear you.", "45": "45%. Almost halfway, you magnificent bastard.", "50": "Halfway there. Holy sh*t.", "55": "55%. No turning back now.", "60": "60% done. The formula is learning your language.", "65": "65%. That’s a suspicious amount of dedication.", "70": "70%. You’re bullying this deck into shape.", "75": "Three quarters done. Absolute machine.", "80": "80%. The finish line is sweating.", "85": "85%. Almost disgustingly productive.", "90": "90%. Final stretch, don’t get soft now.", "95": "95%. Five percent between you and glory.", "100": "You did it, m*therf*cker!"};
 const ADMIN_PIN = "231189";
 
 const WEIGHT_BY_SCORE = {0: 0.25, 1: 2, 2: 6, 3: 12};
@@ -28,6 +29,7 @@ const mainSelect = document.getElementById("mainSelect");
 const rollButton = document.getElementById("rollButton");
 const rejectButton = document.getElementById("rejectButton");
 const approveButton = document.getElementById("approveButton");
+const mehButton = document.getElementById("mehButton");
 const resultWords = document.getElementById("resultWords");
 const resultTheme = document.getElementById("resultTheme");
 const resultCount = document.getElementById("resultCount");
@@ -45,6 +47,9 @@ const progressTheme=document.getElementById("progressTheme");
 const progressPercent=document.getElementById("progressPercent");
 const progressFill=document.getElementById("progressFill");
 const progressCount=document.getElementById("progressCount");
+const milestoneOverlay=document.getElementById("milestoneOverlay");
+const milestonePercent=document.getElementById("milestonePercent");
+const milestoneText=document.getElementById("milestoneText");
 
 const adminPinGate = document.getElementById("adminPinGate");
 const adminPinDisplay = document.getElementById("adminPinDisplay");
@@ -146,6 +151,8 @@ function bindEvents(){
   refreshButton.addEventListener("click", refreshRecords);
   rejectButton?.addEventListener("click", () => saveVerdict("down"));
   approveButton?.addEventListener("click", () => saveVerdict("up"));
+  mehButton?.addEventListener("click", () => saveVerdict("meh"));
+  milestoneOverlay?.addEventListener("pointerup", hideMilestoneOverlay);
   exportButton.addEventListener("click", exportCsv);
   statsToggle?.addEventListener("click",()=>setStatsDrawer(true));
   statsDrawer?.querySelectorAll("[data-close-stats]").forEach(el=>el.addEventListener("click",()=>setStatsDrawer(false)));
@@ -351,16 +358,24 @@ async function refreshRecords(){
   renderDashboard();
 }
 
+function milestoneStorageKey(theme){return `tattooDiceAdminMilestones_${theme}`;}
+function getSeenMilestones(theme){try{return new Set(JSON.parse(localStorage.getItem(milestoneStorageKey(theme))||"[]"));}catch{return new Set();}}
+function markMilestoneSeen(theme,percent){const seen=getSeenMilestones(theme);seen.add(percent);localStorage.setItem(milestoneStorageKey(theme),JSON.stringify([...seen].sort((a,b)=>a-b)));}
+function maybeShowMilestone(theme,count){if(!milestoneOverlay||count<=0)return;const percent=Math.min(100,Math.floor(count/3000*100));const reached=Math.floor(percent/5)*5;if(reached<5||!MILESTONE_MESSAGES[reached]||getSeenMilestones(theme).has(reached))return;markMilestoneSeen(theme,reached);milestonePercent.textContent=`${reached}%`;milestoneText.textContent=MILESTONE_MESSAGES[reached];milestoneOverlay.classList.add("show");milestoneOverlay.setAttribute("aria-hidden","false");}
+function hideMilestoneOverlay(){milestoneOverlay?.classList.remove("show");milestoneOverlay?.setAttribute("aria-hidden","true");}
+
 function setStatsDrawer(open){statsDrawer?.classList.toggle("open",open);statsDrawer?.setAttribute("aria-hidden",String(!open));}
 function updateProgress(){const theme=themeSelect.value;const count=records.filter(i=>i.theme===theme).length;const percent=Math.min(100,count/3000*100);progressTheme.textContent=`${capitalise(theme)} progress`;progressPercent.textContent=`${percent.toFixed(percent>=10?0:1)}%`;progressFill.style.width=`${percent}%`;progressCount.textContent=count;}
 function renderDashboard(){
   const up = records.filter(item => item.rating === "up").length;
   const down = records.filter(item => item.rating === "down").length;
+  const meh = records.filter(item => item.rating === "meh").length;
   const open = records.filter(item => item.rating === "open").length;
 
   document.getElementById("totalRatings").textContent = records.length;
   document.getElementById("upRatings").textContent = up;
   document.getElementById("downRatings").textContent = down;
+  document.getElementById("mehRatings").textContent = meh;
   document.getElementById("openRatings").textContent = open;
   updateProgress();
 
@@ -372,7 +387,7 @@ function renderDashboard(){
         key,
         theme:record.theme,
         words:record.words || [],
-        up:0,down:0,open:0,total:0
+        up:0,down:0,meh:0,open:0,total:0
       });
     }
     const group = groups.get(key);
@@ -383,8 +398,8 @@ function renderDashboard(){
   const ranked = [...groups.values()]
     .map(group => ({
       ...group,
-      net:group.up-group.down,
-      verdict:group.up > group.down ? "up" : group.down > group.up ? "down" : "open"
+      net:(group.up*2)+group.meh-(group.down*2),
+      verdict:(group.up*2+group.meh)>(group.down*2)?"up":(group.down*2)>(group.up*2+group.meh)?"down":"open"
     }))
     .sort((a,b) => b.total-a.total || Math.abs(b.net)-Math.abs(a.net));
 
@@ -395,13 +410,14 @@ function renderDashboard(){
         <td>${capitalise(group.theme)}</td>
         <td>${group.up}</td>
         <td>${group.down}</td>
+        <td>${group.meh}</td>
         <td>${group.open}</td>
         <td class="verdict-${group.verdict}">${verdictLabel(group.verdict)}</td>
         <td>${group.net > 0 ? "+" : ""}${group.net}</td>
         <td><button class="delete-ranking-button" type="button" data-delete-key="${escapeHtml(group.key)}" aria-label="Delete ranking">×</button></td>
       </tr>
     `).join("")
-    : '<tr><td colspan="8" class="empty-cell">No saved rankings yet.</td></tr>';
+    : '<tr><td colspan="9" class="empty-cell">No saved rankings yet.</td></tr>';
 
   const notes = records.filter(item => item.note).slice(0,30);
   recentList.innerHTML = notes.length
@@ -496,7 +512,7 @@ function canonicalKey(theme,words){
   return `${theme}|${[...words].map(word => word.trim().toLowerCase()).sort().join("|")}`;
 }
 function verdictLabel(value){
-  return value === "up" ? "Positive" : value === "down" ? "Negative" : "Open";
+  return value === "up" ? "Positive" : value === "down" ? "Negative" : value === "meh" ? "Meh" : "Open";
 }
 function capitalise(value){
   return value ? value.charAt(0).toUpperCase()+value.slice(1) : "";

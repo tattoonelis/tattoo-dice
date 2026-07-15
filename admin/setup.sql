@@ -9,7 +9,7 @@ create table if not exists public.admin_rankings (
   selected_main text not null default 'Random',
   words jsonb not null,
   combination_key text not null,
-  rating text not null check (rating in ('up','down','open')),
+  rating text not null check (rating in ('up','down','meh','open')),
   note text,
   user_agent text
 );
@@ -49,3 +49,6 @@ on public.admin_rankings
 for delete
 to anon
 using (true);
+
+alter table public.admin_rankings drop constraint if exists admin_rankings_rating_check;
+alter table public.admin_rankings add constraint admin_rankings_rating_check check (rating in ('up','down','meh','open'));

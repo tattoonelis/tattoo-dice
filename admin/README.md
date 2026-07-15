@@ -117,3 +117,10 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - Added a delete button to Combination Rankings.
 - Deleting a ranking removes every stored vote for that combination.
 - Run the updated `admin/setup.sql` once more in Supabase to enable deletes.
+
+## v3.6.0
+- Branding swapped.
+- Added MEH rating.
+- Added 5% milestone overlays.
+- Public tips dismiss anywhere.
+- Run updated admin/setup.sql once.

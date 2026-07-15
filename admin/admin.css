@@ -1964,3 +1964,14 @@ textarea{
   border-color:#ef6259;
   box-shadow:0 0 14px rgba(239,98,89,.35);
 }
+
+.portrait-brand h1{margin:0;color:var(--cream);font-family:"UnifrakturCook",Georgia,serif;font-size:clamp(42px,11vw,58px);line-height:.74}
+.admin-subtitle{margin:5px 0 0;color:var(--red);font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+.verdict-actions{grid-template-columns:1fr .72fr 1fr!important}
+.verdict-meh{border:2px solid #f0c84b;background:linear-gradient(180deg,#e8c443,#bd951b 62%,#7f620c);box-shadow:0 8px 24px rgba(214,177,46,.24),inset 0 1px rgba(255,255,255,.3)}
+.milestone-overlay{position:fixed;inset:0;z-index:4500;display:none;place-items:center;padding:24px;background:rgba(0,0,0,.76);backdrop-filter:blur(6px)}
+.milestone-overlay.show{display:grid}
+.milestone-card{width:min(88vw,430px);padding:28px 24px;border:2px solid #43cf78;border-radius:22px;background:linear-gradient(180deg,#122016,#071009);color:#dfffea;text-align:center;box-shadow:0 0 36px rgba(67,207,120,.35),0 24px 70px rgba(0,0,0,.62)}
+.milestone-percent{display:block;margin-bottom:10px;color:#65df91;font-family:"UnifrakturCook",Georgia,serif;font-size:clamp(48px,13vw,78px);line-height:.8}
+.milestone-card p{margin:0;font-size:clamp(18px,5vw,25px);font-weight:700;line-height:1.25}
+.milestone-card small{display:block;margin-top:14px;color:#8bb798;font-size:11px;letter-spacing:.06em;text-transform:uppercase}

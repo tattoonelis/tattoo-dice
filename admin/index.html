@@ -63,15 +63,12 @@
   <div id="installHint" class="install-hint" hidden>
     Add this page to your Home Screen, then open <strong>Dice Admin</strong> from the new icon.
   </div>
-  <div class="desktop-stage">
+  <div id="milestoneOverlay" class="milestone-overlay" aria-hidden="true"><div class="milestone-card"><span id="milestonePercent" class="milestone-percent">5%</span><p id="milestoneText">Nice. 5% done. We’re officially rolling.</p><small>Tap anywhere to continue</small></div></div><div class="desktop-stage">
   <main class="admin-shell portrait-shell">
     <header class="portrait-header centered-header">
       <button id="statsToggle" class="icon-button" type="button">STATS</button>
 
-      <div class="portrait-brand">
-        <p class="eyebrow">Tattoo Dice</p>
-        <h1>Admin Ranking</h1>
-      </div>
+      <div class="portrait-brand"><h1>Tattoo Dice</h1><p class="admin-subtitle">Admin Ranking</p></div>
 
       <a class="icon-button icon-link" href="../">BACK</a>
     </header>
@@ -120,6 +117,7 @@
 
         <div class="verdict-actions">
           <button id="rejectButton" class="verdict-button verdict-no" type="button">F*CK NO</button>
+          <button id="mehButton" class="verdict-button verdict-meh" type="button">MEH?</button>
           <button id="approveButton" class="verdict-button verdict-yes" type="button">H*LL YES</button>
         </div>
 
@@ -155,6 +153,7 @@
       <div><strong id="totalRatings">0</strong><span>ratings</span></div>
       <div><strong id="upRatings">0</strong><span>positive</span></div>
       <div><strong id="downRatings">0</strong><span>negative</span></div>
+      <div><strong id="mehRatings">0</strong><span>meh</span></div>
       <div><strong id="openRatings">0</strong><span>open</span></div>
     </div>
 
@@ -174,6 +173,7 @@
             <th>Theme</th>
             <th>👍</th>
             <th>👎</th>
+            <th>Meh</th>
             <th>Open</th>
             <th>Verdict</th>
             <th>Net</th>
@@ -181,7 +181,7 @@
           </tr>
         </thead>
         <tbody id="rankingBody">
-          <tr><td colspan="8" class="empty-cell">No saved rankings yet.</td></tr>
+          <tr><td colspan="9" class="empty-cell">No saved rankings yet.</td></tr>
         </tbody>
       </table>
     </div>
