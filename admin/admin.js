@@ -1,3 +1,11 @@
+function disablePageZoom(){
+document.addEventListener("gesturestart",e=>e.preventDefault(),{passive:false});
+document.addEventListener("gesturechange",e=>e.preventDefault(),{passive:false});
+document.addEventListener("gestureend",e=>e.preventDefault(),{passive:false});
+let lastTouchEnd=0;
+document.addEventListener("touchend",e=>{const now=Date.now();if(now-lastTouchEnd<=300)e.preventDefault();lastTouchEnd=now;},{passive:false});
+}
+
 import { initAdminDice, setAdminDiceDeck, showAdminDice } from "./admin-dice.js";
 
 function initAdminPwa(){
@@ -63,6 +71,7 @@ initAdminPin();
 
 function initAdminPin(){
   initAdminPwa();
+  disablePageZoom();
   setMilestoneVisible(false);
   if(adminDiceScene && !adminDiceScene.dataset.ready){
     initAdminDice(adminDiceScene);

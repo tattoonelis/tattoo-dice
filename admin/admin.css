@@ -2059,3 +2059,5 @@ textarea{
   color:#fff7d2!important;
   box-shadow:0 8px 24px rgba(214,177,46,.3),inset 0 1px rgba(255,255,255,.35)!important;
 }
+
+html,body,button,a,canvas{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}

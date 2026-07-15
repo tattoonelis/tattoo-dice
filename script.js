@@ -341,6 +341,14 @@ function startMainDropAnimation() {
 function closeHiddenMessage(){if(!hiddenMessageEl)return;hiddenActive=false;hiddenMessageEl.classList.remove("show");}
 function bindGlobalHiddenMessageDismiss(){const dismiss=e=>{if(!hiddenActive)return;e.preventDefault();closeHiddenMessage();};document.addEventListener("pointerup",dismiss,{passive:false});document.addEventListener("click",dismiss);}
 
+function disablePageZoom(){
+document.addEventListener("gesturestart",e=>e.preventDefault(),{passive:false});
+document.addEventListener("gesturechange",e=>e.preventDefault(),{passive:false});
+document.addEventListener("gestureend",e=>e.preventDefault(),{passive:false});
+let lastTouchEnd=0;
+document.addEventListener("touchend",e=>{const now=Date.now();if(now-lastTouchEnd<=300)e.preventDefault();lastTouchEnd=now;},{passive:false});
+}
+
 async function requestPortraitLock() {
   try {
     if (screen.orientation?.lock) {
@@ -354,6 +362,7 @@ async function requestPortraitLock() {
 
 async function init() {
   lockInterface();
+  disablePageZoom();
   requestPortraitLock();
   setupThree();
   loadStoredMain();

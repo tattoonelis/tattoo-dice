@@ -1949,3 +1949,5 @@ h1{
 .action-row .roll-button{
   font-size:clamp(16px,4.25vw,27px)!important;
 }
+
+html,body,button,a,canvas{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
