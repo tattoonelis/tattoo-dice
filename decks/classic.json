@@ -3,14 +3,28 @@
     "word": "8 Ball",
     "score": 1,
     "weight": 2,
-    "slot": "main",
+    "slot": "detail",
+    "family": "8-ball"
+  },
+  {
+    "word": "8 Ball",
+    "score": 1,
+    "weight": 2,
+    "slot": "effect",
     "family": "8-ball"
   },
   {
     "word": "Ace of Spades",
     "score": 1,
     "weight": 2,
-    "slot": "main",
+    "slot": "detail",
+    "family": "cards"
+  },
+  {
+    "word": "Ace of Spades",
+    "score": 1,
+    "weight": 2,
+    "slot": "effect",
     "family": "cards"
   },
   {
@@ -31,14 +45,28 @@
     "word": "Axe",
     "score": 2,
     "weight": 6,
+    "slot": "main",
+    "family": "weapon"
+  },
+  {
+    "word": "Axe",
+    "score": 2,
+    "weight": 6,
     "slot": "detail",
     "family": "weapon"
   },
   {
-    "word": "Bamboe",
+    "word": "Bamboo",
     "score": 0,
     "weight": 0.25,
     "slot": "detail",
+    "family": "bamboe"
+  },
+  {
+    "word": "Bamboo",
+    "score": 0,
+    "weight": 0.25,
+    "slot": "effect",
     "family": "bamboe"
   },
   {
@@ -49,18 +77,25 @@
     "family": "barbed-wire"
   },
   {
-    "word": "Battle Royale",
-    "score": 0,
-    "weight": 0.25,
-    "slot": "detail",
-    "family": "battle-royale"
+    "word": "Barbed Wire",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "barbed-wire"
   },
   {
     "word": "Bear",
     "score": 1,
     "weight": 2,
-    "slot": "detail",
+    "slot": "main",
     "family": "bear"
+  },
+  {
+    "word": "Blood",
+    "score": 2,
+    "weight": 6,
+    "slot": "detail",
+    "family": "effect"
   },
   {
     "word": "Blood",
@@ -70,10 +105,24 @@
     "family": "effect"
   },
   {
+    "word": "Bones",
+    "score": 2,
+    "weight": 6,
+    "slot": "detail",
+    "family": "bones"
+  },
+  {
+    "word": "Bones",
+    "score": 2,
+    "weight": 6,
+    "slot": "effect",
+    "family": "bones"
+  },
+  {
     "word": "Boobs",
     "score": 0,
     "weight": 0.25,
-    "slot": "main",
+    "slot": "effect",
     "family": "boobs"
   },
   {
@@ -81,20 +130,57 @@
     "score": 3,
     "weight": 12,
     "slot": "main",
-    "family": "butterfly"
+    "family": "butterfly",
+    "blockedWith": [
+      "Wing"
+    ]
+  },
+  {
+    "word": "Butterfly",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "butterfly",
+    "blockedWith": [
+      "Wing"
+    ]
+  },
+  {
+    "word": "Butterfly",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "butterfly",
+    "blockedWith": [
+      "Wing"
+    ]
   },
   {
     "word": "Cards",
     "score": 1,
     "weight": 2,
-    "slot": "main",
+    "slot": "detail",
     "family": "cards"
   },
   {
-    "word": "Cartoon",
+    "word": "Cards",
+    "score": 1,
+    "weight": 2,
+    "slot": "effect",
+    "family": "cards"
+  },
+  {
+    "word": "Funny Character",
     "score": 1,
     "weight": 2,
     "slot": "main",
+    "family": "cartoon"
+  },
+  {
+    "word": "Funny Character",
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
     "family": "cartoon"
   },
   {
@@ -102,6 +188,13 @@
     "score": 1,
     "weight": 2,
     "slot": "main",
+    "family": "feline"
+  },
+  {
+    "word": "Cat",
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
     "family": "feline"
   },
   {
@@ -140,6 +233,13 @@
     "family": "snake"
   },
   {
+    "word": "Cobra",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "snake"
+  },
+  {
     "word": "Cross",
     "score": 1,
     "weight": 2,
@@ -147,20 +247,38 @@
     "family": "cross"
   },
   {
+    "word": "Cross",
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
+    "family": "cross"
+  },
+  {
     "word": "Crystal Ball",
     "score": 1,
     "weight": 2,
-    "slot": "main",
-    "family": "crystal-ball",
-    "requires": [
-      "Wizard"
-    ]
+    "slot": "detail",
+    "family": "crystal-ball"
   },
   {
     "word": "Dagger",
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "weapon"
+  },
+  {
+    "word": "Dagger",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "weapon"
+  },
+  {
+    "word": "Dagger",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
     "family": "weapon"
   },
   {
@@ -171,10 +289,24 @@
     "family": "demon"
   },
   {
+    "word": "Demon",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "demon"
+  },
+  {
     "word": "Devil",
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "devil"
+  },
+  {
+    "word": "Devil",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "devil"
   },
   {
@@ -185,11 +317,31 @@
     "family": "dragon"
   },
   {
+    "word": "Dragon",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "dragon"
+  },
+  {
     "word": "Eagle",
     "score": 3,
     "weight": 12,
     "slot": "main",
-    "family": "bird"
+    "family": "bird",
+    "blockedWith": [
+      "Wing"
+    ]
+  },
+  {
+    "word": "Eagle",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "bird",
+    "blockedWith": [
+      "Wing"
+    ]
   },
   {
     "word": "Evil Clown",
@@ -216,7 +368,21 @@
     "word": "Fire",
     "score": 2,
     "weight": 6,
+    "slot": "detail",
+    "family": "effect"
+  },
+  {
+    "word": "Fire",
+    "score": 2,
+    "weight": 6,
     "slot": "effect",
+    "family": "effect"
+  },
+  {
+    "word": "Flames",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "effect"
   },
   {
@@ -231,6 +397,20 @@
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "floral"
+  },
+  {
+    "word": "Flowers",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "floral"
+  },
+  {
+    "word": "Flowers",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
     "family": "floral"
   },
   {
@@ -262,10 +442,24 @@
     "family": "grim-reaper"
   },
   {
+    "word": "Grim Reaper",
+    "score": 2,
+    "weight": 6,
+    "slot": "detail",
+    "family": "grim-reaper"
+  },
+  {
     "word": "Hannya",
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "hannya"
+  },
+  {
+    "word": "Hannya",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "hannya"
   },
   {
@@ -283,6 +477,20 @@
     "family": "heart"
   },
   {
+    "word": "Heart",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "heart"
+  },
+  {
+    "word": "Heart",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "heart"
+  },
+  {
     "word": "Helmet",
     "score": 1,
     "weight": 2,
@@ -294,6 +502,13 @@
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "lady"
+  },
+  {
+    "word": "Lady Head",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "lady"
   },
   {
@@ -332,6 +547,20 @@
     "family": "mask"
   },
   {
+    "word": "Mask",
+    "score": 2,
+    "weight": 6,
+    "slot": "detail",
+    "family": "mask"
+  },
+  {
+    "word": "Mask",
+    "score": 2,
+    "weight": 6,
+    "slot": "effect",
+    "family": "mask"
+  },
+  {
     "word": "Mermaid",
     "score": 1,
     "weight": 2,
@@ -349,7 +578,7 @@
     "word": "Mountain",
     "score": 0,
     "weight": 0.25,
-    "slot": "main",
+    "slot": "detail",
     "family": "mountain"
   },
   {
@@ -367,11 +596,21 @@
     "family": "feline"
   },
   {
+    "word": "Panther",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "feline"
+  },
+  {
     "word": "Parrot",
     "score": 1,
     "weight": 2,
     "slot": "main",
-    "family": "bird"
+    "family": "bird",
+    "blockedWith": [
+      "Wing"
+    ]
   },
   {
     "word": "Peony",
@@ -395,6 +634,20 @@
     "family": "skull"
   },
   {
+    "word": "Pile of Skulls",
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
+    "family": "skull"
+  },
+  {
+    "word": "Pile of Skulls",
+    "score": 1,
+    "weight": 2,
+    "slot": "effect",
+    "family": "skull"
+  },
+  {
     "word": "Pin-up",
     "score": 3,
     "weight": 12,
@@ -409,7 +662,7 @@
     "family": "weapon"
   },
   {
-    "word": "Ram",
+    "word": "Goat",
     "score": 0,
     "weight": 0.25,
     "slot": "main",
@@ -420,7 +673,10 @@
     "score": 0,
     "weight": 0.25,
     "slot": "main",
-    "family": "bird"
+    "family": "bird",
+    "blockedWith": [
+      "Wing"
+    ]
   },
   {
     "word": "Rope",
@@ -437,6 +693,20 @@
     "family": "floral"
   },
   {
+    "word": "Rose",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "floral"
+  },
+  {
+    "word": "Rose",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "floral"
+  },
+  {
     "word": "Sacred Heart",
     "score": 2,
     "weight": 6,
@@ -448,6 +718,13 @@
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "scorpion"
+  },
+  {
+    "word": "Scorpion",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "scorpion"
   },
   {
@@ -479,6 +756,20 @@
     "family": "skull"
   },
   {
+    "word": "Skull",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "skull"
+  },
+  {
+    "word": "Skull",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "skull"
+  },
+  {
     "word": "Smoke",
     "score": 1,
     "weight": 2,
@@ -493,10 +784,31 @@
     "family": "snake"
   },
   {
+    "word": "Snake",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "snake"
+  },
+  {
+    "word": "Snake",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "snake"
+  },
+  {
     "word": "Snake Head",
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "snake"
+  },
+  {
+    "word": "Snake Head",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "snake"
   },
   {
@@ -507,6 +819,13 @@
     "family": "spider"
   },
   {
+    "word": "Spider",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "spider"
+  },
+  {
     "word": "Spider Web",
     "score": 2,
     "weight": 6,
@@ -514,10 +833,17 @@
     "family": "spider"
   },
   {
+    "word": "Spider Web",
+    "score": 2,
+    "weight": 6,
+    "slot": "effect",
+    "family": "spider"
+  },
+  {
     "word": "Sun",
     "score": 1,
     "weight": 2,
-    "slot": "main",
+    "slot": "detail",
     "family": "sun"
   },
   {
@@ -525,7 +851,17 @@
     "score": 3,
     "weight": 12,
     "slot": "main",
-    "family": "bird"
+    "family": "bird",
+    "blockedWith": [
+      "Wing"
+    ]
+  },
+  {
+    "word": "Sword",
+    "score": 1,
+    "weight": 2,
+    "slot": "main",
+    "family": "weapon"
   },
   {
     "word": "Sword",
@@ -542,10 +878,31 @@
     "family": "feline"
   },
   {
+    "word": "Tiger",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "feline"
+  },
+  {
     "word": "Tribal",
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "tribal"
+  },
+  {
+    "word": "Tribal",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "tribal"
+  },
+  {
+    "word": "Tribal",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
     "family": "tribal"
   },
   {
@@ -564,15 +921,29 @@
   },
   {
     "word": "Water",
-    "score": 0,
-    "weight": 0.25,
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
+    "family": "effect"
+  },
+  {
+    "word": "Water",
+    "score": 1,
+    "weight": 2,
     "slot": "effect",
     "family": "effect"
   },
   {
     "word": "Waves",
-    "score": 0,
-    "weight": 0.25,
+    "score": 1,
+    "weight": 2,
+    "slot": "detail",
+    "family": "effect"
+  },
+  {
+    "word": "Waves",
+    "score": 1,
+    "weight": 2,
     "slot": "effect",
     "family": "effect"
   },
@@ -581,13 +952,41 @@
     "score": 3,
     "weight": 12,
     "slot": "detail",
-    "family": "wing"
+    "family": "wing",
+    "blockedWith": [
+      "Butterfly",
+      "Eagle",
+      "Parrot",
+      "Raven",
+      "Swallow"
+    ]
+  },
+  {
+    "word": "Wing",
+    "score": 3,
+    "weight": 12,
+    "slot": "effect",
+    "family": "wing",
+    "blockedWith": [
+      "Butterfly",
+      "Eagle",
+      "Parrot",
+      "Raven",
+      "Swallow"
+    ]
   },
   {
     "word": "Wizard",
     "score": 3,
     "weight": 12,
     "slot": "main",
+    "family": "wizard"
+  },
+  {
+    "word": "Wizard",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
     "family": "wizard"
   },
   {
@@ -598,10 +997,17 @@
     "family": "wolf"
   },
   {
+    "word": "Wolf",
+    "score": 3,
+    "weight": 12,
+    "slot": "detail",
+    "family": "wolf"
+  },
+  {
     "word": "Yin Yang",
     "score": 1,
     "weight": 2,
-    "slot": "main",
+    "slot": "detail",
     "family": "yin-yang"
   }
 ]
