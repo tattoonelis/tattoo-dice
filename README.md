@@ -22,3 +22,13 @@ A separate ranking interface is included at `/admin/`. See `admin/README.md` and
 - Bones added.
 - Wing is blocked from Butterfly, Eagle, Parrot, Raven and Swallow.
 - No UI, animation, Admin, PIN, progress or formula code was changed.
+
+
+## v3.6.4 — Icons, Social Preview & Dice Edge Fix
+
+- Replaced the Tattoo Dice home-screen icon with the approved ivory five-pip icon.
+- Replaced the Admin home-screen icon with the approved gold five-pip icon.
+- Added the approved 1200×630 social-link preview artwork.
+- Added Open Graph and Twitter preview metadata.
+- Fixed the settled left/right dice being clipped, while leaving the intro/drop animation untouched.
+- No deck, formula, rating, PIN, UI workflow or Admin functionality was changed.

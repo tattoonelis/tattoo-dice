@@ -1951,3 +1951,23 @@ h1{
 }
 
 html,body,button,a,canvas{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+
+/* v3.6.4 — settled dice edge-clipping fix
+   Keep the intro canvas untouched. Once the intro has finished, widen the
+   WebGL render surface symmetrically so the left and right dice remain fully
+   visible at their final positions. */
+.dice-stage-3d{
+  overflow:visible!important;
+}
+#sceneWrap:not(.intro-hidden):not(.intro-moving){
+  left:50%!important;
+  right:auto!important;
+  width:calc(100% + clamp(88px,24vw,150px))!important;
+  transform:translateX(-50%)!important;
+  overflow:visible!important;
+}
+#sceneWrap:not(.intro-hidden):not(.intro-moving) canvas{
+  width:100%!important;
+  height:100%!important;
+}
