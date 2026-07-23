@@ -5,9 +5,97 @@ let wordCount = 3;
 let deck = [];
 let secretSequence = "";
 let hiddenActive = false;
+let mainHintShownAt = 0;
+let mainHintDismissBound = false;
+let displayedCounterValue = null;
+let counterAnimationToken = 0;
 let rollInProgress = false;
+
 let currentRoll = [];
-let lastRollWasKeepDrawing = false;
+
+// Input layer: user taps are never silently discarded while an animation owns
+// the scene. Latest requested count wins; Roll queues at most once.
+let pendingDiceCount = null;
+let pendingRollRequest = false;
+let inputQueueFlushing = false;
+
+function diceInteractionBusy() {
+  return rollInProgress || introActive || snapshotDropActive;
+}
+
+function syncDiceCountButtons(targetCount = wordCount) {
+  diceOptions.forEach(button => {
+    const active = Number(button.dataset.count) === targetCount;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+async function flushPendingDiceInput() {
+  if (inputQueueFlushing || diceInteractionBusy()) return;
+  inputQueueFlushing = true;
+
+  try {
+    if (Number.isInteger(pendingDiceCount) && pendingDiceCount !== wordCount) {
+      const nextCount = pendingDiceCount;
+      pendingDiceCount = null;
+      await transitionDiceCount(nextCount);
+    } else {
+      pendingDiceCount = null;
+    }
+
+    if (!diceInteractionBusy() && pendingRollRequest) {
+      pendingRollRequest = false;
+      await roll({ countIt: true });
+    }
+  } finally {
+    inputQueueFlushing = false;
+    syncDiceCountButtons();
+
+    if (!diceInteractionBusy() && (pendingDiceCount !== null || pendingRollRequest)) {
+      queueMicrotask(flushPendingDiceInput);
+    }
+  }
+}
+
+function requestDiceCount(requestedCount) {
+  if (![1, 2, 3].includes(requestedCount)) return;
+
+  if (requestedCount === 1 && selectedMain !== "Random") {
+    pendingDiceCount = null;
+    syncDiceCountButtons();
+    showDiceCountNotice("Select 2 or 3 dice.");
+    return;
+  }
+
+  if (diceInteractionBusy()) {
+    pendingDiceCount = requestedCount;
+    syncDiceCountButtons(requestedCount);
+    return;
+  }
+
+  if (requestedCount === wordCount) {
+    syncDiceCountButtons();
+    registerSecretInput(String(requestedCount));
+    return;
+  }
+
+  pendingDiceCount = requestedCount;
+  flushPendingDiceInput();
+}
+
+function requestRoll() {
+  closeMainHint();
+
+  if (diceInteractionBusy()) {
+    pendingRollRequest = true;
+    return;
+  }
+
+  pendingRollRequest = true;
+  flushPendingDiceInput();
+}
+
 let activeTheme = localStorage.getItem("tattooDiceActiveTheme") || "classic";
 let fantasyUnlocked = false;
 if (activeTheme === "fantasy" && !fantasyUnlocked) activeTheme = "classic";
@@ -19,18 +107,24 @@ let pinInput = "";
 let mainSelectionChanged = false;
 let mainDropActive = false;
 let mainDropStartTime = 0;
-let mainDropDuration = 1.25;
 let introIsStartup = true;
-let themeModalWasOpen = false;
 let mainGlowLight = null;
+const mainGlowWorldPosition = new THREE.Vector3();
+const liveMotionProjected = new THREE.Vector3();
+let mainTintProgress = 0;
+let mainPlasmaOverlayMesh = null;
+let mainPlasmaClock = 0;
+let mainPlasmaLastFrameTime = null;
+let mainPlasmaPaused = false;
+let liveMainAuraTransition = null;
 
 const rollButton = document.getElementById("rollButton");
 const diceOptions = document.querySelectorAll(".dice-option");
 const counterEl = document.getElementById("counter");
 const sceneWrap = document.getElementById("sceneWrap");
 const diceStageEl = document.getElementById("diceStage3d");
-const hiddenMessageEl = document.getElementById("hiddenMessage");
-const screenFade = document.getElementById("screenFade");
+const mainHintOverlay = document.getElementById("mainHintOverlay");
+const mainHintButtonStage = document.getElementById("mainHintButtonStage");
 const themeButton = document.getElementById("themeButton");
 const themeModal = document.getElementById("themeModal");
 const classicThemeChoice = document.getElementById("classicThemeChoice");
@@ -43,40 +137,77 @@ const mainButton = document.getElementById("mainButton");
 const mainModal = document.getElementById("mainModal");
 const mainChoiceList = document.getElementById("mainChoiceList");
 const introGateEl = document.getElementById("introGate");
+const splashProgressBar = document.getElementById("splashProgressBar");
 
 const SECRET_CODE = "332211";
 const FANTASY_UNLOCK_CODE = "2311";
-const KEEP_DRAWING_CHANCE = 0.01;
-const HIDDEN_MESSAGES = ["Keep drawing.", "Not feeling it? Roll again.", "Wrong vibe? Switch themes.", "Different theme. Different magic.", "Don’t force it. Switch themes."];
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
-let scene, camera, renderer, floor;
-let introStarted = false;
+let scene, camera, renderer, floor, floorGlow;
 let introActive = false;
 let introStartTime = 0;
-let introDuration = 1.78;
 let introResolve = null;
-let introTargetRect = null;
-let introStartTop = 0;
-let introAirDice = [];
 let diceMeshes = [];
+let diceShadowMeshes = [];
+let shadowDieBottomTexture = null;
+let floorGlowTexture = null;
+const shadowProjectedXAxis = new THREE.Vector3();
+const GROUNDED_DICE_SCALE = 1.15;
+let snapshotDropActive = false;
+const diceTextureCache = new Map();
+let textureWarmupToken = 0;
+let textureWarmupPromise = Promise.resolve();
+let diceSlotsInitialized = false;
 
-const layouts = {
+const DICE_COMPOSITES = {
   1: [
     [0.00, -0.24, 0.34, -0.82, 0.10, 0.00, 2.42]
   ],
   2: [
-    // Two dice centered as a pair around the middle.
-    [-0.92, -0.30, 0.38, -0.82, 0.20, -0.06, 1.92],
-    [ 0.92, -0.08, -0.52, -0.78,-0.28,  0.10, 1.72]
+    // Two dice centered as a pair with enough horizontal clearance for both labels.
+    [-1.18, -0.30, 0.38, -0.82, 0.20, -0.06, 1.92],
+    [ 1.18, -0.08, -0.52, -0.78,-0.28,  0.10, 1.72]
   ],
   3: [
-    [0.00, -0.34, 0.56, -0.82, 0.10, 0.00, 2.06],
-    [-2.06, -0.04, -0.66, -0.78, 0.36, -0.13, 1.66],
-    [ 2.06, -0.04, -0.66, -0.78,-0.36,  0.13, 1.66]
+    // Main pose restored literally from v2.6. Effects stay on the v2.7 system.
+    [0.00, -0.34, 0.78, -0.68, 0.00, 0.00, 2.06],
+    [-1.84, -0.04, -0.52, -0.66,-0.04, -0.01, 1.66],
+    [ 1.84, -0.04, -0.52, -0.66, 0.04,  0.01, 1.66]
   ]
 };
+
+// Single source of truth for idle, Roll, Drop, Fall and count transitions.
+// No animation is allowed to invent its own final position / rotation / size.
+function getDiceComposite(count = wordCount) {
+  return DICE_COMPOSITES[count] || DICE_COMPOSITES[3];
+}
+
+function getDicePose(index, count = wordCount) {
+  return getDiceComposite(count)[index] || null;
+}
+
+function getCanonicalDiceSize(die, index = diceMeshes.indexOf(die), count = wordCount) {
+  const pose = die?.userData?.layout || getDicePose(index, count);
+  return pose?.[6] || 1;
+}
+
+function applyCanonicalDicePose(index, count = wordCount) {
+  const die = diceMeshes[index];
+  const pose = getDicePose(index, count);
+  if (!die || !pose) return false;
+
+  die.userData.layout = pose;
+  die.userData.diceSize = pose[6];
+  die.userData.base.set(pose[0], pose[1], pose[2]);
+  die.position.copy(die.userData.base);
+  die.rotation.set(pose[3], pose[4], pose[5]);
+  die.scale.setScalar(pose[6]);
+  return true;
+}
+
+const layouts = DICE_COMPOSITES; // compatibility alias; do not define poses elsewhere.
+
 
 // RoundedBoxGeometry / BoxGeometry material order:
 // +x, -x, +y, -y, +z, -z
@@ -88,9 +219,6 @@ const FACE_NORMALS = [
   new THREE.Vector3(0, 0, 1),
   new THREE.Vector3(0, 0, -1)
 ];
-
-init();
-
 
 function setThemeModalState(open) {
   if (!themeModal) return;
@@ -127,17 +255,47 @@ function updatePinDisplay() {
   });
 }
 
+function updateDiceCountAvailability() {
+  diceOptions.forEach(button => {
+    const blocksSingleDie = selectedMain !== "Random" && button.dataset.count === "1";
+    button.classList.toggle("main-disabled", blocksSingleDie);
+    if (blocksSingleDie) {
+      button.setAttribute("aria-disabled", "true");
+      button.title = "Select 2 or 3 dice";
+    } else {
+      button.removeAttribute("aria-disabled");
+      button.title = `${button.dataset.count} ${button.dataset.count === "1" ? "word" : "words"}`;
+    }
+  });
+  if (selectedMain !== "Random" && pendingDiceCount === 1) pendingDiceCount = null;
+  syncDiceCountButtons();
+}
+
+function showDiceCountNotice(message) {
+  const notice = document.getElementById("diceCountNotice");
+  if (!notice) return;
+
+  notice.textContent = message;
+  notice.classList.remove("show");
+  void notice.offsetWidth;
+  notice.classList.add("show");
+  clearTimeout(notice._hideTimer);
+  notice._hideTimer = setTimeout(() => notice.classList.remove("show"), 1500);
+}
+
 function updateActionButtonLabels() {
   const themeLabel = themeButton?.querySelector("span");
   const mainLabel = mainButton?.querySelector("span");
 
   if (themeLabel) {
-    themeLabel.textContent = activeTheme === "fantasy" ? "Fantasy" : "Classic";
+    themeLabel.textContent = activeTheme === "fantasy" ? "FANTASY" : "CLASSIC";
   }
 
   if (mainLabel) {
-    mainLabel.textContent = selectedMain || "Random";
+    mainLabel.textContent = String(selectedMain || "RANDOM").toUpperCase();
   }
+
+  updateDiceCountAvailability();
 }
 
 function updateThemeMenu() {
@@ -151,7 +309,7 @@ function updateThemeMenu() {
   fantasyThemeChoice.setAttribute("aria-pressed", String(activeTheme === "fantasy"));
   fantasyThemeLabel.textContent = fantasyUnlocked ? "Fantasy" : "Fantasy 🔒";
   updateActionButtonLabels();
-  bindGlobalHiddenMessageDismiss();
+  bindMainHintDismiss();
 }
 
 function mainStorageKey(theme = activeTheme) {
@@ -159,10 +317,8 @@ function mainStorageKey(theme = activeTheme) {
 }
 
 function loadStoredMain() {
-  const fallback = activeTheme === "classic"
-    ? localStorage.getItem("tattooDiceSelectedMain")
-    : null;
-  selectedMain = localStorage.getItem(mainStorageKey()) || fallback || "Random";
+  // Every fresh app launch starts in Random, regardless of a previous session.
+  selectedMain = "Random";
   updateActionButtonLabels();
 }
 
@@ -189,6 +345,7 @@ async function selectTheme(themeName) {
 
   loadStoredMain();
   await loadDeck();
+  warmDiceTextures();
   validateDeckScores();
   buildMainMenu();
 
@@ -217,31 +374,804 @@ function setMainModalState(open) {
   }
 }
 
-function updateMainSelectionGlow() {
+const MAIN_VFX_CONFIG = {
+  colorHex: 0x35ff83,
+  glowLightHex: 0x38d879,
+  glowIntensity: 1.15,
+  orbBaseRadius: 0.8096
+};
+
+const MAIN_PLASMA_COLOR = new THREE.Color(MAIN_VFX_CONFIG.colorHex);
+const MAIN_PLASMA_GLOW_INTENSITY = MAIN_VFX_CONFIG.glowIntensity;
+const MAIN_ORB_BASE_RADIUS = MAIN_VFX_CONFIG.orbBaseRadius;
+
+function mainVfxRgba(alpha) {
+  const hex = MAIN_VFX_CONFIG.colorHex;
+  const r = (hex >> 16) & 255;
+  const g = (hex >> 8) & 255;
+  const b = hex & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+const MAIN_PLASMA_VERTEX_SHADER = `
+  uniform float uShellOffset;
+  varying vec2 vUv;
+  varying vec3 vObjectPosition;
+  varying vec3 vObjectNormal;
+  varying vec2 vOrbPlanePosition;
+
+  void main() {
+    vUv = uv;
+    vObjectNormal = normalize(normal);
+    // Object-space position is shared by every face of the same cube. Using it
+    // as the plasma coordinate makes a vein reach the exact same point on both
+    // sides of an edge instead of restarting in each face's separate UV map.
+    vObjectPosition = position;
+
+    // Keep the procedural energy almost flush with the body. The small offset
+    // only prevents z-fighting; the fragment shading below makes it read as
+    // energy trapped beneath a clear resin skin rather than floating outside.
+    vec3 shellPosition = position + normal * uShellOffset;
+    vec4 viewShellPosition = modelViewMatrix * vec4(shellPosition, 1.0);
+    vec3 viewCubeCentre = (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    float viewObjectScale = max(
+      length((modelViewMatrix * vec4(1.0, 0.0, 0.0, 0.0)).xyz),
+      0.0001
+    );
+    // Camera-facing coordinates around the actual 3D centre of the cube.
+    // Dividing out the parent scale keeps the orb identical in 1/2/3 layouts.
+    vOrbPlanePosition = (viewShellPosition.xy - viewCubeCentre.xy) / viewObjectScale;
+    gl_Position = projectionMatrix * viewShellPosition;
+  }
+`;
+
+const MAIN_PLASMA_FRAGMENT_SHADER = `
+  precision highp float;
+
+  uniform sampler2D baseMap;
+  uniform float uTime;
+  uniform float uProgress;
+  uniform vec3 uColor;
+  uniform float uLayer;
+  uniform float uBreath;
+  uniform float uCoordinateScale;
+  varying vec2 vUv;
+  varying vec3 vObjectPosition;
+  varying vec3 vObjectNormal;
+  varying vec2 vOrbPlanePosition;
+
+  float hash31(vec3 p) {
+    p = fract(p * 0.1031);
+    p += dot(p, p.yzx + 33.33);
+    return fract((p.x + p.y) * p.z);
+  }
+
+  float valueNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+
+    float n000 = hash31(i + vec3(0.0, 0.0, 0.0));
+    float n100 = hash31(i + vec3(1.0, 0.0, 0.0));
+    float n010 = hash31(i + vec3(0.0, 1.0, 0.0));
+    float n110 = hash31(i + vec3(1.0, 1.0, 0.0));
+    float n001 = hash31(i + vec3(0.0, 0.0, 1.0));
+    float n101 = hash31(i + vec3(1.0, 0.0, 1.0));
+    float n011 = hash31(i + vec3(0.0, 1.0, 1.0));
+    float n111 = hash31(i + vec3(1.0, 1.0, 1.0));
+
+    float nx00 = mix(n000, n100, f.x);
+    float nx10 = mix(n010, n110, f.x);
+    float nx01 = mix(n001, n101, f.x);
+    float nx11 = mix(n011, n111, f.x);
+    float nxy0 = mix(nx00, nx10, f.y);
+    float nxy1 = mix(nx01, nx11, f.y);
+    return mix(nxy0, nxy1, f.z);
+  }
+
+  float fbm(vec3 p) {
+    float value = 0.0;
+    float amplitude = 0.54;
+    for (int octave = 0; octave < 4; octave++) {
+      value += amplitude * valueNoise(p);
+      p = p * 2.03 + vec3(7.1, 3.7, 5.9);
+      amplitude *= 0.50;
+    }
+    return value;
+  }
+
+  void main() {
+    vec4 face = texture2D(baseMap, vUv);
+    float luminance = dot(face.rgb, vec3(0.299, 0.587, 0.114));
+
+    // Protect the printed subject. Plasma is visible only on the pale body of
+    // the die, including its softly shaded portions.
+    // Keep the black print genuinely black. A deliberately tighter mask also
+    // excludes the antialiased grey edge pixels around every letter.
+    // Rounded bevel is pale resin too, just shaded darker.
+    // Include it while keeping black/near-black lettering excluded.
+    float surfaceMask = smoothstep(0.44, 0.80, luminance);
+
+    float time = uTime * (uLayer < 0.5 ? 0.29 : 0.22);
+    // Circular flow driver: cos/sin form one continuous orbit instead of a
+    // value travelling left and then visibly reversing direction. All plasma
+    // offsets below derive from this loop, so the motion has no turn-around
+    // point and reads as a continuous circulation through the resin.
+    float flowAngle = time * 0.72 + uLayer * 1.91;
+    vec3 flowLoop = vec3(
+      cos(flowAngle),
+      sin(flowAngle),
+      sin(flowAngle + 1.5707963)
+    );
+    vec3 layerOffset = uLayer < 0.5
+      ? vec3(0.0, 0.0, 0.0)
+      : vec3(4.71, -2.93, 6.18);
+    vec3 normalizedObjectPosition = vObjectPosition * uCoordinateScale;
+    vec3 p = normalizedObjectPosition * (uLayer < 0.5 ? 1.78 : 1.52) + layerOffset;
+
+    // Two slowly moving three-dimensional noise fields bend the coordinate
+    // space itself. This produces rounded, fluid turns rather than straight,
+    // graphic cellular borders. Because p is object-space, the warping remains
+    // seamless where the front, side and top faces meet.
+    vec3 warp = vec3(
+      fbm(p * 0.72 + flowLoop * 1.18 + vec3(0.0, 0.0, 1.7)),
+      fbm(p * 0.72 + flowLoop.yzx * 1.06 + vec3(-2.3, 0.0, 0.0)),
+      fbm(p * 0.72 + flowLoop.zxy * 0.94 + vec3(0.0, 3.1, 0.0))
+    ) - 0.5;
+    vec3 flowed = p + warp * (uLayer < 0.5 ? 1.34 : 1.58);
+
+    float broadField = fbm(flowed * 0.92 + flowLoop.yzx * 0.44);
+    float detailField = fbm(flowed * 1.78 + flowLoop.zxy * 0.31);
+    float field = broadField * 0.78 + detailField * 0.22;
+
+    // Contour bands through the warped volume become continuous plasma veins.
+    // A second offset contour adds occasional forks without turning the result
+    // back into a rigid grid.
+    float phase = field * (uLayer < 0.5 ? 6.7 : 5.8)
+      + dot(flowLoop, vec3(0.44, 0.31, 0.25)) * (uLayer < 0.5 ? 1.15 : 0.92);
+    float distanceToVein = abs(sin(phase));
+    // Narrower thresholds create more white space and remove the cellular blob look.
+    float mainVein = 1.0 - smoothstep(0.018, uLayer < 0.5 ? 0.135 : 0.105, distanceToVein);
+
+    float branchPhase = (field + detailField * 0.31) * (uLayer < 0.5 ? 9.8 : 8.1)
+      + dot(flowLoop.yzx, vec3(0.36, 0.28, 0.22)) * (uLayer < 0.5 ? 1.0 : 0.84)
+      + (uLayer < 0.5 ? 1.9 : 4.2);
+    float branchDistance = abs(sin(branchPhase));
+    float branchVein = 1.0 - smoothstep(0.016, uLayer < 0.5 ? 0.082 : 0.064, branchDistance);
+    branchVein *= smoothstep(0.48, 0.76, broadField);
+
+    // Sparse primary currents cross most or all of the die instead of every
+    // line closing into a small cell. The low-frequency bend keeps them
+    // organic, while object-space coordinates keep them continuous at edges.
+    vec3 streamDirection = normalize(uLayer < 0.5
+      ? vec3(0.82, 0.31, -0.48)
+      : vec3(-0.37, 0.88, 0.29));
+    float streamBend = fbm(flowed * 0.43 + flowLoop * 0.23 + vec3(0.0, 0.0, 2.6 + uLayer * 3.1)) - 0.5;
+    float streamCoordinate = dot(flowed, streamDirection) + streamBend * 1.34;
+    float streamDistance = abs(sin(streamCoordinate * (uLayer < 0.5 ? 2.15 : 1.86) + uLayer * 2.7));
+    float longStream = 1.0 - smoothstep(0.018, uLayer < 0.5 ? 0.105 : 0.078, streamDistance);
+    float streamGate = smoothstep(0.42, 0.59, fbm(flowed * 0.27 + flowLoop.zxy * 0.16 + vec3(-3.4, 1.8, 0.0)));
+    longStream *= mix(0.54, 1.0, streamGate);
+
+    // A second broad current crosses the first one at another angle. Its very
+    // low spatial frequency creates large open regions across the whole face
+    // instead of allowing many small cells to pile up on one side.
+    vec3 crossDirection = normalize(uLayer < 0.5
+      ? vec3(-0.26, 0.71, 0.65)
+      : vec3(0.74, 0.18, -0.65));
+    float crossBend = fbm(flowed * 0.31 + flowLoop.yzx * 0.19 + vec3(0.0, 4.2, 0.0)) - 0.5;
+    float crossCoordinate = dot(flowed, crossDirection) + crossBend * 1.10;
+    float crossDistance = abs(sin(crossCoordinate * (uLayer < 0.5 ? 1.56 : 1.38) + 1.4 + uLayer));
+    float crossStream = 1.0 - smoothstep(0.014, uLayer < 0.5 ? 0.080 : 0.058, crossDistance);
+    float crossGate = smoothstep(0.36, 0.57, fbm(flowed * 0.24 + flowLoop * 0.14 + vec3(2.8, -1.6, 0.0)));
+    crossStream *= mix(0.42, 0.92, crossGate);
+
+    float veins = clamp(
+      mainVein
+      + branchVein * (uLayer < 0.5 ? 0.44 : 0.32)
+      + longStream * (uLayer < 0.5 ? 0.82 : 0.42)
+      + crossStream * (uLayer < 0.5 ? 0.58 : 0.31),
+      0.0,
+      1.0
+    );
+    float softHalo = max(
+      1.0 - smoothstep(0.11, uLayer < 0.5 ? 0.43 : 0.34, distanceToVein),
+      max(longStream * (uLayer < 0.5 ? 0.67 : 0.34), crossStream * (uLayer < 0.5 ? 0.45 : 0.25))
+    );
+    // One shared irregular breath drives the core, plasma brightness and speed.
+    // It is calculated on the CPU from several incommensurate rhythms so the
+    // motion never reads as a perfect looping LED pulse.
+    float pulse = mix(0.88, 1.12, uBreath);
+    veins *= pulse;
+
+    // Internal energy orb. One shared camera-facing plane is centred on the
+    // actual object origin, rather than creating a separate projection on each
+    // visible face. The orb therefore stays visually suspended in the middle
+    // of the complete cube instead of slipping towards its bottom bevel.
+    float orbAngle = uTime * 0.34;
+    vec2 orbCentre = vec2(
+      cos(orbAngle) * 0.040,
+      sin(orbAngle) * 0.040
+    );
+    float orbDistance = length(vOrbPlanePosition - orbCentre);
+    float orbRadius = ${MAIN_ORB_BASE_RADIUS.toFixed(3)} * mix(0.92, 1.08, uBreath);
+    float orbBody = 1.0 - smoothstep(orbRadius * 0.42, orbRadius, orbDistance);
+    float orbCore = 1.0 - smoothstep(0.0, orbRadius * 0.34, orbDistance);
+    float orbHalo = 1.0 - smoothstep(orbRadius * 0.58, orbRadius * 1.72, orbDistance);
+    orbHalo *= 0.50 + uBreath * 0.24;
+
+    // Energy profile across every vein: green outer glow -> white-hot core ->
+    // green outer glow. The narrow white core makes the flow feel luminous,
+    // while the green shoulders preserve the Tattoo Dice accent colour.
+    float greenShoulder = smoothstep(0.14, 0.55, veins);
+    float whiteCore = smoothstep(0.70, 0.965, veins);
+    float haloStrength = softHalo * (1.0 - whiteCore) * (uLayer < 0.5 ? 0.30 : 0.18);
+
+    vec3 deepGreen = uColor * 0.36;
+    vec3 brightGreen = uColor * 1.28;
+    vec3 hotWhite = vec3(1.0, 1.0, 1.0);
+    vec3 colour = mix(deepGreen, brightGreen, clamp(greenShoulder + haloStrength, 0.0, 1.0));
+    colour = mix(colour, hotWhite, whiteCore);
+
+    // The orb is the source and the plasma is its reaction. The white centre is
+    // small and soft; the surrounding green falls away gradually through the
+    // resin instead of forming a hard neon circle.
+    // Restore enough energy for the core to read through the resin while the
+    // plasma brightness remains completely untouched.
+    float orbEnergy = 0.86 * clamp(orbBody * 0.88 + orbHalo * 0.48, 0.0, 1.0);
+    // Keep the approved size, motion and intensity, but shift the complete orb
+    // towards a cleaner white instead of limiting white to its smallest core.
+    float orbWhiteMix = clamp(0.72 + orbCore * 0.26, 0.0, 0.98);
+    vec3 orbColour = mix(uColor * 0.78, hotWhite * 1.02, orbWhiteMix);
+    colour = mix(colour, orbColour, orbEnergy);
+
+    // Keep the white die itself untouched: only the vein and its restrained
+    // green halo are drawn by this transparent overlay.
+    float layerStrength = uLayer < 0.5 ? 1.0 : 0.42;
+    float plasmaAlpha = 0.50 * clamp(haloStrength * 0.42 + greenShoulder * 0.72 + whiteCore * 0.20, 0.0, 0.96);
+    float orbAlpha = 0.78 * clamp(orbHalo * 0.38 + orbBody * 0.56 + orbCore * 0.38, 0.0, 0.90);
+    float alpha = surfaceMask * uProgress * layerStrength * max(plasmaAlpha, orbAlpha);
+
+    gl_FragColor = vec4(colour, alpha);
+  }
+`;
+
+function disposeMainPlasmaOverlay() {
+  if (!mainPlasmaOverlayMesh) return;
+  mainPlasmaOverlayMesh.parent?.remove(mainPlasmaOverlayMesh);
+  const disposedTextures = new Set();
+  mainPlasmaOverlayMesh.traverse?.(child => {
+    if (!child.isMesh && !child.isSprite) return;
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach(material => {
+      const map = material?.map;
+      if (map && child.isSprite && !disposedTextures.has(map)) {
+        map.dispose();
+        disposedTextures.add(map);
+      }
+      material?.dispose();
+    });
+  });
+  mainPlasmaOverlayMesh = null;
+}
+
+function createMainPlasmaLayer(mainDie, layerIndex, shellOffset, renderOrder) {
+  const plasmaMaterials = mainDie.material.map(sourceMaterial => new THREE.ShaderMaterial({
+    uniforms: {
+      baseMap: { value: sourceMaterial.map || null },
+      uTime: { value: 0 },
+      uProgress: { value: 0 },
+      uColor: { value: MAIN_PLASMA_COLOR.clone() },
+      uLayer: { value: layerIndex },
+      uBreath: { value: 0.5 },
+      // Slot geometry is unit-sized in v2.10. Parent scale handles 1/2/3
+      // layout size, so the internal orb/plasma coordinates are identical in
+      // every mode without a mode-specific correction.
+      uCoordinateScale: { value: 1.0 },
+      uShellOffset: { value: shellOffset }
+    },
+    vertexShader: MAIN_PLASMA_VERTEX_SHADER,
+    fragmentShader: MAIN_PLASMA_FRAGMENT_SHADER,
+    transparent: true,
+    depthTest: true,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+    polygonOffset: true,
+    polygonOffsetFactor: -1 - layerIndex,
+    polygonOffsetUnits: -1 - layerIndex,
+    toneMapped: false
+  }));
+
+  const mesh = new THREE.Mesh(mainDie.geometry, plasmaMaterials);
+  mesh.name = layerIndex === 0 ? "main-dice-plasma-primary" : "main-dice-plasma-depth";
+
+  mesh.renderOrder = renderOrder;
+  mesh.frustumCulled = false;
+  return mesh;
+}
+
+function createExternalAuraTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createRadialGradient(128, 128, 38, 128, 128, 128);
+  // Transparent centre + broad green body + fully feathered perimeter.
+  // Because the sprite sits through the cube centre with depth testing enabled,
+  // the solid die occludes the middle and only the glow OUTSIDE its silhouette
+  // remains visible on screen.
+  gradient.addColorStop(0.00, mainVfxRgba(0.00));
+  gradient.addColorStop(0.30, mainVfxRgba(0.08));
+  gradient.addColorStop(0.52, mainVfxRgba(0.42));
+  gradient.addColorStop(0.70, mainVfxRgba(0.28));
+  gradient.addColorStop(0.86, mainVfxRgba(0.10));
+  gradient.addColorStop(1.00, mainVfxRgba(0.00));
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 256, 256);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.generateMipmaps = false;
+  return texture;
+}
+
+function ensureMainPlasmaOverlay() {
+  // v2.10: build the Main VFX once and keep the resources attached to slot 0.
+  // Random mode only hides them; no shader/material construction is allowed
+  // to happen on the first Main selection.
+  const mainDie = diceMeshes[0];
+  if (!mainDie || !Array.isArray(mainDie.material)) return null;
+
+  if (mainPlasmaOverlayMesh?.parent === mainDie) return mainPlasmaOverlayMesh;
+  disposeMainPlasmaOverlay();
+
+  const group = new THREE.Group();
+  group.name = "main-dice-plasma";
+
+  // Internal plasma/orb remains almost flush with the resin.
+  group.add(createMainPlasmaLayer(mainDie, 0, 0.0075, 4));
+
+  // v2.7: the aura is no longer another copy of the cube geometry.
+  // It is a soft camera-facing light field centred THROUGH the die. Depth testing
+  // lets the opaque cube mask the centre, leaving only a genuine external halo
+  // visible beyond the silhouette. This avoids the previous "aura inside resin"
+  // look and works consistently for every cube rotation.
+  const auraTexture = createExternalAuraTexture();
+  const auraLayers = [
+    { scale: 1.62, opacity: 0.42, phase: 0.0, orbit: 0.020 },
+    { scale: 1.86, opacity: 0.24, phase: 2.1, orbit: 0.030 },
+    { scale: 2.12, opacity: 0.12, phase: 4.2, orbit: 0.040 }
+  ];
+
+  auraLayers.forEach((layer, index) => {
+    const material = new THREE.SpriteMaterial({
+      map: auraTexture,
+      color: MAIN_VFX_CONFIG.colorHex,
+      transparent: true,
+      opacity: 0,
+      depthTest: true,
+      depthWrite: false,
+
+      // Same visible RGB behavior as AdditiveBlending while preserving ordinary
+      // framebuffer alpha. Drop/Fall no longer capture these sprites: the same
+      // live aura remains active and follows the Main throughout each phase.
+      blending: THREE.CustomBlending,
+      blendEquation: THREE.AddEquation,
+      blendSrc: THREE.SrcAlphaFactor,
+      blendDst: THREE.OneFactor,
+      blendEquationAlpha: THREE.AddEquation,
+      blendSrcAlpha: THREE.OneFactor,
+      blendDstAlpha: THREE.OneMinusSrcAlphaFactor,
+
+      toneMapped: false
+    });
+    const aura = new THREE.Sprite(material);
+    aura.name = `main-dice-external-aura-${index + 1}`;
+    const baseSize = layer.scale;
+    aura.scale.set(baseSize, baseSize, 1);
+    aura.position.set(0, 0, 0);
+    aura.userData.auraBaseSize = baseSize;
+    aura.userData.auraBaseOpacity = layer.opacity;
+    aura.userData.auraPulsePhase = layer.phase;
+    aura.userData.auraOrbit = layer.orbit;
+    aura.userData.auraTexture = auraTexture;
+    aura.renderOrder = 3 + index * 0.01;
+    aura.frustumCulled = false;
+    group.add(aura);
+  });
+
+  mainDie.add(group);
+  mainPlasmaOverlayMesh = group;
+  return mainPlasmaOverlayMesh;
+}
+
+function forEachMainPlasmaMaterial(callback) {
+  if (!mainPlasmaOverlayMesh) return;
+  mainPlasmaOverlayMesh.traverse(child => {
+    if (!child.isMesh) return;
+    const materials = Array.isArray(child.material) ? child.material : [child.material];
+    materials.forEach(callback);
+  });
+}
+
+function setMainTintProgress(progress) {
   const active = selectedMain !== "Random";
+  mainTintProgress = active ? THREE.MathUtils.clamp(progress, 0, 1) : 0;
   diceStageEl?.classList.toggle("main-selected", active);
 
   if (mainGlowLight) {
-    mainGlowLight.intensity = active ? 1.05 : 0;
+    mainGlowLight.intensity = active
+      ? MAIN_PLASMA_GLOW_INTENSITY * mainTintProgress * 0.82
+      : 0;
   }
 
-  diceMeshes.forEach((mesh, index) => {
-    if (!Array.isArray(mesh.material)) return;
+  const plasmaOverlay = ensureMainPlasmaOverlay();
+  if (plasmaOverlay) {
+    plasmaOverlay.visible = active && mainTintProgress > 0;
+    forEachMainPlasmaMaterial(material => {
+      material.uniforms.uProgress.value = mainTintProgress;
+    });
 
+    // Aura opacity intentionally lives in updateMainPlasmaTime() only.
+    // Do not write sprite opacity here: doing so drops the active breath factor
+    // during Drop/Idle/Fall handoffs and creates a visible brightness jump.
+  }
+
+  // The real die materials remain unchanged. This is important for a seamless
+  // drop -> idle -> fall handoff: all three states show the same shader overlay
+  // instead of using a separate colour/emissive treatment for the resting die.
+  diceMeshes.forEach(mesh => {
+    if (!Array.isArray(mesh.material)) return;
     mesh.material.forEach(material => {
       if (!material || !("emissive" in material)) return;
-
-      if (active && index === 0) {
-        material.emissive.setHex(0x32c878);
-        material.emissiveIntensity = 0.34;
-      } else {
-        material.emissive.setHex(0x000000);
-        material.emissiveIntensity = 0;
+      if (material.userData.mainTintBaseColor) {
+        material.color.copy(material.userData.mainTintBaseColor);
       }
+      material.emissive.setHex(0x000000);
+      material.emissiveIntensity = 0;
       material.needsUpdate = true;
     });
   });
 }
+
+function updateMainPlasmaTime(timeSeconds) {
+  if (selectedMain === "Random") {
+    if (mainPlasmaOverlayMesh) mainPlasmaOverlayMesh.visible = false;
+    if (mainGlowLight) mainGlowLight.intensity = 0;
+    mainPlasmaLastFrameTime = timeSeconds;
+    return;
+  }
+
+  if (mainPlasmaLastFrameTime === null) mainPlasmaLastFrameTime = timeSeconds;
+  const delta = THREE.MathUtils.clamp(timeSeconds - mainPlasmaLastFrameTime, 0, 0.08);
+  mainPlasmaLastFrameTime = timeSeconds;
+  if (!mainPlasmaPaused) mainPlasmaClock += delta;
+
+  // Three non-matching rhythms create a slow, organic breath without random
+  // jumps. The result remains deterministic, snapshot-safe and cheap.
+  const breathRaw =
+    Math.sin(mainPlasmaClock * 1.37) * 0.52 +
+    Math.sin(mainPlasmaClock * 0.73 + 1.8) * 0.31 +
+    Math.sin(mainPlasmaClock * 0.29 + 4.1) * 0.17;
+  const breath = THREE.MathUtils.clamp(0.5 + breathRaw * 0.42, 0, 1);
+
+  if (mainPlasmaOverlayMesh) {
+    forEachMainPlasmaMaterial(material => {
+      // Keep the flow clock monotonic and constant-speed. Modulating the clock
+      // by breath made the pattern subtly accelerate/decelerate and could read
+      // as a back-and-forth motion. Breath now affects only energy/intensity.
+      material.uniforms.uTime.value = mainPlasmaClock;
+      material.uniforms.uBreath.value = breath;
+    });
+
+    // External aura: continuous circular drift + breathing. No ping-pong.
+    // The glow itself stays outside because the solid cube masks the sprite centre.
+    mainPlasmaOverlayMesh.children.forEach(child => {
+      if (!child.isSprite || !child.userData?.auraBaseSize) return;
+      const baseSize = child.userData.auraBaseSize;
+      const phase = child.userData.auraPulsePhase || 0;
+      const orbit = child.userData.auraOrbit || 0;
+      const angle = mainPlasmaClock * 0.42 + phase;
+      const wave = 1.0 + Math.sin(mainPlasmaClock * 0.68 + phase) * 0.025 + (breath - 0.5) * 0.055;
+      child.scale.set(baseSize * wave, baseSize * (2.0 - wave), 1);
+      child.position.set(Math.cos(angle) * orbit, Math.sin(angle) * orbit * 0.72, 0);
+      child.material.opacity =
+        (child.userData.auraBaseOpacity || 0) *
+        mainTintProgress *
+        THREE.MathUtils.lerp(0.82, 1.12, breath);
+    });
+  }
+
+  const active = selectedMain !== "Random" && mainTintProgress > 0;
+  if (mainGlowLight) {
+    const die = diceMeshes[0];
+    if (die) {
+      die.getWorldPosition(mainGlowWorldPosition);
+      mainGlowLight.position.set(mainGlowWorldPosition.x, mainGlowWorldPosition.y + 0.12, mainGlowWorldPosition.z + 1.45);
+    }
+    mainGlowLight.intensity = active
+      ? MAIN_PLASMA_GLOW_INTENSITY * mainTintProgress * THREE.MathUtils.lerp(0.72, 1.08, breath)
+      : 0;
+  }
+}
+
+function getMainAuraSprites() {
+  if (!mainPlasmaOverlayMesh) return [];
+  return mainPlasmaOverlayMesh.children.filter(
+    child => child.isSprite && child.userData?.auraBaseSize
+  );
+}
+
+function setMainAuraVisibility(visible) {
+  getMainAuraSprites().forEach(aura => {
+    aura.visible = visible;
+  });
+}
+
+function beginLiveMainAuraTransition({ zIndex, transformOrigin = "center center" }) {
+  if (liveMainAuraTransition || selectedMain === "Random") return liveMainAuraTransition;
+
+  const canvas = renderer?.domElement;
+  const mainDie = diceMeshes[0];
+  if (!canvas || !mainDie || !mainPlasmaOverlayMesh || !getMainAuraSprites().length) return null;
+
+  const canvasRect = canvas.getBoundingClientRect();
+  if (!canvasRect.width || !canvasRect.height) return null;
+
+  const sourceMaterials = Array.isArray(mainDie.material) ? mainDie.material : [mainDie.material];
+  const plasmaMeshes = mainPlasmaOverlayMesh.children.filter(child => child.isMesh);
+  const state = {
+    canvas,
+    canvasParent: canvas.parentNode,
+    canvasNextSibling: canvas.nextSibling,
+    canvasStyle: canvas.getAttribute("style"),
+    diceVisibility: diceMeshes.map(die => die.visible),
+    shadowVisibility: diceShadowMeshes.map(shadow => shadow.visible),
+    floorVisible: floor?.visible,
+    sourceColorWrite: sourceMaterials.map(material => material.colorWrite),
+    plasmaVisibility: plasmaMeshes.map(mesh => mesh.visible),
+    overlayVisible: mainPlasmaOverlayMesh.visible,
+    sourceMaterials,
+    plasmaMeshes,
+    canvasRect: {
+      width: canvasRect.width,
+      height: canvasRect.height
+    },
+    dieTransforms: diceMeshes.map(die => ({
+      position: die.position.clone(),
+      rotation: die.rotation.clone(),
+      scale: die.scale.clone()
+    }))
+  };
+
+  // Keep the complete resting WebGL composition alive. The support dice now
+  // remain in the same framebuffer as the additive Main aura, so the aura sees
+  // exactly the same white dice behind it during Drop/Fall as it does in Idle.
+  // Only the Main resin colour and its internal plasma/orb are suppressed; the
+  // existing DOM Main snapshot supplies those pixels during the transition.
+  diceShadowMeshes.forEach(shadow => {
+    shadow.visible = false;
+  });
+  if (floor) floor.visible = false;
+  sourceMaterials.forEach(material => {
+    material.colorWrite = false;
+  });
+  plasmaMeshes.forEach(mesh => {
+    mesh.visible = false;
+  });
+  mainPlasmaOverlayMesh.visible = true;
+  setMainAuraVisibility(true);
+
+  renderSceneWithDiceLayers();
+
+  // Keep the canvas fixed at its normal viewport rectangle. Individual live
+  // dice transforms are driven from the already-existing DOM animation clocks,
+  // so support dice stay in this framebuffer while every motion/timing remains
+  // identical to the approved snapshot animation.
+  document.body.appendChild(canvas);
+  Object.assign(canvas.style, {
+    position: "fixed",
+    left: `${canvasRect.left}px`,
+    top: `${canvasRect.top}px`,
+    width: `${canvasRect.width}px`,
+    height: `${canvasRect.height}px`,
+    margin: "0",
+    transform: "none",
+    transformOrigin,
+    zIndex: String(zIndex),
+    pointerEvents: "none"
+  });
+
+  liveMainAuraTransition = state;
+  return state;
+}
+
+function interpolateMotionFrame(frames, progress) {
+  const clamped = THREE.MathUtils.clamp(progress ?? 0, 0, 1);
+  let from = frames[0];
+  let to = frames[frames.length - 1];
+
+  for (let index = 1; index < frames.length; index += 1) {
+    if (clamped <= frames[index].offset) {
+      from = frames[index - 1];
+      to = frames[index];
+      break;
+    }
+  }
+
+  const span = Math.max(0.000001, to.offset - from.offset);
+  const local = THREE.MathUtils.clamp((clamped - from.offset) / span, 0, 1);
+  return {
+    x: THREE.MathUtils.lerp(from.x, to.x, local),
+    y: THREE.MathUtils.lerp(from.y, to.y, local),
+    rotation: THREE.MathUtils.lerp(from.rotation || 0, to.rotation || 0, local)
+  };
+}
+
+function cubicBezierProgress(progress, x1, y1, x2, y2) {
+  const targetX = THREE.MathUtils.clamp(progress, 0, 1);
+  let low = 0;
+  let high = 1;
+  let t = targetX;
+
+  const sample = (value, control1, control2) => {
+    const inverse = 1 - value;
+    return 3 * inverse * inverse * value * control1
+      + 3 * inverse * value * value * control2
+      + value * value * value;
+  };
+
+  for (let iteration = 0; iteration < 12; iteration += 1) {
+    const sampledX = sample(t, x1, x2);
+    if (Math.abs(sampledX - targetX) < 0.0001) break;
+    if (sampledX < targetX) low = t;
+    else high = t;
+    t = (low + high) * 0.5;
+  }
+
+  return sample(t, y1, y2);
+}
+
+function applyLiveDiceMotion(state, index, motion) {
+  const die = diceMeshes[index];
+  const base = state?.dieTransforms?.[index];
+  const rect = state?.canvasRect;
+  if (!die || !base || !rect?.width || !rect?.height || !camera) return;
+
+  liveMotionProjected.copy(base.position).project(camera);
+  liveMotionProjected.x += (motion.x / rect.width) * 2;
+  liveMotionProjected.y -= (motion.y / rect.height) * 2;
+  die.position.copy(liveMotionProjected.unproject(camera));
+  die.rotation.copy(base.rotation);
+  die.rotation.z += THREE.MathUtils.degToRad(motion.rotation || 0);
+  die.scale.copy(base.scale);
+}
+
+function runSynchronizedDiceMotions(state, tracks) {
+  if (!state || !tracks?.length) return Promise.resolve();
+
+  tracks.forEach(track => {
+    track.animation.pause();
+    track.animation.currentTime = 0;
+  });
+
+  return new Promise(resolve => {
+    const startedAt = performance.now();
+
+    const tick = now => {
+      const elapsed = now - startedAt;
+      let complete = true;
+
+      tracks.forEach(track => {
+        const delay = track.delay || 0;
+        const duration = Math.max(1, track.duration || 1);
+        const raw = THREE.MathUtils.clamp((elapsed - delay) / duration, 0, 1);
+        const eased = cubicBezierProgress(raw, ...track.bezier);
+        const motion = interpolateMotionFrame(track.frames, eased);
+
+        track.animation.currentTime = Math.min(elapsed, delay + duration);
+        applyLiveDiceMotion(state, track.index, motion);
+        if (elapsed < delay + duration) complete = false;
+      });
+
+      renderSceneWithDiceLayers();
+
+      if (complete) {
+        tracks.forEach(track => {
+          track.animation.currentTime = (track.delay || 0) + Math.max(1, track.duration || 1);
+        });
+        resolve();
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  });
+}
+
+function endLiveMainAuraTransition({ renderAfterRestore = true } = {}) {
+  const state = liveMainAuraTransition;
+  if (!state) return;
+
+  const {
+    canvas,
+    canvasParent,
+    canvasNextSibling,
+    canvasStyle,
+    diceVisibility,
+    shadowVisibility,
+    floorVisible,
+    sourceColorWrite,
+    plasmaVisibility,
+    overlayVisible,
+    sourceMaterials,
+    plasmaMeshes,
+    dieTransforms
+  } = state;
+
+  if (canvasParent) {
+    if (canvasNextSibling?.parentNode === canvasParent) {
+      canvasParent.insertBefore(canvas, canvasNextSibling);
+    } else {
+      canvasParent.appendChild(canvas);
+    }
+  }
+
+  if (canvasStyle === null) canvas.removeAttribute("style");
+  else canvas.setAttribute("style", canvasStyle);
+
+  sourceMaterials.forEach((material, index) => {
+    material.colorWrite = sourceColorWrite[index];
+  });
+  plasmaMeshes.forEach((mesh, index) => {
+    mesh.visible = plasmaVisibility[index];
+  });
+  mainPlasmaOverlayMesh.visible = overlayVisible;
+  diceMeshes.forEach((die, index) => {
+    die.visible = diceVisibility[index];
+    const transform = dieTransforms[index];
+    if (transform) {
+      die.position.copy(transform.position);
+      die.rotation.copy(transform.rotation);
+      die.scale.copy(transform.scale);
+    }
+  });
+  diceShadowMeshes.forEach((shadow, index) => {
+    shadow.visible = shadowVisibility[index];
+  });
+  if (floor) floor.visible = floorVisible;
+
+  liveMainAuraTransition = null;
+  if (renderAfterRestore) renderSceneWithDiceLayers();
+}
+
+function pauseMainPlasmaAnimation() {
+  mainPlasmaPaused = true;
+  updateMainPlasmaTime(performance.now() / 1000);
+}
+
+function resumeMainPlasmaAnimation() {
+  mainPlasmaPaused = false;
+  mainPlasmaLastFrameTime = performance.now() / 1000;
+}
+
+function updateMainSelectionGlow() {
+  // Selection only toggles VFX/lock state. It never changes the Main's physical
+  // material, composite, position, rotation or size.
+  const mainDie = diceMeshes[0];
+  if (mainDie && Array.isArray(mainDie.material)) {
+    mainDie.material.forEach(material => {
+      material.transparent = false;
+      material.opacity = 1;
+      material.depthTest = true;
+      material.depthWrite = true;
+    });
+  }
+  setMainTintProgress(selectedMain !== "Random" ? 1 : 0);
+}
+
 
 function buildMainMenu() {
   if (!mainChoiceList) return;
@@ -277,7 +1207,6 @@ function buildMainMenu() {
       if (activeTheme === "classic") {
         localStorage.setItem("tattooDiceSelectedMain", selectedMain);
       }
-      updateMainSelectionGlow();
       updateActionButtonLabels();
 
       mainChoiceList.querySelectorAll(".main-choice").forEach(choice => {
@@ -296,50 +1225,88 @@ function buildMainMenu() {
 }
 
 function applyMainSelectionDrop() {
-  if (!deck.length || rollInProgress || introActive) return;
+  if (!deck.length) return;
+  if (rollInProgress || introActive || snapshotDropActive) return;
 
+  closeMainHint();
+
+  // A fixed Main already determines the first subject, so a one-die result has
+  // no random outcome left. Preserve the former UX by moving an existing
+  // one-die composition directly to the minimum valid two-dice composition.
+  if (selectedMain !== "Random" && wordCount === 1) {
+    // The current one-die Random result must fall out as the unchanged normal
+    // die. The newly selected VFX becomes active only for the incoming Main.
+    setMainTintProgress(0);
+    requestDiceCount(2);
+    return;
+  }
+
+  const nextRoll = makeRoll(wordCount);
+
+  // Universal slot system: Main selection changes ONLY slot 0.
+  // Rear slots, their transforms, materials and textures remain untouched.
+  if (typeof nextRoll[0] === "string" && diceMeshes[0]?.userData.layout) {
+    currentRoll[0] = nextRoll[0];
+    updateSlotFaceTextures(diceMeshes[0], nextRoll[0], diceMeshes[0].userData.layout);
+  }
+
+  updateMainSelectionGlow();
+  playTopDrop(false);
+}
+
+
+
+
+function positionMainHint() {
+  if (!hiddenActive || !mainHintOverlay || !mainHintButtonStage || !mainButton) return;
+
+  const rect = mainButton.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
+  mainHintOverlay.style.setProperty("--main-hint-button-left", `${rect.left}px`);
+  mainHintOverlay.style.setProperty("--main-hint-button-width", `${rect.width}px`);
+  mainHintOverlay.style.setProperty("--main-hint-button-height", `${rect.height}px`);
+  mainHintOverlay.style.setProperty("--main-hint-center-x", `${rect.left + rect.width * 0.5}px`);
+  mainHintOverlay.style.setProperty("--main-hint-button-top", `${rect.top}px`);
+}
+
+function showMainHint() {
+  if (!mainHintOverlay || !mainHintButtonStage || !mainButton) return;
+
+  const clone = mainButton.cloneNode(true);
+  clone.removeAttribute("id");
+  clone.removeAttribute("aria-haspopup");
+  clone.disabled = true;
+  clone.tabIndex = -1;
+  mainHintButtonStage.replaceChildren(clone);
+
+  hiddenActive = true;
+  mainHintShownAt = performance.now();
+  mainHintOverlay.classList.add("show");
+  mainHintOverlay.setAttribute("aria-hidden", "false");
+  positionMainHint();
+  requestAnimationFrame(positionMainHint);
+}
+
+function closeMainHint() {
+  if (!mainHintOverlay) return;
   hiddenActive = false;
-  hiddenMessageEl.classList.remove("show");
-  if (screenFade) screenFade.classList.remove("show");
-
-  currentRoll = makeRoll(wordCount);
-  renderDice(currentRoll, false);
-  playTopDrop(false);
+  mainHintOverlay.classList.remove("show");
+  mainHintOverlay.setAttribute("aria-hidden", "true");
 }
 
-function replayCurrentDiceFromTop() {
-  if (!deck.length || rollInProgress || introActive) return;
-  renderDice(currentRoll, false);
-  playTopDrop(false);
+function bindMainHintDismiss() {
+  if (mainHintDismissBound || !mainHintOverlay) return;
+  mainHintDismissBound = true;
+
+  mainHintOverlay.addEventListener("pointerup", event => {
+    if (!hiddenActive || performance.now() - mainHintShownAt < 180) return;
+    event.preventDefault();
+    closeMainHint();
+  }, { passive: false });
+  window.addEventListener("resize", positionMainHint, { passive: true });
+  window.addEventListener("orientationchange", positionMainHint, { passive: true });
 }
-
-function startMainDropAnimation() {
-  const now = performance.now() / 1000;
-  mainDropStartTime = now;
-  mainDropActive = true;
-
-  diceMeshes.forEach((die, index) => {
-    const layout = die.userData.layout;
-    die.userData.dropTargetPosition = new THREE.Vector3(layout[0], layout[1], layout[2]);
-    die.userData.dropTargetRotation = new THREE.Euler(layout[3], layout[4], layout[5]);
-    die.userData.dropStartY = layout[1] + 6.2 + index * 0.55;
-    die.userData.dropImpact = 0.54 + index * 0.035;
-    die.userData.dropStrength = index === 0 ? 0.68 : 0.50;
-
-    die.position.set(layout[0], die.userData.dropStartY, layout[2]);
-    die.rotation.set(
-      layout[3] - Math.PI * 4,
-      layout[4] - Math.PI * 2,
-      layout[5] - Math.PI * 2
-    );
-    die.scale.set(1, 1, 1);
-    die.userData.rolling = false;
-  });
-}
-
-
-function closeHiddenMessage(){if(!hiddenMessageEl)return;hiddenActive=false;hiddenMessageEl.classList.remove("show");}
-function bindGlobalHiddenMessageDismiss(){const dismiss=e=>{if(!hiddenActive)return;e.preventDefault();closeHiddenMessage();};document.addEventListener("pointerup",dismiss,{passive:false});document.addEventListener("click",dismiss);}
 
 function disablePageZoom(){
 document.addEventListener("gesturestart",e=>e.preventDefault(),{passive:false});
@@ -365,46 +1332,62 @@ async function init() {
   disablePageZoom();
   requestPortraitLock();
   setupThree();
-  loadStoredMain();
+
+  // Requested startup state: Random every time.
+  selectedMain = "Random";
   updateThemeMenu();
   updateActionButtonLabels();
 
+  const splashStarted = performance.now();
+  setSplashProgress(8);
+
   await loadDeck();
+  setSplashProgress(24);
+
+  // Move first-use texture work behind the splash.
+  await warmDiceTextures({ awaitCompletion: true });
+  setSplashProgress(48);
+
   validateDeckScores();
   buildMainMenu();
-  updateMainSelectionGlow();
 
-  // Preload the exact first result and all materials while the intro text is visible.
   wordCount = 3;
   currentRoll = makeRoll(3);
-  renderDice(currentRoll, false);
-  renderer.compile(scene, camera);
-  renderer.render(scene, camera);
 
-  await loadCounter();
-  await waitForIntroTap();
-  await playIntroRoll();
-  await incrementCounter();
+  // renderDice creates the three permanent slots + hidden Main VFX exactly once.
+  renderDice(currentRoll, false);
+  diceMeshes.forEach(die => { die.visible = false; });
+  diceShadowMeshes.forEach((_, index) => setDiceShadowState(index, 0, false));
+
+  // One deliberate startup compile, never in a Roll/count/Main interaction.
+  renderer.compile(scene, camera);
+  renderSceneWithDiceLayers();
+  setSplashProgress(78);
+
+  // Counter is deliberately non-blocking; the splash cannot get stuck on a network call.
+  loadCounter().catch(error => console.warn("Counter load skipped:", error));
+  await wait(Math.max(0, 1650 - (performance.now() - splashStarted)));
+  setSplashProgress(100);
+  await wait(260);
+
+  await animateSplashLogoToHeader();
+  await wait(40);
+
+  diceMeshes.forEach((die, index) => {
+    die.visible = index < wordCount && Boolean(die.userData.layout);
+  });
+  await playTopDrop(true);
+  setTimeout(() => introGateEl?.remove(), 520);
+  incrementCounter().catch(error => console.warn("Counter increment skipped:", error));
 
   diceOptions.forEach(button => {
     button.addEventListener("click", () => {
-      if (rollInProgress) return;
-
-      wordCount = Number(button.dataset.count);
-      diceOptions.forEach(b => b.classList.remove("active"));
-      button.classList.add("active");
-
-      registerSecretInput(String(wordCount));
-
-      // Changing dice count only changes the mode.
-      // No automatic roll here; user must press ROLL again.
+      requestDiceCount(Number(button.dataset.count));
     });
   });
 
   rollButton.addEventListener("click", () => {
-    closeHiddenMessage();
-
-    roll({ countIt: true });
+    requestRoll();
   });
 
   if (themeButton && themeModal) {
@@ -421,14 +1404,20 @@ async function init() {
       }, { passive: false });
     });
 
-    classicThemeChoice?.addEventListener("pointerup", event => {
+    classicThemeChoice?.addEventListener("pointerup", async event => {
       event.preventDefault();
-      selectTheme("classic");
+      await selectTheme("classic");
+      setThemeModalState(false);
     }, { passive: false });
 
-    fantasyThemeChoice?.addEventListener("pointerup", event => {
+    fantasyThemeChoice?.addEventListener("pointerup", async event => {
       event.preventDefault();
-      selectTheme("fantasy");
+      if (!fantasyUnlocked) {
+        await selectTheme("fantasy");
+        return;
+      }
+      await selectTheme("fantasy");
+      setThemeModalState(false);
     }, { passive: false });
 
     pinModal?.querySelectorAll("[data-close-pin]").forEach(element => {
@@ -443,19 +1432,11 @@ async function init() {
       const clearButton = event.target.closest("[data-pin-clear]");
       const backspaceButton = event.target.closest("[data-pin-backspace]");
       if (!digitButton && !clearButton && !backspaceButton) return;
-
       event.preventDefault();
-
-      if (clearButton) {
-        pinInput = "";
-      } else if (backspaceButton) {
-        pinInput = pinInput.slice(0, -1);
-      } else if (pinInput.length < 4) {
-        pinInput += digitButton.dataset.pinDigit;
-      }
-
+      if (clearButton) pinInput = "";
+      else if (backspaceButton) pinInput = pinInput.slice(0, -1);
+      else if (pinInput.length < 4) pinInput += digitButton.dataset.pinDigit;
       updatePinDisplay();
-
       if (pinInput.length === 4) {
         if (pinInput === FANTASY_UNLOCK_CODE) {
           fantasyUnlocked = true;
@@ -485,7 +1466,6 @@ async function init() {
       event.stopPropagation();
       setMainModalState(true);
     }, { passive: false });
-
     mainModal.querySelectorAll("[data-close-main]").forEach(element => {
       element.addEventListener("pointerup", event => {
         event.preventDefault();
@@ -497,142 +1477,686 @@ async function init() {
   window.addEventListener("resize", resizeRenderer);
 }
 
-function waitForIntroTap() {
-  if (!introGateEl) return Promise.resolve();
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
+function setSplashProgress(percent) {
+  if (splashProgressBar) splashProgressBar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+}
+
+
+async function animateSplashLogoToHeader() {
+  const splashLogo = document.getElementById("splashLogo");
+  const headerLogo = document.querySelector(".app-header h1");
+  if (!introGateEl || !splashLogo || !headerLogo) return;
+
+  if (document.fonts?.ready) await document.fonts.ready.catch(() => {});
+  await nextPaint(2);
+
+  const from = splashLogo.getBoundingClientRect();
+  const to = headerLogo.getBoundingClientRect();
+  if (!from.width || !from.height || !to.width || !to.height) return;
+
+  const headerStyle = getComputedStyle(headerLogo);
+  const flyer = document.createElement("div");
+  flyer.className = "exact-header-logo-flight";
+  flyer.innerHTML = headerLogo.innerHTML;
+  flyer.setAttribute("aria-hidden", "true");
+  Object.assign(flyer.style, {
+    position: "fixed",
+    left: `${to.left}px`,
+    top: `${to.top}px`,
+    width: `${to.width}px`,
+    height: `${to.height}px`,
+    margin: "0",
+    padding: "0",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxSizing: "border-box",
+    font: headerStyle.font,
+    fontFamily: headerStyle.fontFamily,
+    fontSize: headerStyle.fontSize,
+    fontWeight: headerStyle.fontWeight,
+    lineHeight: headerStyle.lineHeight,
+    letterSpacing: headerStyle.letterSpacing,
+    color: headerStyle.color,
+    textShadow: headerStyle.textShadow,
+    WebkitTextStroke: headerStyle.webkitTextStroke,
+    whiteSpace: "nowrap",
+    zIndex: "700",
+    pointerEvents: "none",
+    transformOrigin: "center center",
+    willChange: "transform"
+  });
+  document.body.appendChild(flyer);
+
+  const sourceCenterX = from.left + from.width / 2;
+  const sourceCenterY = from.top + from.height / 2;
+  const targetCenterX = to.left + to.width / 2;
+  const targetCenterY = to.top + to.height / 2;
+  const dx = sourceCenterX - targetCenterX;
+  const dy = sourceCenterY - targetCenterY;
+  const sx = from.width / to.width;
+  const sy = from.height / to.height;
+  const startTransform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
+
+  flyer.style.transform = startTransform;
+  headerLogo.style.opacity = "0";
+  splashLogo.style.opacity = "0";
+  introGateEl.classList.add("logo-flight");
+  await nextPaint(2);
+
+  const logoFlight = flyer.animate([
+    { transform: startTransform },
+    { transform: "translate3d(0,0,0) scale(1,1)" }
+  ], {
+    duration: 780,
+    easing: "cubic-bezier(.22,.78,.22,1)",
+    fill: "forwards"
+  });
+
+  await logoFlight.finished.catch(() => {});
+
+  // Atomic handoff: the black splash disappears in the same paint in which
+  // the real header becomes visible. The clone remains above both for two
+  // complete frames, so there can be no empty or black bridge frame.
+  flyer.style.transform = "translate3d(0,0,0) scale(1,1)";
+  headerLogo.style.opacity = "1";
+  introGateEl.classList.add("finished");
+  await nextPaint(2);
+  flyer.remove();
+}
+
+function nextPaint(frameCount = 1) {
   return new Promise(resolve => {
-    const begin = event => {
-      if (introStarted) return;
-      if (event.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
-
-      event.preventDefault();
-      introStarted = true;
-      introGateEl.removeEventListener("pointerup", begin);
-      introGateEl.removeEventListener("click", begin);
-      introGateEl.removeEventListener("keydown", begin);
-      resolve();
+    const step = () => {
+      frameCount -= 1;
+      if (frameCount <= 0) resolve();
+      else requestAnimationFrame(step);
     };
-
-    introGateEl.addEventListener("pointerup", begin, { passive: false });
-    introGateEl.addEventListener("click", begin, { passive: false });
-    introGateEl.addEventListener("keydown", begin);
+    requestAnimationFrame(step);
   });
 }
 
-function playIntroRoll() {
-  return playTopDrop(true);
+
+function exitDropOverlay() {
+  document.querySelectorAll(".dice-drop-snapshot,.dice-drop-shadow").forEach(node => node.remove());
+  document.body.classList.remove("dice-drop-overlay");
 }
 
-function playTopDrop(isStartup = false) {
-  if (!diceMeshes.length || (isStartup && !introGateEl)) {
-    sceneWrap.classList.remove("intro-hidden");
-    if (isStartup) introGateEl?.remove();
-    return Promise.resolve();
+function captureDieSnapshot(index, { excludeMainAura = false } = {}) {
+  if (!renderer || !sceneWrap || !diceMeshes[index]) return null;
+  const canvas = renderer.domElement;
+  // Size the snapshot against the renderer canvas itself. Using the outer
+  // scene wrapper can stretch the captured WebGL frame by a few percent,
+  // which caused the visible "popcorn" size jump at handoff.
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+
+  const dieVisibility = diceMeshes.map(die => die.visible);
+  const shadowVisibility = diceShadowMeshes.map(shadow => shadow.visible);
+  const floorVisible = floor?.visible;
+  const auraVisibility = excludeMainAura && index === 0
+    ? getMainAuraSprites().map(aura => aura.visible)
+    : null;
+
+  let dataUrl = null;
+  try {
+    if (auraVisibility) setMainAuraVisibility(false);
+    diceMeshes.forEach((die, dieIndex) => { die.visible = dieIndex === index; });
+    diceShadowMeshes.forEach(shadow => { shadow.visible = false; });
+    if (floor) floor.visible = false;
+    renderSceneWithDiceLayers();
+    dataUrl = canvas.toDataURL("image/png");
+  } catch (error) {
+    console.warn("Die snapshot failed", error);
+  } finally {
+    if (auraVisibility) {
+      getMainAuraSprites().forEach((aura, auraIndex) => {
+        aura.visible = auraVisibility[auraIndex];
+      });
+    }
+    diceMeshes.forEach((die, dieIndex) => { die.visible = dieVisibility[dieIndex]; });
+    diceShadowMeshes.forEach((shadow, shadowIndex) => { shadow.visible = shadowVisibility[shadowIndex]; });
+    if (floor) floor.visible = floorVisible;
+    renderSceneWithDiceLayers();
   }
 
-  introIsStartup = isStartup;
-  introTargetRect = sceneWrap.getBoundingClientRect();
-  introStartTop = -introTargetRect.height - 26;
-  document.body.classList.add("intro-running");
+  return dataUrl ? { dataUrl, rect } : null;
+}
 
-  sceneWrap.classList.add("intro-moving");
-  sceneWrap.style.left = `${introTargetRect.left}px`;
-  sceneWrap.style.top = `${introStartTop}px`;
-  sceneWrap.style.width = `${introTargetRect.width}px`;
-  sceneWrap.style.height = `${introTargetRect.height}px`;
-  sceneWrap.classList.remove("intro-hidden");
+function captureMainPlasmaSnapshot(index) {
+  const die = diceMeshes[index];
+  if (!renderer || !sceneWrap || !die || index !== 0 || !mainPlasmaOverlayMesh) return null;
 
-  introAirDice = [];
+  const sourceMaterials = Array.isArray(die.material) ? die.material : [die.material];
+  const previousColorWrite = sourceMaterials.map(material => material.colorWrite);
+  const previousPlasmaVisible = mainPlasmaOverlayMesh.visible;
 
-  diceMeshes.forEach((die, index) => {
-    const layout = die.userData.layout;
-    const targetPosition = new THREE.Vector3(layout[0], layout[1], layout[2]);
-    const targetRotation = new THREE.Euler(layout[3], layout[4], layout[5]);
+  // Render only the plasma child onto the transparent WebGL canvas. The solid
+  // die is deliberately kept out of this capture, so fading the effect can
+  // never make the die itself transparent or darken its lettering.
+  sourceMaterials.forEach(material => { material.colorWrite = false; });
+  mainPlasmaOverlayMesh.visible = true;
+  const snapshot = captureDieSnapshot(index, { excludeMainAura: true });
+  sourceMaterials.forEach((material, materialIndex) => {
+    material.colorWrite = previousColorWrite[materialIndex];
+  });
+  mainPlasmaOverlayMesh.visible = previousPlasmaVisible;
+  renderSceneWithDiceLayers();
+  return snapshot;
+}
 
-    die.userData.introTargetPosition = targetPosition.clone();
-    die.userData.introTargetRotation = targetRotation.clone();
-    die.userData.introPhysicsStrength =
-      (index === 0 ? 0.76 : 0.58) * (0.95 + Math.random() * 0.10);
-    die.userData.introImpactDelay = index * (0.028 + Math.random() * 0.015);
-    die.userData.introLanded = false;
 
-    die.position.copy(targetPosition);
-    die.rotation.copy(targetRotation);
-    die.scale.set(1, 1, 1);
-    die.visible = false;
-    die.userData.rolling = false;
 
-    const airDie = die.clone();
-    airDie.geometry = die.geometry;
-    airDie.material = die.material;
-    airDie.visible = true;
-    airDie.position.copy(targetPosition);
-    airDie.scale.set(1, 1, 1);
-    airDie.renderOrder = die.renderOrder;
-    airDie.castShadow = die.castShadow;
-    airDie.receiveShadow = die.receiveShadow;
 
-    const turnsX = index === 0 ? 4 : 3 + index;
-    const turnsY = index === 0 ? 2 : 1 + index;
-    const turnsZ = index === 0 ? 1 : index;
 
-    airDie.userData.startRotation = new THREE.Euler(
-      targetRotation.x - turnsX * Math.PI * 2,
-      targetRotation.y - turnsY * Math.PI * 2,
-      targetRotation.z - turnsZ * Math.PI * 2
-    );
-    airDie.userData.targetRotation = targetRotation.clone();
-    airDie.userData.impactStart = 0.60 + die.userData.introImpactDelay;
-    airDie.rotation.copy(airDie.userData.startRotation);
 
-    scene.add(airDie);
-    introAirDice.push(airDie);
+
+
+
+
+function projectedDieCenter(index) {
+  const die = diceMeshes[index];
+  const rect = sceneWrap.getBoundingClientRect();
+  const point = die.position.clone().project(camera);
+  return {
+    x: rect.left + (point.x + 1) * 0.5 * rect.width,
+    y: rect.top + (1 - point.y) * 0.5 * rect.height
+  };
+}
+
+function applyDropLandingPose(index) {
+  const die = diceMeshes[index];
+  const pose = getDicePose(index, wordCount);
+  if (!die || !pose) return;
+
+  applyCanonicalDicePose(index, wordCount);
+  die.userData.rolling = false;
+}
+
+async function animateSingleDieDrop(index, duration = 784) {
+  const die = diceMeshes[index];
+  const shadowMesh = diceShadowMeshes[index];
+  if (!die) return;
+
+  // Keep the proven full-canvas drop animation. Only its final pose is
+  // corrected: capture the die at the exact resting transform already used by
+  // the normal, stationary scene.
+  applyDropLandingPose(index);
+  die.visible = true;
+
+  const isSelectedMain = index === 0 && selectedMain !== "Random";
+  if (isSelectedMain) {
+    setMainTintProgress(1);
+    pauseMainPlasmaAnimation();
+    updateMainPlasmaTime(performance.now() / 1000);
+    renderSceneWithDiceLayers();
+    }
+  // Aura is deliberately excluded from the DOM snapshot. The one existing live
+  // Three.js aura remains attached to the Main and follows these same frames.
+  const snapshot = captureDieSnapshot(index, { excludeMainAura: isSelectedMain });
+  if (!snapshot) {
+    if (isSelectedMain) resumeMainPlasmaAnimation();
+    return;
+  }
+  const image = document.createElement("img");
+  image.className = "dice-drop-snapshot";
+  image.alt = "";
+  image.src = snapshot.dataUrl;
+
+  // Put the snapshot at its first Drop frame before it enters the DOM. Safari
+  // can otherwise composite the newly appended image once at its idle position
+  // before Web Animations applies the first keyframe.
+  const startY = -(snapshot.rect.top + snapshot.rect.height + 220);
+  Object.assign(image.style, {
+    left: `${snapshot.rect.left}px`,
+    top: `${snapshot.rect.top}px`,
+    width: `${snapshot.rect.width}px`,
+    height: `${snapshot.rect.height}px`,
+    zIndex: isSelectedMain ? "652" : "650",
+    transform: `translate3d(0,${startY}px,0)`
   });
 
-  if (isStartup) introGateEl.classList.add("starting");
-  introStartTime = performance.now() / 1000;
-  introActive = true;
+  document.body.append(image);
 
+
+  document.body.classList.add("dice-drop-overlay");
+  const liveAura = isSelectedMain
+    ? beginLiveMainAuraTransition({ zIndex: 651 })
+    : null;
+  if (!liveAura) die.visible = false;
+
+  // Contact shadows are disabled in v2.22.
+  if (shadowMesh) {
+    shadowMesh.visible = false;
+    shadowMesh.material.opacity = 0;
+  }
+  renderSceneWithDiceLayers();
+
+  // Move the complete transparent canvas far enough upward that the die itself
+  // starts outside the physical screen. No scale keyframes means no morphing.
+  const horizontalWobble = index === 1 ? -8 : index === 2 ? 8 : 5;
+  const dropFrames = [
+    { transform: `translate3d(0,${startY}px,0)`, offset: 0 },
+    { transform: `translate3d(${horizontalWobble}px,${startY * 0.54}px,0)`, offset: 0.42 },
+    { transform: `translate3d(${-horizontalWobble * 0.45}px,-14px,0)`, offset: 0.84 },
+    { transform: "translate3d(0,7px,0)", offset: 0.94 },
+    { transform: "translate3d(0,0,0)", offset: 1 }
+  ];
+  const liveDropFrames = [
+    { x: 0, y: startY, rotation: 0, offset: 0 },
+    { x: horizontalWobble, y: startY * 0.54, rotation: 0, offset: 0.42 },
+    { x: -horizontalWobble * 0.45, y: -14, rotation: 0, offset: 0.84 },
+    { x: 0, y: 7, rotation: 0, offset: 0.94 },
+    { x: 0, y: 0, rotation: 0, offset: 1 }
+  ];
+  const dropOptions = {
+    duration,
+    easing: "cubic-bezier(.36,.02,.24,1)",
+    fill: "forwards"
+  };
+  const baseDropFrames = dropFrames.map(frame => ({ ...frame, opacity: 1 }));
+  const drop = image.animate(baseDropFrames, dropOptions);
+  const dropFinished = liveAura
+    ? runSynchronizedDiceMotions(liveAura, [{
+        animation: drop,
+        index,
+        frames: liveDropFrames,
+        duration,
+        delay: 0,
+        bezier: [0.36, 0.02, 0.24, 1]
+      }])
+    : drop.finished.catch(() => {});
+
+  await dropFinished;
+
+  // Atomic handoff: remove the DOM snapshot before revealing the real mesh,
+  // then render both changes in the same JavaScript turn. The browser therefore
+  // never paints the snapshot and the Three.js die on top of each other.
+  applyDropLandingPose(index);
+  if (isSelectedMain) setMainTintProgress(1);
+  image.remove();
+  if (liveAura) endLiveMainAuraTransition({ renderAfterRestore: false });
+  die.visible = true;
+  syncDiceShadow(index, 1, true);
+  renderSceneWithDiceLayers();
+  if (isSelectedMain) resumeMainPlasmaAnimation();
+}
+
+function captureVisibleDiceCover({ excludeMainAura = false } = {}) {
+  if (!renderer?.domElement) return null;
+  const canvas = renderer.domElement;
+  const rect = canvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+
+  const auraVisibility = excludeMainAura
+    ? getMainAuraSprites().map(aura => aura.visible)
+    : null;
+  let dataUrl = null;
+  try {
+    if (auraVisibility) setMainAuraVisibility(false);
+    renderSceneWithDiceLayers();
+    dataUrl = canvas.toDataURL("image/png");
+  } catch (error) {
+    console.warn("Dice cover snapshot failed", error);
+  } finally {
+    if (auraVisibility) {
+      getMainAuraSprites().forEach((aura, auraIndex) => {
+        aura.visible = auraVisibility[auraIndex];
+      });
+    }
+    renderSceneWithDiceLayers();
+  }
+  if (!dataUrl) return null;
+
+  const image = document.createElement("img");
+  image.className = "dice-drop-snapshot dice-exit-capture-cover";
+  image.alt = "";
+  image.src = dataUrl;
+  Object.assign(image.style, {
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
+    zIndex: "653"
+  });
+  document.body.append(image);
+  return image;
+}
+
+function waitForPaintFrames(count = 2) {
   return new Promise(resolve => {
-    introResolve = resolve;
+    const step = () => {
+      count -= 1;
+      if (count <= 0) resolve();
+      else requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   });
+}
+
+async function playCountSelectionExit() {
+  if (!diceMeshes.length) return;
+
+  // Keep one unchanged full-scene frame over the visible WebGL canvas while
+  // individual die snapshots are captured. captureDieSnapshot temporarily
+  // isolates each mesh; without this cover those internal capture renders can
+  // become visible as a one-frame blink immediately before the fall.
+  const canvas = renderer?.domElement || null;
+  const hasLiveMainAura =
+    selectedMain !== "Random" &&
+    mainTintProgress > 0 &&
+    diceMeshes[0]?.visible;
+  if (hasLiveMainAura) {
+    setMainTintProgress(1);
+    pauseMainPlasmaAnimation();
+    updateMainPlasmaTime(performance.now() / 1000);
+    renderSceneWithDiceLayers();
+  }
+  const cover = captureVisibleDiceCover({ excludeMainAura: hasLiveMainAura });
+  const previousCanvasVisibility = canvas?.style.visibility || "";
+  if (cover && canvas) {
+    // Data-URL images can be appended before their first composited frame.
+    // Hiding WebGL in the same task caused the single pre-fall flash on iOS.
+    // Two RAFs guarantees a painted cover without using image.decode(), which
+    // previously proved unsafe for this PWA startup path.
+    await waitForPaintFrames(2);
+    if (!hasLiveMainAura) canvas.style.visibility = "hidden";
+  }
+
+  const snapshots = [];
+  diceMeshes.forEach((die, index) => {
+    if (!die.visible) return;
+    const isSelectedMain = index === 0 && selectedMain !== "Random";
+
+    const snapshot = captureDieSnapshot(index, { excludeMainAura: isSelectedMain });
+    if (!snapshot) return;
+
+    const image = document.createElement("img");
+    image.className = "dice-drop-snapshot dice-count-exit-snapshot";
+    image.alt = "";
+    image.src = snapshot.dataUrl;
+    Object.assign(image.style, {
+      left: `${snapshot.rect.left}px`,
+      top: `${snapshot.rect.top}px`,
+      width: `${snapshot.rect.width}px`,
+      height: `${snapshot.rect.height}px`,
+      transformOrigin: "50% 58%",
+      opacity: "1",
+      // Preserve the resting scene hierarchy during the DOM-snapshot exit:
+      // the main/middle die must stay above both rear dice for every frame.
+      zIndex: index === 0 ? "652" : "650"
+    });
+    document.body.append(image);
+
+
+    snapshots.push({ image, index, rect: snapshot.rect, isSelectedMain });
+  });
+
+  if (!snapshots.length) {
+    cover?.remove();
+    if (canvas) canvas.style.visibility = previousCanvasVisibility;
+    resumeMainPlasmaAnimation();
+    return;
+  }
+
+  document.body.classList.add("dice-drop-overlay");
+  const liveAura = hasLiveMainAura
+    ? beginLiveMainAuraTransition({ zIndex: 651, transformOrigin: "50% 58%" })
+    : null;
+  if (!liveAura) {
+    diceMeshes.forEach(die => { die.visible = false; });
+    diceShadowMeshes.forEach((_, index) => setDiceShadowState(index, 0, false));
+    renderSceneWithDiceLayers();
+  } else {
+    // Support dice are now the real live meshes in the same framebuffer as
+    // the aura. Their old DOM snapshots remain only as invisible animation
+    // clocks, preventing duplicate/brighter dice during the Fall.
+    snapshots.forEach(({ image, isSelectedMain }) => {
+      if (!isSelectedMain) image.style.visibility = "hidden";
+    });
+  }
+
+  // Ensure the individual snapshots themselves have reached the compositor
+  // before removing the full-scene cover. This closes the second possible
+  // one-frame gap in the fall handoff.
+  await waitForPaintFrames(2);
+
+  // The animated exit snapshots are now ready. Swap them atomically for the
+  // temporary cover and reveal the already-cleared WebGL canvas underneath.
+  cover?.remove();
+  if (canvas && !liveAura) canvas.style.visibility = previousCanvasVisibility;
+
+  const animations = [];
+  const synchronizedTracks = [];
+  snapshots.forEach(({ image, index, rect, isSelectedMain }) => {
+    const direction = index === 1 ? -1 : 1;
+    const travelY = window.innerHeight - rect.top + rect.height + 180;
+    const travelX = direction * (18 + index * 7);
+    const rotation = direction * (16 + index * 5);
+    const movementFrames = [
+      { transform: "translate3d(0,0,0) rotate(0deg)", opacity: 1, offset: 0 },
+      { transform: `translate3d(${travelX * 0.18}px,18px,0) rotate(${rotation * 0.15}deg)`, opacity: 1, offset: 0.18 },
+      { transform: `translate3d(${travelX * 0.52}px,${travelY * 0.38}px,0) rotate(${rotation * 0.58}deg)`, opacity: 1, offset: 0.55 },
+      { transform: `translate3d(${travelX}px,${travelY}px,0) rotate(${rotation}deg)`, opacity: 0.96, offset: 1 }
+    ];
+    const liveMovementFrames = [
+      { x: 0, y: 0, rotation: 0, offset: 0 },
+      { x: travelX * 0.18, y: 18, rotation: rotation * 0.15, offset: 0.18 },
+      { x: travelX * 0.52, y: travelY * 0.38, rotation: rotation * 0.58, offset: 0.55 },
+      { x: travelX, y: travelY, rotation, offset: 1 }
+    ];
+    const options = {
+      duration: 434,
+      delay: index * 24,
+      easing: "cubic-bezier(.42,0,.82,.54)",
+      fill: "forwards"
+    };
+    const baseMovementFrames = movementFrames.map(frame => ({ ...frame, opacity: 1 }));
+    const movement = image.animate(baseMovementFrames, options);
+    animations.push(movement);
+    if (liveAura) {
+      synchronizedTracks.push({
+        animation: movement,
+        index,
+        frames: liveMovementFrames,
+        duration: options.duration,
+        delay: options.delay,
+        bezier: [0.42, 0, 0.82, 0.54]
+      });
+    }
+  });
+
+  if (liveAura) {
+    await runSynchronizedDiceMotions(liveAura, synchronizedTracks);
+  } else {
+    await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
+  }
+  snapshots.forEach(({ image }) => image.remove());
+  if (liveAura) endLiveMainAuraTransition({ renderAfterRestore: false });
+  document.body.classList.remove("dice-drop-overlay");
+  resumeMainPlasmaAnimation();
+}
+
+async function transitionDiceCount(requestedCount) {
+  if (![1, 2, 3].includes(requestedCount)) return;
+
+  if (requestedCount === wordCount) {
+    syncDiceCountButtons();
+    return;
+  }
+
+  if (rollInProgress || introActive || snapshotDropActive) {
+    pendingDiceCount = requestedCount;
+    return;
+  }
+
+  introIsStartup = false;
+  introActive = true;
+  snapshotDropActive = true;
+
+  try {
+    await playCountSelectionExit();
+
+    const resizedRoll = currentRoll.slice(0, requestedCount);
+    if (resizedRoll.length < requestedCount) {
+      const generatedRoll = makeRoll(requestedCount);
+      for (let index = resizedRoll.length; index < requestedCount; index++) {
+        if (typeof generatedRoll[index] === "string") resizedRoll.push(generatedRoll[index]);
+      }
+    }
+
+    wordCount = requestedCount;
+    currentRoll = resizedRoll;
+    renderDice(currentRoll, false);
+
+    diceMeshes.forEach(die => { die.visible = false; });
+    diceShadowMeshes.forEach((_, index) => setDiceShadowState(index, 0, false));
+    renderSceneWithDiceLayers();
+
+    // playTopDrop refuses to start while introActive is true, so hand over the
+    // scene lock explicitly between fall and drop.
+    snapshotDropActive = false;
+    introActive = false;
+
+    await playTopDrop(false);
+
+    diceMeshes.forEach((die, index) => {
+      const active = index < wordCount && Boolean(getDicePose(index, wordCount));
+      die.visible = active;
+      if (!active && diceShadowMeshes[index]) diceShadowMeshes[index].visible = false;
+    });
+    renderSceneWithDiceLayers();
+
+    registerSecretInput(String(wordCount));
+  } catch (error) {
+    console.error("Recovered from dice-count transition error:", error);
+  } finally {
+    snapshotDropActive = false;
+    introActive = false;
+    document.body.classList.remove("dice-drop-overlay");
+    syncDiceCountButtons();
+    queueMicrotask(flushPendingDiceInput);
+  }
+}
+
+function enforceActiveDiceSlots() {
+  for (let index = 0; index < diceMeshes.length; index++) {
+    const die = diceMeshes[index];
+    const shadow = diceShadowMeshes[index];
+    const pose = getDicePose(index, wordCount);
+    const active = index < wordCount && Boolean(pose);
+
+    if (!active) {
+      die.visible = false;
+      die.userData.rolling = false;
+      die.userData.layout = null;
+      if (shadow) shadow.visible = false;
+      continue;
+    }
+
+    // Visibility/state invariant only. Animation owns transforms while active.
+    if (!introActive && !die.userData.rolling) {
+      applyCanonicalDicePose(index, wordCount);
+    }
+  }
+}
+
+async function playTopDrop(isStartup = false) {
+  if (!diceMeshes.length || introActive) return;
+
+  introIsStartup = isStartup;
+  introActive = true;
+  snapshotDropActive = true;
+
+  const sequence = wordCount === 3 ? [1, 2, 0]
+    : wordCount === 2 ? [1, 0]
+      : [0];
+
+  try {
+    setMainTintProgress(selectedMain !== "Random" ? 1 : 0);
+
+    diceMeshes.forEach((die, index) => {
+      const active = index < wordCount && Boolean(die.userData.layout);
+      die.visible = false;
+      die.userData.rolling = false;
+      setDiceShadowState(index, 0, false);
+
+      if (!active) {
+        die.userData.layout = null;
+        if (diceShadowMeshes[index]) diceShadowMeshes[index].visible = false;
+      }
+    });
+    renderSceneWithDiceLayers();
+
+    for (const index of sequence) {
+      if (index >= wordCount || !diceMeshes[index]?.userData.layout) continue;
+      await animateSingleDieDrop(index, 784);
+      await wait(70);
+    }
+  } catch (error) {
+    console.error("Recovered from dice drop error:", error);
+  } finally {
+    diceMeshes.forEach((die, index) => {
+      const active = index < wordCount && Boolean(getDicePose(index, wordCount));
+      die.visible = active;
+      die.userData.rolling = false;
+
+      if (active) {
+        applyCanonicalDicePose(index, wordCount);
+        syncDiceShadow(index, 1, true);
+      } else if (diceShadowMeshes[index]) {
+        diceShadowMeshes[index].visible = false;
+      }
+    });
+
+    if (selectedMain !== "Random") {
+      setMainTintProgress(1);
+      resumeMainPlasmaAnimation();
+    }
+
+    snapshotDropActive = false;
+    introActive = false;
+    document.body.classList.remove("dice-drop-overlay");
+    renderSceneWithDiceLayers();
+    syncDiceCountButtons();
+    queueMicrotask(flushPendingDiceInput);
+  }
 }
 
 function finishIntroRoll() {
+  // Freeze every die at the exact final subject/face before the overlay is
+  // removed. There is deliberately no extra spin or settling phase here.
+  diceMeshes.forEach((die, index) => {
+    const target = die.userData.dropTargetPosition;
+    const rotation = die.userData.dropTargetRotation;
+    if (target) die.position.copy(target);
+    if (rotation) die.rotation.copy(rotation);
+    die.scale.setScalar(getCanonicalDiceSize(die, index));
+    syncDiceShadow(index, 1, true);
+  });
+  renderSceneWithDiceLayers();
+
   introActive = false;
+  exitDropOverlay();
 
-  introAirDice.forEach(airDie => {
-    scene.remove(airDie);
+  // Re-apply the canonical stage coordinates immediately after restoring the
+  // original renderer/camera. These coordinates represent the same visual
+  // landing pose and prevent a second, visible correction animation.
+  diceMeshes.forEach((die, index) => {
+    if (index >= wordCount || !getDicePose(index, wordCount)) return;
+    applyCanonicalDicePose(index, wordCount);
+    die.userData.rolling = false;
+    syncDiceShadow(index, 1, true);
   });
-  introAirDice = [];
-
-  diceMeshes.forEach(die => {
-    die.visible = true;
-    die.position.copy(die.userData.introTargetPosition);
-    die.rotation.copy(die.userData.introTargetRotation);
-    die.scale.set(1, 1, 1);
-    die.userData.base.copy(die.userData.introTargetPosition);
-    die.userData.introLanded = true;
-  });
-
-  sceneWrap.style.left = "";
-  sceneWrap.style.top = "";
-  sceneWrap.style.width = "";
-  sceneWrap.style.height = "";
-  sceneWrap.classList.remove("intro-moving", "intro-hidden");
-  document.body.classList.remove("intro-running");
-  resizeRenderer();
-
-  if (introIsStartup && introGateEl) {
-    introGateEl.classList.add("finished");
-    setTimeout(() => introGateEl.remove(), 170);
-  }
-  introIsStartup = false;
-  updateMainSelectionGlow();
+  renderSceneWithDiceLayers();
 
   const resolve = introResolve;
   introResolve = null;
-  resolve?.();
+  if (resolve) resolve();
 }
 
 function lockInterface() {
@@ -651,115 +2175,525 @@ function setupThree() {
   camera.position.set(0, 6.8, 7.1);
   camera.lookAt(0, -0.55, 0);
 
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+  // Cap DPR at 2.0. The previous 2.5 cap made the normal roll noticeably
+  // fill-rate heavy on high-DPI phones, especially while the internal plasma
+  // remains visible on a locked Main die. 2.0 keeps the premium edge quality
+  // while cutting the number of shaded pixels substantially.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMappingExposure = 1.00; // premium-toy sidequest: gentler highlight rolloff
+  // All visible shadows are the custom contact-shadow meshes below. Keeping a
+  // WebGL shadow map enabled added GPU work every frame without changing the
+  // approved look, so leave it off for smoother mobile rolls.
+  renderer.shadowMap.enabled = false;
   sceneWrap.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.35));
+  scene.add(new THREE.AmbientLight(0xfffbf2, 1.48));
 
-  const key = new THREE.DirectionalLight(0xfff4dd, 2.15);
-  key.position.set(-2.8, 8.8, 7.2);
-  key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  const key = new THREE.DirectionalLight(0xfff4df, 1.72);
+  key.position.set(0, 10.5, 1.2);
+  key.castShadow = false;
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xe6efff, 0.28);
-  fill.position.set(4.5, 4.6, 2.4);
+  const fill = new THREE.DirectionalLight(0xe8efff, 0.38);
+  fill.position.set(0, 5.2, 5.5);
   scene.add(fill);
 
-  mainGlowLight = new THREE.PointLight(0x38d879, 0, 5.2, 2);
+  mainGlowLight = new THREE.PointLight(MAIN_VFX_CONFIG.glowLightHex, 0, 5.2, 2);
   mainGlowLight.position.set(0, 0.25, 2.35);
   scene.add(mainGlowLight);
 
   floor = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 12),
-    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.32 })
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.20 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -1.58;
   floor.receiveShadow = true;
   scene.add(floor);
 
+  // Step 5.10.14c: do not add the warm floor-glow plane.
+  // Its additive #fff8e8 texture was clipped by the WebGL canvas and produced
+  // a visible horizontal colour seam where the dice stage ended.
+  floorGlow = null;
+
   resizeRenderer();
   animate();
 }
 
-function renderDice(words, animateIn = false) {
-  diceMeshes.forEach(mesh => {
-    scene.remove(mesh);
-    if (Array.isArray(mesh.material)) mesh.material.forEach(mat => {
-      if (mat.map) mat.map.dispose();
-      mat.dispose();
-    });
-    if (mesh.geometry) mesh.geometry.dispose();
-  });
 
-  diceMeshes = [];
+function makeFloorGlowTexture() {
+  if (floorGlowTexture) return floorGlowTexture;
 
-  const layout = layouts[words.length] || layouts[3];
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  const gradient = ctx.createRadialGradient(256, 128, 4, 256, 128, 246);
+  gradient.addColorStop(0.00, "rgba(255,248,232,0.40)");
+  gradient.addColorStop(0.36, "rgba(255,248,232,0.18)");
+  gradient.addColorStop(0.72, "rgba(255,248,232,0.05)");
+  gradient.addColorStop(1.00, "rgba(255,248,232,0.00)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  words.forEach((word, index) => {
-    const p = layout[index];
-    const mesh = createTextDie(word, p, index);
-    // Keep normal 3D depth behavior. The main die is already physically in front.
-    // No depthTest hack, because that caused rear dice to show through.
-    mesh.renderOrder = index === 0 ? 2 : 1;
-
-    mesh.position.set(p[0], p[1], p[2]);
-    mesh.rotation.set(p[3], p[4], p[5]);
-    mesh.userData.base = mesh.position.clone();
-    mesh.userData.layout = p;
-    mesh.userData.startRot = new THREE.Euler();
-    mesh.userData.endRot = new THREE.Euler();
-    mesh.userData.startTime = 0;
-    mesh.userData.duration = 1;
-    mesh.userData.delay = index * 0.06;
-    mesh.userData.rolling = false;
-
-    // Shadow layering:
-    // main/front die casts shadow; rear/side dice do not cast onto the main die.
-    mesh.castShadow = index === 0;
-    mesh.receiveShadow = true;
-
-    scene.add(mesh);
-    diceMeshes.push(mesh);
-  });
-
-  updateMainSelectionGlow();
-
-  if (animateIn) startDiceAnimation();
+  floorGlowTexture = new THREE.CanvasTexture(canvas);
+  floorGlowTexture.colorSpace = THREE.SRGBColorSpace;
+  return floorGlowTexture;
 }
 
-function createTextDie(finalWord, layout, index) {
-  const size = layout[6];
-  const visibleFaceIndex = getLandingFaceIndex(layout);
-  const allFaces = makeFaceWords(finalWord, visibleFaceIndex);
+function makeShadowDieBottomTexture() {
+  if (shadowDieBottomTexture) return shadowDieBottomTexture;
 
-  const materials = allFaces.map((faceWord) => new THREE.MeshPhysicalMaterial({
-    map: makeTextTexture(faceWord),
-    roughness: 0.36,
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+
+  // Shadow-die Step 5.9: only the underside of the duplicate is visible at rest.
+  // The rounded square mirrors the physical footprint of the die instead of
+  // projecting a separate fan/blob shape away from it.
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.filter = "blur(13px)";
+  ctx.beginPath();
+  const inset = 24;
+  const radius = 64;
+  const x = inset;
+  const y = inset;
+  const w = canvas.width - inset * 2;
+  const h = canvas.height - inset * 2;
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+
+  const gradient = ctx.createRadialGradient(
+    canvas.width / 2,
+    canvas.height / 2,
+    12,
+    canvas.width / 2,
+    canvas.height / 2,
+    canvas.width * 0.46
+  );
+  gradient.addColorStop(0.00, "rgba(0,0,0,0.30)");
+  gradient.addColorStop(0.52, "rgba(0,0,0,0.22)");
+  gradient.addColorStop(0.84, "rgba(0,0,0,0.08)");
+  gradient.addColorStop(1.00, "rgba(0,0,0,0.00)");
+  ctx.fillStyle = gradient;
+  ctx.fill();
+  ctx.restore();
+
+  shadowDieBottomTexture = new THREE.CanvasTexture(canvas);
+  shadowDieBottomTexture.colorSpace = THREE.SRGBColorSpace;
+  return shadowDieBottomTexture;
+}
+
+function placeShadowDieBottom(shadow, die) {
+  if (!shadow || !die) return;
+
+  // Keep the contact plate directly below the die's world position. Moving it
+  // to the rotated underside centre shifts it sideways on pitched dice and
+  // creates a visible gap, making the die appear to float even more.
+  shadow.position.x = die.position.x;
+  shadow.position.z = die.position.z;
+
+  // The plate stays flat on the floor and only follows the die's horizontal
+  // heading. Pitch and roll must not move the resting contact shadow sideways.
+  shadowProjectedXAxis.set(1, 0, 0).applyQuaternion(die.quaternion);
+  shadowProjectedXAxis.y = 0;
+  if (shadowProjectedXAxis.lengthSq() > 0.000001) {
+    shadowProjectedXAxis.normalize();
+    shadow.rotation.z = -Math.atan2(shadowProjectedXAxis.z, shadowProjectedXAxis.x);
+  }
+}
+
+function createShadowDieBottom(layout, index) {
+  const size = layout[6];
+  const footprintWidth = size * 1.78;
+  const footprintDepth = size * 1.24;
+  const material = new THREE.MeshBasicMaterial({
+    map: makeShadowDieBottomTexture(),
+    transparent: true,
+    opacity: 0.28,
+    depthWrite: false,
+    depthTest: true,
+    alphaTest: 0.003,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
+    side: THREE.DoubleSide
+  });
+  const geometry = new THREE.PlaneGeometry(footprintWidth, footprintDepth);
+  const shadow = new THREE.Mesh(geometry, material);
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.rotation.z = -layout[4];
+  shadow.position.set(layout[0], -1.577 + index * 0.0002, layout[2]);
+  shadow.renderOrder = -1;
+  shadow.userData.restYaw = layout[4];
+  shadow.userData.dieSize = size;
+  shadow.userData.baseOpacity = 0.24;
+  scene.add(shadow);
+  return shadow;
+}
+
+function setDiceShadowState(index, closeness = 1, visible = true) {
+  const shadow = diceShadowMeshes[index];
+  if (!shadow) return;
+
+  // v2.22: contact shadows are intentionally disabled everywhere.
+  shadow.visible = false;
+  shadow.material.opacity = 0;
+}
+
+function syncDiceShadow(index, closeness = 1, visible = true) {
+  const shadow = diceShadowMeshes[index];
+  if (!shadow) return;
+  shadow.visible = false;
+  shadow.material.opacity = 0;
+}
+
+function getDiceTexture(text, textColor = "#111111") {
+  const key = `${textColor}::${String(text || "")}`;
+  if (!diceTextureCache.has(key)) {
+    const texture = makeTextTexture(text, textColor);
+    texture.userData.sharedDiceTexture = true;
+    diceTextureCache.set(key, texture);
+  }
+  return diceTextureCache.get(key);
+}
+
+function createDiceFaceMaterial(text, textColor = "#111111") {
+  return new THREE.MeshPhysicalMaterial({
+    map: getDiceTexture(text, textColor),
+    roughness: 0.26,
     metalness: 0,
-    clearcoat: 0.22,
-    clearcoatRoughness: 0.42,
+    clearcoat: 0.48,
+    clearcoatRoughness: 0.24,
     transparent: false,
     opacity: 1,
     depthTest: true,
     depthWrite: true
-  }));
+  });
+}
 
-  const geometry = new RoundedBoxGeometry(size, size, size, 28, size * 0.11);
+function buildDiceMaterials(finalWord, layout, index) {
+  const visibleFaceIndex = getLandingFaceIndex(layout);
+  const allFaces = makeFaceWords(finalWord, visibleFaceIndex);
+  const mainTextColor = "#000000";
+  return allFaces.map((faceWord) => createDiceFaceMaterial(faceWord, mainTextColor));
+}
+
+function disposeDiceMaterials(materials) {
+  if (!Array.isArray(materials)) return;
+  materials.forEach((material) => material?.dispose());
+}
+
+function warmDiceTextures({ awaitCompletion = false } = {}) {
+  const token = ++textureWarmupToken;
+  const words = [...new Set(deck.map(item => item?.word).filter(Boolean))];
+
+  textureWarmupPromise = new Promise(resolve => {
+    let index = 0;
+
+    const warmBatch = (deadline) => {
+      if (token !== textureWarmupToken) {
+        resolve();
+        return;
+      }
+
+      // Small batches prevent a long iPhone main-thread stall while the splash
+      // is visible. By the time the app opens, all subject textures are cached.
+      let count = 0;
+      while (
+        index < words.length &&
+        count < 6 &&
+        (!deadline || deadline.timeRemaining() > 3)
+      ) {
+        getDiceTexture(words[index], "#111111");
+        index += 1;
+        count += 1;
+      }
+
+      if (index >= words.length) {
+        resolve();
+        return;
+      }
+
+      if ("requestIdleCallback" in window) {
+        requestIdleCallback(warmBatch, { timeout: 80 });
+      } else {
+        setTimeout(() => warmBatch(null), 0);
+      }
+    };
+
+    if ("requestIdleCallback" in window) {
+      requestIdleCallback(warmBatch, { timeout: 80 });
+    } else {
+      setTimeout(() => warmBatch(null), 0);
+    }
+  });
+
+  return awaitCompletion ? textureWarmupPromise : Promise.resolve();
+}
+
+function prepareDiceResult(words) {
+  diceMeshes.forEach((die, index) => {
+    const nextWord = words[index];
+    if (!die || !die.visible || typeof nextWord !== "string") return;
+
+    // A fixed Main is the same permanent slot, simply locked.
+    if (index === 0 && selectedMain !== "Random") {
+      die.userData.materialsCommitted = true;
+      die.userData.pendingFaceTexture = null;
+      return;
+    }
+
+    const faceIndex = die.userData.visibleFaceIndex;
+    die.userData.pendingFaceIndex = faceIndex;
+    die.userData.pendingFaceTexture = getDiceTexture(nextWord, "#000000");
+    die.userData.materialsCommitted = false;
+  });
+}
+
+function commitPendingDiceMaterials(die) {
+  const pendingTexture = die?.userData?.pendingFaceTexture;
+  const faceIndex = die?.userData?.pendingFaceIndex;
+  if (!pendingTexture || !Number.isInteger(faceIndex) || die.userData.materialsCommitted) return;
+
+  const material = die.material?.[faceIndex];
+  if (material) {
+    material.map = pendingTexture;
+
+    if (die === diceMeshes[0] && mainPlasmaOverlayMesh) {
+      mainPlasmaOverlayMesh.children.forEach(child => {
+        if (!child.isMesh || !Array.isArray(child.material)) return;
+        const shaderMaterial = child.material[faceIndex];
+        if (shaderMaterial?.uniforms?.baseMap) {
+          shaderMaterial.uniforms.baseMap.value = pendingTexture;
+        }
+      });
+    }
+  }
+
+  die.userData.pendingFaceTexture = null;
+  die.userData.pendingFaceIndex = null;
+  die.userData.materialsCommitted = true;
+}
+
+function renderSceneWithDiceLayers() {
+  const mainDie = diceMeshes[0];
+
+  // With only one active die there is nothing to layer: one ordinary pass.
+  if (!mainDie?.visible || wordCount <= 1) {
+    renderer.autoClear = true;
+    renderer.render(scene, camera);
+    return;
+  }
+
+  // Pass 1: complete rear composition, but without slot 0.
+  const mainWasVisible = mainDie.visible;
+  mainDie.visible = false;
+  renderer.autoClear = true;
+  renderer.render(scene, camera);
+
+  // Pass 2: preserve the colour buffer, clear depth only, then draw the same
+  // permanent Main slot in front. This pipeline is identical for Random and
+  // fixed Main and therefore cannot diverge between modes.
+  const rearVisibility = diceMeshes.slice(1).map(die => die.visible);
+  const shadowVisibility = diceShadowMeshes.map(shadow => shadow.visible);
+  const floorVisible = floor?.visible;
+
+  mainDie.visible = mainWasVisible;
+  diceMeshes.slice(1).forEach(die => { die.visible = false; });
+  diceShadowMeshes.forEach(shadow => { shadow.visible = false; });
+  if (floor) floor.visible = false;
+
+  renderer.autoClear = false;
+  renderer.clearDepth();
+  renderer.render(scene, camera);
+
+  renderer.autoClear = true;
+  diceMeshes.slice(1).forEach((die, i) => { die.visible = rearVisibility[i]; });
+  diceShadowMeshes.forEach((shadow, i) => { shadow.visible = shadowVisibility[i]; });
+  if (floor) floor.visible = floorVisible;
+}
+
+function createPersistentDiceMaterials() {
+  return Array.from({ length: 6 }, () => {
+    // Never expose a placeholder word on an uninitialised face.
+    // Real subject textures are assigned before an active slot becomes visible.
+    const material = createDiceFaceMaterial("", "#000000");
+    return material;
+  });
+}
+
+function createPersistentDiceSlot(index) {
+  // Unit geometry preserves the exact proportional bevel from the old
+  // size-specific geometry. Layout size is now a transform, not a rebuild.
+  const geometry = new RoundedBoxGeometry(1, 1, 1, 28, 0.11);
   geometry.computeVertexNormals();
 
+  const materials = createPersistentDiceMaterials();
+  // All dice keep the exact same opaque physical material behavior.
+  // Foreground separation is composited in renderSceneWithDiceLayers().
+  materials.forEach(material => {
+    material.transparent = false;
+    material.opacity = 1;
+    material.depthTest = true;
+    material.depthWrite = true;
+  });
+
   const mesh = new THREE.Mesh(geometry, materials);
-  mesh.castShadow = true;
+  mesh.name = `dice-slot-${index}`;
+  mesh.renderOrder = index === 0 ? 10 : 1;
+  mesh.castShadow = false;
   mesh.receiveShadow = true;
-  mesh.userData.visibleFaceIndex = visibleFaceIndex;
+  mesh.visible = false;
+
+  mesh.userData.base = new THREE.Vector3();
+  mesh.userData.layout = null;
+  mesh.userData.startRot = new THREE.Euler();
+  mesh.userData.endRot = new THREE.Euler();
+  mesh.userData.startTime = 0;
+  mesh.userData.duration = 1;
+  mesh.userData.delay = index * 0.06;
+  mesh.userData.rolling = false;
+  mesh.userData.visibleFaceIndex = 4;
+  mesh.userData.diceSize = 1;
+  mesh.userData.materialsCommitted = true;
+
+  scene.add(mesh);
   return mesh;
+}
+
+function createPersistentShadowSlot(index) {
+  const material = new THREE.MeshBasicMaterial({
+    map: makeShadowDieBottomTexture(),
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    depthTest: true,
+    alphaTest: 0.003,
+    polygonOffset: true,
+    polygonOffsetFactor: 1,
+    polygonOffsetUnits: 1,
+    side: THREE.DoubleSide
+  });
+
+  // Old footprint was size*1.78 x size*1.24. A unit plane plus scale is exact.
+  const geometry = new THREE.PlaneGeometry(1.78, 1.24);
+  const shadow = new THREE.Mesh(geometry, material);
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = -1.577 + index * 0.0002;
+  shadow.renderOrder = -1;
+  shadow.visible = false;
+  shadow.userData.baseOpacity = 0.24;
+  shadow.userData.dieSize = 1;
+  scene.add(shadow);
+  return shadow;
+}
+
+function ensureDiceSlots() {
+  if (diceSlotsInitialized) return;
+
+  diceMeshes = [0, 1, 2].map(index => createPersistentDiceSlot(index));
+  diceShadowMeshes = [0, 1, 2].map(index => createPersistentShadowSlot(index));
+  diceSlotsInitialized = true;
+
+  // Create expensive VFX resources once behind startup. Random keeps them hidden
+  // and updateMainPlasmaTime performs no shader animation work in that state.
+  ensureMainPlasmaOverlay();
+  setMainTintProgress(0);
+}
+
+function updateSlotFaceTextures(die, finalWord, layout) {
+  const visibleFaceIndex = getLandingFaceIndex(layout);
+  const allFaces = makeFaceWords(finalWord, visibleFaceIndex);
+
+  die.userData.visibleFaceIndex = visibleFaceIndex;
+  allFaces.forEach((faceWord, faceIndex) => {
+    const material = die.material[faceIndex];
+    if (!material) return;
+    material.map = getDiceTexture(faceWord, "#000000");
+
+    if (die === diceMeshes[0] && mainPlasmaOverlayMesh) {
+      mainPlasmaOverlayMesh.children.forEach(child => {
+        if (!child.isMesh || !Array.isArray(child.material)) return;
+        const shaderMaterial = child.material[faceIndex];
+        if (shaderMaterial?.uniforms?.baseMap) {
+          shaderMaterial.uniforms.baseMap.value = material.map;
+        }
+      });
+    }
+  });
+
+  die.userData.pendingFaceTexture = null;
+  die.userData.pendingFaceIndex = null;
+  die.userData.materialsCommitted = true;
+}
+
+function applyLayoutToDiceSlot(index, word, layout, visible, animateIn = false) {
+  const die = diceMeshes[index];
+  const shadow = diceShadowMeshes[index];
+  if (!die || !shadow) return;
+
+  die.visible = visible;
+  shadow.visible = visible;
+  die.userData.rolling = false;
+
+  if (!visible || !layout || typeof word !== "string") {
+    die.userData.layout = null;
+    return;
+  }
+
+  const size = layout[6];
+  die.userData.layout = layout;
+  die.userData.diceSize = size;
+  applyCanonicalDicePose(index, wordCount);
+
+  updateSlotFaceTextures(die, word, layout);
+
+  shadow.userData.restYaw = layout[4];
+  shadow.userData.dieSize = size;
+  shadow.scale.set(size, size, 1);
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.rotation.z = -layout[4];
+  shadow.position.set(layout[0], -1.577 + index * 0.0002, layout[2]);
+  syncDiceShadow(index, animateIn ? 0 : 1, !animateIn);
+}
+
+function renderDice(words, animateIn = false) {
+  ensureDiceSlots();
+
+  const layout = getDiceComposite(words.length);
+
+  for (let index = 0; index < 3; index++) {
+    const visible = index < words.length && Boolean(layout[index]);
+    applyLayoutToDiceSlot(
+      index,
+      visible ? words[index] : "",
+      visible ? layout[index] : null,
+      visible,
+      animateIn
+    );
+  }
+
+  // The same Main slot owns VFX in every count. Selection only toggles state.
+  updateMainSelectionGlow();
+
+  if (animateIn) {
+    renderSceneWithDiceLayers();
+    requestAnimationFrame(() => startDiceAnimation());
+  }
 }
 
 function getLandingFaceIndex(layout) {
@@ -811,7 +2745,7 @@ function randomDeckWord(used = new Set()) {
   return "Tattoo";
 }
 
-function makeTextTexture(text) {
+function makeTextTexture(text, textColor = "#111111") {
   const c = document.createElement("canvas");
   c.width = c.height = 1024;
   const ctx = c.getContext("2d");
@@ -819,16 +2753,16 @@ function makeTextTexture(text) {
   ctx.imageSmoothingQuality = "high";
 
   const bg = ctx.createLinearGradient(0, 0, 1024, 1024);
-  bg.addColorStop(0, "#fff9eb");
-  bg.addColorStop(0.62, "#eadfcc");
-  bg.addColorStop(1, "#c7bda8");
+  bg.addColorStop(0, "#fffdf8");
+  bg.addColorStop(0.62, "#f6f1e8");
+  bg.addColorStop(1, "#e4ddd2");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, 1024, 1024);
 
   const shine = ctx.createRadialGradient(330, 245, 70, 512, 512, 790);
   shine.addColorStop(0, "rgba(255,255,255,.20)");
   shine.addColorStop(0.55, "rgba(255,255,255,.04)");
-  shine.addColorStop(1, "rgba(0,0,0,.075)");
+  shine.addColorStop(1, "rgba(67,52,36,.060)");
   ctx.fillStyle = shine;
   ctx.fillRect(0, 0, 1024, 1024);
 
@@ -840,7 +2774,7 @@ function makeTextTexture(text) {
   // Draw upright text for the current final landing/render pose.
   ctx.save();
   ctx.translate(512, 512);
-  drawDiceText(ctx, text);
+  drawDiceText(ctx, text, textColor);
   ctx.restore();
 
   const tex = new THREE.CanvasTexture(c);
@@ -849,8 +2783,8 @@ function makeTextTexture(text) {
   return tex;
 }
 
-function drawDiceText(ctx, text) {
-  const raw = String(text || "Roll").trim();
+function drawDiceText(ctx, text, textColor = "#111111") {
+  const raw = String(text || "").trim();
   const lines = buildTextLines(raw);
   const maxWidth = 720;
   const maxHeight = 620;
@@ -860,7 +2794,7 @@ function drawDiceText(ctx, text) {
 
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "#111";
+  ctx.fillStyle = textColor;
   ctx.strokeStyle = "rgba(255,255,255,.16)";
   ctx.lineWidth = Math.max(2, fontSize * 0.018);
   ctx.font = `900 ${fontSize}px "Arial Rounded MT Bold", "Arial Rounded MT", Arial, sans-serif`;
@@ -878,7 +2812,7 @@ function drawDiceText(ctx, text) {
 
 function buildTextLines(text) {
   const parts = text.split(/\s+/).filter(Boolean);
-  if (parts.length <= 1) return parts.length ? parts : ["Roll"];
+  if (parts.length <= 1) return parts.length ? parts : [""];
 
   // Multi-word subjects: each word on its own line, as requested.
   return parts;
@@ -945,50 +2879,80 @@ async function loadDeck() {
   }
 }
 
+function setRollRenderPerformanceMode(active) {
+  // v2.4: no visual state switch during Roll. The preferred dimmer one-layer
+  // look is now permanent, so toggling shader layers here would reintroduce a
+  // brightness jump and an end-of-roll hitch.
+}
+
+
 async function roll(options = { countIt: true }) {
-  if (!deck.length || rollInProgress) return;
+  if (!deck.length) return;
 
-  rollInProgress = true;
-  hiddenActive = false;
-  rollButton.classList.add("rolling");
-
-  // Reset Keep Drawing overlay on the next roll.
-  // The fade layer transitions out via CSS so brightness returns smoothly.
-  hiddenMessageEl.classList.remove("show");
-  if (screenFade) screenFade.classList.remove("show");
-  hiddenMessageEl.classList.remove("show");
-  
-
-  currentRoll = makeRoll(wordCount);
-  renderDice(currentRoll, true);
-
-  const randomKeepDrawing = !lastRollWasKeepDrawing && Math.random() < KEEP_DRAWING_CHANCE;
-  if (randomKeepDrawing) {
-    setTimeout(() => {
-      hiddenActive = true;
-      lastRollWasKeepDrawing = true;
-      showHiddenMessage();
-    }, 760);
+  if (rollInProgress || introActive || snapshotDropActive) {
+    pendingRollRequest = true;
+    return;
   }
 
-  if (!randomKeepDrawing) lastRollWasKeepDrawing = false;
+  rollInProgress = true;
+  setRollRenderPerformanceMode(true);
+  closeMainHint();
+  rollButton.classList.add("rolling");
 
-  setTimeout(() => {
-    rollButton.classList.remove("rolling");
-    rollInProgress = false;
+  try {
+    const nextRoll = makeRoll(wordCount);
+    currentRoll = nextRoll;
+    prepareDiceResult(nextRoll);
+
+    const rollDurationMs = startDiceAnimation();
+
+    await wait(rollDurationMs + 45);
 
     if (options.countIt) incrementCounter();
-  }, 1280);
+  } catch (error) {
+    console.error("Recovered from Roll error:", error);
+  } finally {
+    rollButton.classList.remove("rolling");
+    rollInProgress = false;
+    setRollRenderPerformanceMode(false);
+    syncDiceCountButtons();
+    queueMicrotask(flushPendingDiceInput);
+  }
 }
 
 function startDiceAnimation() {
   const now = performance.now() / 1000;
+  const fixedMain = selectedMain !== "Random";
+  let maxEndSeconds = 0;
 
   diceMeshes.forEach((die, index) => {
     const p = die.userData.layout;
+    const keepMainStill = fixedMain && index === 0;
+
+    // Permanent slots outside the active 1/2/3 composition have no layout.
+    // They must never enter the Roll path or read pose coordinates.
+    if (!die.visible || !p) {
+      die.userData.rolling = false;
+      return;
+    }
+
+    // Roll starts from the exact same canonical composite as idle.
+    applyCanonicalDicePose(index, wordCount);
+
+    if (keepMainStill) {
+      syncDiceShadow(index, 1, true);
+      die.userData.rolling = false;
+      die.rotation.set(p[3], p[4], p[5]);
+      return;
+    }
+
+    // Rolling dice start without a shadow. The normal per-frame closeness logic
+    // brings it in only as the die approaches the table.
+    setDiceShadowState(index, 0, false);
+
+    // Restored verbatim movement values from the supplied working live file.
     const strengthVariation = 0.94 + Math.random() * 0.12;
     const timingVariation = (Math.random() - 0.5) * 0.06;
-
     die.userData.startTime = now;
     die.userData.duration = 1.34 + index * 0.07 + timingVariation;
     die.userData.delay = index * (0.045 + Math.random() * 0.018);
@@ -999,60 +2963,36 @@ function startDiceAnimation() {
       p[4] + 4 * Math.PI * 2,
       p[5] + 2 * Math.PI * 2
     );
-
-    die.userData.physicsStrength =
-      (index === 0 ? 0.72 : 0.54) * strengthVariation;
-    die.userData.wobbleAmplitude =
-      (index === 0 ? 0.085 : 0.065) * (0.9 + Math.random() * 0.2);
-    die.userData.wobbleFrequency = 10.5 + Math.random() * 2.2;
+    die.userData.physicsStrength = (index === 0 ? 0.72 : 0.54) * strengthVariation;
+    die.userData.wobbleAmplitude = (index === 0 ? 0.050 : 0.040) * (0.9 + Math.random() * 0.2);
+    die.userData.wobbleFrequency = 6.2 + Math.random() * 1.4;
     die.userData.wobblePhase = Math.random() * Math.PI * 2;
+    maxEndSeconds = Math.max(maxEndSeconds, die.userData.delay + die.userData.duration);
   });
+
+  return Math.ceil(maxEndSeconds * 1000);
 }
 
 function landingBounce(progress, strength = 0.54) {
-  // Three distinct impacts with diminishing energy.
-  if (progress < 0.58) {
-    const air = progress / 0.58;
-    return Math.sin(air * Math.PI) * strength * 0.86;
-  }
-
-  if (progress < 0.77) {
-    const bounce1 = (progress - 0.58) / 0.19;
-    return Math.sin(bounce1 * Math.PI) * strength * 0.72;
-  }
-
-  if (progress < 0.91) {
-    const bounce2 = (progress - 0.77) / 0.14;
-    return Math.sin(bounce2 * Math.PI) * strength * 0.36;
-  }
-
-  const bounce3 = Math.min((progress - 0.91) / 0.09, 1);
-  return Math.sin(bounce3 * Math.PI) * strength * 0.14;
+  // One continuous lift-and-land arc. Squaring sin gives zero velocity at both
+  // ends, so there are no piecewise impact boundaries for the eye to read as
+  // micro-stutters.
+  const arc = Math.sin(Math.PI * THREE.MathUtils.clamp(progress, 0, 1));
+  return arc * arc * strength;
 }
 
-function landingSquash(progress, index = 0) {
-  const impact1 = Math.exp(-Math.pow((progress - 0.58) / 0.020, 2));
-  const impact2 = Math.exp(-Math.pow((progress - 0.77) / 0.017, 2));
-  const impact3 = Math.exp(-Math.pow((progress - 0.91) / 0.013, 2));
-
-  const amount = (
-    impact1 * 0.075 +
-    impact2 * 0.034 +
-    impact3 * 0.014
-  ) * (index === 0 ? 1 : 0.84);
-
-  return {
-    y: 1 - amount,
-    xz: 1 + amount * 0.64
-  };
+function landingSquash() {
+  // Keep the resin cube rigid during a normal roll. The previous three Gaussian
+  // impact squashes created visible stop/start beats near the end of the roll.
+  return { y: 1, xz: 1 };
 }
 
 function dampedWobble(progress, amplitude, frequency, phase) {
   // Only start after the main travel phase, then quickly lose energy.
-  const start = 0.66;
+  const start = 0.72;
   if (progress <= start) return 0;
   const local = (progress - start) / (1 - start);
-  const damping = Math.exp(-4.8 * local);
+  const damping = Math.exp(-5.6 * local);
   return Math.sin(local * frequency + phase) * amplitude * damping;
 }
 
@@ -1060,214 +3000,118 @@ function dampedWobble(progress, amplitude, frequency, phase) {
 function animate() {
   requestAnimationFrame(animate);
   const t = performance.now() / 1000;
+  updateMainPlasmaTime(t);
 
-  if (introActive) {
-    const progress = Math.min(
-      Math.max((t - introStartTime) / introDuration, 0),
-      1
-    );
-
-    // Shared canvas falls into the exact final stage rectangle.
-    const fallPhase = Math.min(progress / 0.60, 1);
-    const gravityDrop = fallPhase * fallPhase;
-    const currentTop = lerp(
-      introStartTop,
-      introTargetRect.top,
-      gravityDrop
-    );
-    sceneWrap.style.top = `${currentTop}px`;
-    sceneWrap.style.left = `${introTargetRect.left}px`;
-
-    // ANIMATION A: temporary airborne dice spin only while falling.
-    introAirDice.forEach((airDie, index) => {
-      const impactStart = airDie.userData.impactStart;
-      const targetRotation = airDie.userData.targetRotation;
-
-      if (progress < impactStart) {
-        const airProgress = Math.min(progress / impactStart, 1);
-        const spinEase = easeInOutCubic(airProgress);
-
-        airDie.rotation.x = lerp(
-          airDie.userData.startRotation.x,
-          targetRotation.x,
-          spinEase
-        );
-        airDie.rotation.y = lerp(
-          airDie.userData.startRotation.y,
-          targetRotation.y,
-          spinEase
-        );
-        airDie.rotation.z = lerp(
-          airDie.userData.startRotation.z,
-          targetRotation.z,
-          spinEase
-        );
-      } else if (airDie.visible) {
-        // Exact handoff at contact.
-        airDie.rotation.copy(targetRotation);
-        airDie.visible = false;
-
-        const landingDie = diceMeshes[index];
-        landingDie.visible = true;
-        landingDie.position.copy(landingDie.userData.introTargetPosition);
-        landingDie.rotation.copy(landingDie.userData.introTargetRotation);
-        landingDie.scale.set(1, 1, 1);
-        landingDie.userData.introLanded = true;
-      }
-    });
-
-    // ANIMATION B: real stable dice bounce with rotation fully locked.
-    diceMeshes.forEach((die, index) => {
-      if (!die.userData.introLanded) return;
-
-      const impactStart = introAirDice[index].userData.impactStart;
-      const localImpact = Math.min(
-        Math.max((progress - impactStart) / (1 - impactStart), 0),
-        1
-      );
-
-      let bounce;
-      if (localImpact < 0.64) {
-        const firstBounce = localImpact / 0.64;
-        bounce = Math.sin(firstBounce * Math.PI) *
-          die.userData.introPhysicsStrength * 0.74;
-      } else {
-        const secondBounce = (localImpact - 0.64) / 0.36;
-        bounce = Math.sin(secondBounce * Math.PI) *
-          die.userData.introPhysicsStrength * 0.27;
-      }
-
-      const impactOne = Math.exp(
-        -Math.pow((localImpact - 0.015) / 0.026, 2)
-      );
-      const impactTwo = Math.exp(
-        -Math.pow((localImpact - 0.65) / 0.022, 2)
-      );
-      const amount = (
-        impactOne * 0.076 +
-        impactTwo * 0.026
-      ) * (index === 0 ? 1 : 0.86);
-
-      const squashY = 1 - amount;
-      const squashXZ = 1 + amount * 0.62;
-
-      die.position.x = die.userData.introTargetPosition.x;
-      die.position.y = die.userData.introTargetPosition.y + bounce;
-      die.position.z = die.userData.introTargetPosition.z;
-
-      // Hard lock: no spin, wobble or interpolation after contact.
-      die.rotation.copy(die.userData.introTargetRotation);
-      die.scale.set(squashXZ, squashY, squashXZ);
-    });
-
-    if (progress >= 1) {
-      finishIntroRoll();
-    }
-  } else if (mainDropActive) {
-    const progress = Math.min(
-      Math.max((t - mainDropStartTime) / mainDropDuration, 0),
-      1
-    );
+  if (introActive && snapshotDropActive) {
+    // DOM snapshots own the visible drop. The Three scene stays frozen at the
+    // exact landing poses and is only revealed as each snapshot lands.
+  } else if (introActive) {
+    let allFinished = true;
 
     diceMeshes.forEach((die, index) => {
-      const impact = die.userData.dropImpact;
+      const delay = die.userData.dropDelay || 0;
+      const duration = die.userData.dropDuration || 1.34;
+      const local = (t - introStartTime - delay) / duration;
+      const p = THREE.MathUtils.clamp(local, 0, 1);
+      if (local < 1) allFinished = false;
+
       const target = die.userData.dropTargetPosition;
       const targetRotation = die.userData.dropTargetRotation;
+      const start = die.userData.dropStartPosition;
+      if (!target || !targetRotation || !start) return;
 
-      if (progress < impact) {
-        const air = progress / impact;
+      if (local <= 0) {
+        die.position.copy(start);
+        setDiceShadowState(index, 0, false);
+        return;
+      }
+
+      const impact = die.userData.dropImpact || 0.82;
+      if (p < impact) {
+        const air = p / impact;
+        // A literal vertical fall from above the device: x/z never drift.
         const gravity = air * air;
+        const settle = THREE.MathUtils.smootherstep(air, 0, 1);
+        const wobbleEnvelope = Math.sin(Math.PI * air) * (1 - 0.30 * air);
+        const wobble = Math.sin(air * die.userData.dropWobbleFrequency + die.userData.dropWobblePhase)
+          * die.userData.dropWobbleAmplitude * wobbleEnvelope;
 
-        die.position.y = lerp(die.userData.dropStartY, target.y, gravity);
-        die.rotation.x = lerp(
-          targetRotation.x - Math.PI * 4,
-          targetRotation.x,
-          easeInOutCubic(air)
-        );
-        die.rotation.y = lerp(
-          targetRotation.y - Math.PI * 2,
-          targetRotation.y,
-          easeInOutCubic(air)
-        );
-        die.rotation.z = lerp(
-          targetRotation.z - Math.PI * 2,
-          targetRotation.z,
-          easeInOutCubic(air)
-        );
+        die.position.x = target.x;
+        die.position.y = lerp(start.y, target.y, gravity);
+        die.position.z = target.z;
+        die.rotation.x = lerp(targetRotation.x - 0.20, targetRotation.x, settle) + wobble;
+        die.rotation.y = lerp(targetRotation.y + (index === 1 ? -0.16 : 0.16), targetRotation.y, settle);
+        die.rotation.z = lerp(targetRotation.z + (index === 1 ? 0.12 : -0.12), targetRotation.z, settle) - wobble * 0.75;
+        die.scale.setScalar(getCanonicalDiceSize(die, index));
+
+        // Contact shadow is absent in the air and fades in only near the floor.
+        const closeness = THREE.MathUtils.smoothstep(air, 0.72, 1);
+        syncDiceShadow(index, closeness, closeness > 0.01);
       } else {
-        const landed = (progress - impact) / (1 - impact);
-        let bounce;
-
-        if (landed < 0.66) {
-          bounce = Math.sin((landed / 0.66) * Math.PI) *
-            die.userData.dropStrength * 0.72;
-        } else {
-          bounce = Math.sin(((landed - 0.66) / 0.34) * Math.PI) *
-            die.userData.dropStrength * 0.24;
-        }
-
+        const landed = THREE.MathUtils.clamp((p - impact) / (1 - impact), 0, 1);
+        // One small vertical bounce, with no squash/morph and no post-landing spin.
+        const bounce = Math.sin(landed * Math.PI) * die.userData.dropStrength * (1 - landed);
         die.position.set(target.x, target.y + bounce, target.z);
         die.rotation.copy(targetRotation);
+        die.scale.setScalar(getCanonicalDiceSize(die, index));
+        syncDiceShadow(index, 1 - Math.min(0.24, bounce * 0.75), true);
       }
     });
 
-    if (progress >= 1) {
-      mainDropActive = false;
-      diceMeshes.forEach(die => {
-        die.position.copy(die.userData.dropTargetPosition);
-        die.rotation.copy(die.userData.dropTargetRotation);
-        die.scale.set(1, 1, 1);
-        die.userData.base.copy(die.userData.dropTargetPosition);
-      });
-    }
+    if (allFinished) finishIntroRoll();
   } else {
-    // Existing normal ROLL animation remains unchanged.
-    diceMeshes.forEach(die => {
+    // Exact original ROLL movement, with only the selected Main optionally locked.
+    diceMeshes.forEach((die, index) => {
       const u = die.userData;
-      if (!u.rolling) return;
+      if (!u.rolling) {
+        // Static slots/shadows are already at their canonical transform.
+        return;
+      }
 
-      const p = Math.min(
-        Math.max((t - u.startTime - u.delay) / u.duration, 0),
-        1
-      );
+      const p = Math.min(Math.max((t - u.startTime - u.delay) / u.duration, 0), 1);
       if (p <= 0) return;
-
       const e = easeInOutCubic(p);
 
       die.rotation.x = lerp(u.startRot.x, u.endRot.x, e);
       die.rotation.y = lerp(u.startRot.y, u.endRot.y, e);
       die.rotation.z = lerp(u.startRot.z, u.endRot.z, e);
 
-      const index = diceMeshes.indexOf(die);
+      // The landing face is fully turned away at this fixed point in the
+      // existing roll path for every supported 1/2/3-dice layout. Commit once
+      // here, before the final approach, so the die cannot land on the old word
+      // and then visibly switch after stopping.
+      if (!u.materialsCommitted && p >= 0.38) {
+        commitPendingDiceMaterials(die);
+      }
+
       const bounce = landingBounce(p, u.physicsStrength);
       const squash = landingSquash(p, index);
-      const wobble = dampedWobble(
-        p,
-        u.wobbleAmplitude,
-        u.wobbleFrequency,
-        u.wobblePhase
-      );
+      const wobble = dampedWobble(p, u.wobbleAmplitude, u.wobbleFrequency, u.wobblePhase);
 
       die.position.y = u.base.y + bounce;
-      die.position.x = u.base.x +
-        Math.sin(p * Math.PI * 2.7 + index * 0.55) *
-        (1 - p) * 0.048;
-
+      const rollEnvelope = Math.pow(Math.sin(Math.PI * p), 2.0);
+      die.position.x = u.base.x
+        + Math.sin(p * Math.PI * 2.0 + index * 0.55) * rollEnvelope * 0.030;
       die.rotation.x += wobble;
       die.rotation.z -= wobble * 0.72;
-      die.scale.set(squash.xz, squash.y, squash.xz);
+      const canonicalSize = getCanonicalDiceSize(die, index);
+      die.scale.set(
+        canonicalSize * squash.xz,
+        canonicalSize * squash.y,
+        canonicalSize * squash.xz
+      );
+      syncDiceShadow(index, 1 - Math.min(0.45, bounce * 0.55), true);
 
       if (p >= 1) {
+        commitPendingDiceMaterials(die);
         u.rolling = false;
-        const l = u.layout;
-        die.rotation.set(l[3], l[4], l[5]);
-        die.position.copy(u.base);
-        die.scale.set(1, 1, 1);
+        applyCanonicalDicePose(index, wordCount);
+        syncDiceShadow(index, 1, true);
       }
     });
   }
 
-  renderer.render(scene, camera);
+  renderSceneWithDiceLayers();
 }
 
 function resizeRenderer() {
@@ -1383,17 +3227,8 @@ function registerSecretInput(value) {
 
   if (secretSequence === SECRET_CODE) {
     secretSequence = "";
-    hiddenActive = true;
-    showHiddenMessage();
+    showMainHint();
   }
-}
-
-function showHiddenMessage() {
-  rollButton.classList.remove("rolling");
-  hiddenMessageEl.textContent = "Keep Drawing!";
-  lastRollWasKeepDrawing = true;
-  if (screenFade) screenFade.classList.add("show");
-  hiddenMessageEl.classList.add("show");
 }
 
 async function loadCounter() {
@@ -1455,7 +3290,52 @@ async function getCounterTotal() {
 }
 
 function renderCounter(count) {
-  counterEl.textContent = `${formatNumber(count)} tattoo ideas rolled`;
+  if (!counterEl) return;
+
+  const nextValue = Math.max(0, Math.trunc(Number(count || 0)));
+  const previousValue = displayedCounterValue;
+  const formatted = formatNumber(nextValue);
+  const prefix = formatted.slice(0, -1);
+  const nextDigit = formatted.slice(-1);
+  const shouldRollDigit = previousValue !== null && nextValue === previousValue + 1;
+  const animationToken = ++counterAnimationToken;
+
+  displayedCounterValue = nextValue;
+  counterEl.setAttribute("aria-label", `${formatted} tattoo ideas rolled`);
+  counterEl.classList.remove("counter-rolling");
+
+  if (!shouldRollDigit) {
+    counterEl.innerHTML = `
+      <span class="counter-number">
+        <span class="counter-prefix">${prefix}</span><span class="counter-digit-window"><span class="counter-digit counter-digit-static">${nextDigit}</span></span>
+      </span><span class="counter-label">&nbsp;tattoo ideas rolled</span>
+    `;
+    return;
+  }
+
+  const previousDigit = formatNumber(previousValue).slice(-1);
+  counterEl.innerHTML = `
+    <span class="counter-number">
+      <span class="counter-prefix">${prefix}</span><span class="counter-digit-window">
+        <span class="counter-digit counter-digit-old">${previousDigit}</span>
+        <span class="counter-digit counter-digit-new">${nextDigit}</span>
+      </span>
+    </span><span class="counter-label">&nbsp;tattoo ideas rolled</span>
+  `;
+
+  requestAnimationFrame(() => {
+    if (animationToken === counterAnimationToken) counterEl.classList.add("counter-rolling");
+  });
+
+  window.setTimeout(() => {
+    if (animationToken !== counterAnimationToken) return;
+    counterEl.classList.remove("counter-rolling");
+    counterEl.innerHTML = `
+      <span class="counter-number">
+        <span class="counter-prefix">${prefix}</span><span class="counter-digit-window"><span class="counter-digit counter-digit-static">${nextDigit}</span></span>
+      </span><span class="counter-label">&nbsp;tattoo ideas rolled</span>
+    `;
+  }, 540);
 }
 
 function formatNumber(number) {
@@ -1466,16 +3346,18 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-function easeOutQuart(x) {
-  return 1 - Math.pow(1 - x, 4);
-}
 
-function smoothStep(x) {
-  return x * x * (3 - 2 * x);
-}
 
 function easeInOutCubic(x) {
   return x < 0.5
     ? 4 * x * x * x
     : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
+
+// Start only after the entire ES module has evaluated.
+// v2.20 called init() too early: setupThree() synchronously read
+// MAIN_VFX_CONFIG while that const was still in the ES-module TDZ.
+init().catch(error => {
+  console.error("Tattoo Dice initialization failed:", error);
+  window.__TATTOO_DICE_INIT_ERROR__ = error;
+});

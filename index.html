@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/style.css?v=3.6.4-sidequest-v2.32" />
   <script type="importmap">
     {
       "imports": {
@@ -41,12 +41,11 @@
   <main class="app">
     <section class="stage">
       <div class="app-header">
-        <h1>Tattoo Dice</h1>
+        <h1><img class="brand-logo-image" src="assets/tattoo-dice-header.png" alt="Tattoo Dice" /></h1>
       </div>
       <div class="tagline">Stop scrolling. Start rolling.</div>
       <div class="dice-stage-3d" id="diceStage3d">
-        <div id="sceneWrap" class="intro-hidden" aria-label="Tattoo dice result"></div>
-        <div class="hidden-message" id="hiddenMessage">Keep Drawing!</div>
+        <div id="sceneWrap" aria-label="Tattoo dice result"></div>
       </div>
       <div class="controls">
         <div class="dice-select" aria-label="Aantal woorden">
@@ -54,6 +53,7 @@
           <button class="dice-option" data-count="2" aria-label="2 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip top-right"></span></span></button>
           <button class="dice-option active" data-count="3" aria-label="3 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip center"></span><span class="pip top-right"></span></span></button>
         </div>
+        <div class="dice-count-notice" id="diceCountNotice" role="status" aria-live="polite"></div>
         
         <div class="action-row">
           <button class="theme-button" id="themeButton" type="button" aria-haspopup="dialog">
@@ -69,23 +69,31 @@
       </div>
     </section>
     <footer class="footer">
-      <div class="credit"><span>• by </span><a href="https://instagram.com/tattoonelis" target="_blank" rel="noopener">@tattoonelis</a><span> •</span></div>
       <div class="counter" id="counter" aria-live="polite"></div>
+      <div class="credit"><span>• by </span><a href="https://instagram.com/tattoonelis" target="_blank" rel="noopener">@tattoonelis</a><span> •</span></div>
     </footer>
   </main>
 
-  <div class="intro-gate" id="introGate" role="button" tabindex="0" aria-label="Tap to start">
-    <div class="intro-shade"></div>
-    <div class="intro-message">Tap to start</div>
+  <div class="main-hint-overlay" id="mainHintOverlay" aria-hidden="true">
+    <div class="main-hint-message">CHOOSE A MAIN</div>
+    <div class="main-hint-arrow" aria-hidden="true"></div>
+    <div class="action-row main-hint-button-stage" id="mainHintButtonStage" aria-hidden="true"></div>
+  </div>
+
+  <div class="intro-gate" id="introGate" aria-label="Tattoo Dice loading">
+    <div class="splash-logo-wrap">
+      <div class="splash-logo" id="splashLogo"><img class="brand-logo-image" src="assets/tattoo-dice-header.png" alt="Tattoo Dice" /></div>
+      <div class="splash-progress" aria-hidden="true"><span id="splashProgressBar"></span></div>
+    </div>
   </div>
 
   <div class="theme-modal" id="themeModal" aria-hidden="true">
     <div class="theme-modal-backdrop" data-close-theme></div>
     <section class="theme-modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
       <button class="theme-modal-close" type="button" aria-label="Close theme menu" data-close-theme>×</button>
-      <h2 id="themeModalTitle">Theme</h2>
+      <h2 id="themeModalTitle">THEME</h2>
       <button class="theme-choice active" id="classicThemeChoice" type="button" data-theme="classic" aria-pressed="true">
-        <span>Classic</span>
+        <span>CLASSIC</span>
       </button>
       <button class="theme-choice locked" id="fantasyThemeChoice" type="button" data-theme="fantasy" aria-pressed="false">
         <span id="fantasyThemeLabel">Fantasy 🔒</span>
@@ -98,7 +106,7 @@
     <div class="pin-modal-backdrop" data-close-pin></div>
     <section class="pin-modal-card" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
       <button class="pin-modal-close" type="button" aria-label="Close code entry" data-close-pin>×</button>
-      <h2 id="pinModalTitle">Unlock</h2>
+      <h2 id="pinModalTitle">UNLOCK</h2>
       <div class="pin-subtitle">Enter the 4-digit code</div>
       <div class="pin-display" id="pinDisplay" aria-live="polite" aria-label="Code entry">
         <span></span><span></span><span></span><span></span>
@@ -124,19 +132,26 @@
     <div class="main-modal-backdrop" data-close-main></div>
     <section class="main-modal-card" role="dialog" aria-modal="true" aria-labelledby="mainModalTitle">
       <button class="main-modal-close" type="button" aria-label="Close main menu" data-close-main>×</button>
-      <h2 id="mainModalTitle">Main</h2>
+      <h2 id="mainModalTitle">MAIN</h2>
       <div class="main-choice-list" id="mainChoiceList"></div>
     </section>
   </div>
 
   <div class="portrait-lock" id="portraitLock" aria-hidden="true">
     <div class="portrait-lock-card">
-      <div class="portrait-lock-icon" aria-hidden="true">↻</div>
-      <div class="portrait-lock-title">Rotate your device</div>
+      <div class="portrait-lock-die-wrap" aria-hidden="true">
+        <div class="portrait-lock-die">
+          <span class="portrait-lock-pip pip-1"></span>
+          <span class="portrait-lock-pip pip-2"></span>
+          <span class="portrait-lock-pip pip-3"></span>
+          <span class="portrait-lock-pip pip-4"></span>
+          <span class="portrait-lock-pip pip-5"></span>
+        </div>
+      </div>
+      <div class="portrait-lock-title">ROTATE YOUR DEVICE</div>
       <div class="portrait-lock-text">Tattoo Dice works best in portrait mode.</div>
     </div>
   </div>
-  <script type="module" src="/script.js"></script>
-  <div id="screenFade" class="screen-fade"></div>
+  <script type="module" src="/script.js?v=3.6.4-sidequest-v2.32"></script>
 </body>
 </html>

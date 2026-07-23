@@ -32,3 +32,22 @@ A separate ranking interface is included at `/admin/`. See `admin/README.md` and
 - Added Open Graph and Twitter preview metadata.
 - Fixed the settled left/right dice being clipped, while leaving the intro/drop animation untouched.
 - No deck, formula, rating, PIN, UI workflow or Admin functionality was changed.
+
+
+## Animation revision
+- Splash loading screen with green progress bar.
+- Startup always begins in Random.
+- Startup/theme/main use staggered left-right-main drops.
+- Roll uses in-place rotation; selected Main stays still.
+- Each shadow follows its die and fades with height.
+
+## Acceptance-complete animation pass
+See `ACCEPTANCE-CHECKLIST.md` for the exact implemented behavior.
+
+
+## UX polish
+- When a fixed Main is active, the 1-Dice selector remains visible but dimmed.
+- Tapping it shows the inline hint “Select at least 2 Dice for a fixed Main.” for 1.5 seconds.
+
+
+Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall blink fix

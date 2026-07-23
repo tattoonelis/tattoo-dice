@@ -1,7 +1,7 @@
 :root{--bg:#050505;--cream:#eee4cf;--cream-soft:#cfc4ad;--line:#8f8674;--line-dim:#3a3834;--footer-text:#565656;--counter-text:var(--cream);--red:#c42018}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none}
 html,body{margin:0;width:100%;height:100%;background:var(--bg);overflow:hidden;position:fixed;inset:0;overscroll-behavior:none;touch-action:manipulation}
-body{height:100dvh;background:radial-gradient(circle at center 20%,rgba(255,255,255,.035),transparent 32%),radial-gradient(circle at center 80%,rgba(255,255,255,.025),transparent 36%),var(--bg);color:var(--cream);font-family:Georgia,"Times New Roman",serif}
+body{height:100dvh;background:radial-gradient(circle at center 20%,rgba(255,255,255,.02),transparent 42%),radial-gradient(circle at center 80%,rgba(255,255,255,.012),transparent 52%),var(--bg);color:var(--cream);font-family:Georgia,"Times New Roman",serif}
 button{font:inherit;-webkit-user-select:none;user-select:none}
 .app{height:100dvh;width:100vw;display:grid;grid-template-rows:minmax(0,1fr) auto;overflow:hidden}
 .stage{min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;align-items:center;padding:max(24px,calc(env(safe-area-inset-top) + 6px)) 22px 18px;text-align:center;overflow:hidden}
@@ -13,12 +13,9 @@ h1{margin:clamp(34px,6.5vh,82px) auto 0;width:min(100%,860px);font-family:"Unifr
 
 
 
-.hidden-message{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:30;color:var(--red);font-family:"UnifrakturCook",Georgia,serif;font-size:clamp(58px,17vw,118px);line-height:.85;text-shadow:0 2px 0 rgba(0,0,0,.42),0 0 18px rgba(196,32,24,.28);opacity:0;pointer-events:none;transform:scale(.82) rotate(-2deg)}
-.hidden-message.show{animation:hiddenStamp .58s cubic-bezier(.18,.9,.22,1.25) forwards}
-@keyframes hiddenStamp{0%{opacity:0;transform:scale(.7) rotate(-6deg)}65%{opacity:1;transform:scale(1.07) rotate(1deg)}100%{opacity:1;transform:scale(1) rotate(-1deg)}}
 .controls{display:flex;flex-direction:column;gap:clamp(18px,2.8dvh,28px);align-items:center;margin-bottom:1vh}
 .dice-select{display:flex;gap:clamp(18px,6vw,42px);justify-content:center;align-items:flex-end}
-.dice-option{appearance:none;background:transparent;border:0;padding:0;color:var(--cream-soft);font-family:Georgia,serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:none}
+.dice-option{appearance:none;background:transparent;border:0;padding:0;color:var(--cream-soft);font-family:Arial,Helvetica,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:none}
 .mini-die{width:clamp(58px,18vw,104px);height:clamp(58px,18vw,104px);border:2px solid var(--line-dim);border-radius:13px;position:relative;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;background:#050505;display:block}
 .dice-option.active .mini-die{border-color:var(--cream);box-shadow:0 0 18px rgba(238,228,207,.24),0 0 38px rgba(238,228,207,.08)}
 .dice-option:active .mini-die{transform:scale(.97)}
@@ -26,7 +23,7 @@ h1{margin:clamp(34px,6.5vh,82px) auto 0;width:min(100%,860px);font-family:"Unifr
 .dice-option.active .dice-number{color:var(--cream)}
 .pip{width:15%;height:15%;border-radius:50%;background:var(--cream);position:absolute;box-shadow:0 0 12px rgba(238,228,207,.24)}
 .center{left:42.5%;top:42.5%}.bottom-left{left:28%;top:58%}.top-right{right:28%;top:28%}
-.roll-button{appearance:none;border:2px solid var(--line);border-radius:18px;width:min(100%,720px);height:clamp(68px,10dvh,96px);background:transparent;color:var(--cream);font-family:Georgia,serif;font-weight:700;font-size:clamp(38px,11vw,76px);letter-spacing:.08em;display:flex;justify-content:center;align-items:center;gap:clamp(18px,5vw,32px);cursor:pointer;box-shadow:0 0 0 1px rgba(238,228,207,.08) inset;transition:transform .16s ease,opacity .16s ease}
+.roll-button{appearance:none;border:2px solid var(--line);border-radius:18px;width:min(100%,720px);height:clamp(68px,10dvh,96px);background:transparent;color:var(--cream);font-family:Georgia,serif;font-weight:700;font-size:clamp(46px,13vw,92px);letter-spacing:.08em;display:flex;justify-content:center;align-items:center;gap:clamp(18px,5vw,32px);cursor:pointer;box-shadow:0 0 0 1px rgba(238,228,207,.08) inset;transition:transform .16s ease,opacity .16s ease}
 .roll-button:active{transform:scale(.985)}
 .roll-button.rolling{opacity:.72;transform:scale(.99)}
 .cube{width:clamp(40px,11vw,68px);height:clamp(40px,11vw,68px);border:2px solid var(--cream);border-radius:8px;position:relative;transform:rotate(-8deg);flex:0 0 auto;box-shadow:0 0 18px rgba(238,228,207,.12)}
@@ -52,7 +49,7 @@ h1{margin:clamp(34px,6.5vh,82px) auto 0;width:min(100%,860px);font-family:"Unifr
 }
 
 
-/* One-time opening gate and roll. */
+/* Automatic splash/loading gate. */
 .intro-gate{
   position:fixed;
   inset:0;
@@ -62,54 +59,6 @@ h1{margin:clamp(34px,6.5vh,82px) auto 0;width:min(100%,860px);font-family:"Unifr
   touch-action:manipulation;
   user-select:none;
   -webkit-user-select:none;
-}
-.intro-shade{
-  position:absolute;
-  inset:0;
-  background:rgba(5,5,5,.78);
-  opacity:1;
-  transition:opacity .34s ease;
-}
-.intro-message{
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  color:var(--red);
-  font-family:"UnifrakturCook",Georgia,serif;
-  font-size:clamp(54px,15vw,112px);
-  line-height:.88;
-  text-align:center;
-  text-shadow:0 2px 0 rgba(0,0,0,.42),0 0 18px rgba(196,32,24,.28);
-  animation:introStamp .58s cubic-bezier(.18,.9,.22,1.25) both;
-}
-.intro-gate.starting{
-  pointer-events:none;
-}
-.intro-gate.starting .intro-message{
-  animation:introMessageOut .30s ease forwards;
-}
-.intro-gate.starting .intro-shade{
-  opacity:0;
-}
-.intro-gate.finished{
-  animation:introGateOut .16s ease forwards;
-  pointer-events:none;
-}
-@keyframes introStamp{
-  0%{opacity:0;transform:scale(.7) rotate(-6deg)}
-  65%{opacity:1;transform:scale(1.07) rotate(1deg)}
-  100%{opacity:1;transform:scale(1) rotate(-1deg)}
-}
-@keyframes introMessageOut{
-  from{opacity:1;transform:scale(1) rotate(-1deg)}
-  to{opacity:0;transform:scale(.94) rotate(0)}
-}
-@keyframes introGateOut{
-  from{opacity:1}
-  to{opacity:0}
 }
 #sceneWrap.intro-hidden{
   opacity:0!important;
@@ -122,9 +71,6 @@ h1{margin:clamp(34px,6.5vh,82px) auto 0;width:min(100%,860px);font-family:"Unifr
   opacity:1!important;
   pointer-events:none!important;
   overflow:visible!important;
-}
-@media (orientation:landscape) and (max-height:620px){
-  .intro-message{font-size:clamp(44px,13vh,92px)}
 }
 
 
@@ -336,10 +282,9 @@ h1{margin:clamp(34px,6.5vh,82px) auto 0;width:min(100%,860px);font-family:"Unifr
   .dice-number{font-size:clamp(24px,7vh,44px);line-height:.9;}
   .roll-button{width:min(100%,360px);height:clamp(58px,13vh,86px);font-size:clamp(34px,9vh,62px);border-radius:16px;gap:clamp(12px,2.6vw,24px);}
   .cube{width:clamp(34px,8vh,58px);height:clamp(34px,8vh,58px);border-radius:7px;}
-  .footer{grid-area:footer;height:auto;padding:2px 18px 0;background:linear-gradient(to top,rgba(255,255,255,.035),rgba(255,255,255,.01) 58%,transparent);}
+  .footer{grid-area:footer;height:auto;padding:2px 18px 0;background:linear-gradient(to top,rgba(255,255,255,.02),rgba(255,255,255,.01) 58%,transparent);}
   .credit{font-size:clamp(14px,3.8vh,24px);line-height:1.05;}
   .counter{margin-top:3px;font-size:clamp(12px,3.4vh,19px);letter-spacing:.07em;}
-  .hidden-message{font-size:clamp(48px,15vh,104px);}
 }
 @media (orientation: landscape) and (max-height: 430px) {
   .stage{grid-template-columns:minmax(280px,1.18fr) minmax(230px,.82fr);column-gap:clamp(14px,3vw,32px);padding-top:6px;padding-bottom:5px;}
@@ -1932,7 +1877,7 @@ h1{
 /* v3.1.2 dynamic action labels */
 .action-row .theme-button,
 .action-row .main-button{
-  font-size:clamp(11px,2.15vw,15px)!important;
+  font-size:clamp(12px,2.365vw,16.5px)!important;
   line-height:1.05!important;
   padding-inline:8px!important;
   text-align:center!important;
@@ -1947,7 +1892,7 @@ h1{
   text-align:center!important;
 }
 .action-row .roll-button{
-  font-size:clamp(16px,4.25vw,27px)!important;
+  font-size:clamp(17.6px,4.675vw,29.7px)!important;
 }
 
 html,body,button,a,canvas{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -1970,4 +1915,1220 @@ html,body,button,a,canvas{touch-action:manipulation;-webkit-text-size-adjust:100
 #sceneWrap:not(.intro-hidden):not(.intro-moving) canvas{
   width:100%!important;
   height:100%!important;
+}
+
+
+/* v3.6.4 colour-only refresh — built on the supplied working live version */
+:root{
+  --bg:#111111;
+  --cream:#faf9f5;
+  --cream-soft:#e8e6df;
+  --line:#242424;
+  --line-dim:#d8d6cf;
+  --footer-text:#171717;
+  --counter-text:#171717;
+  --daylight-dark:#111111;
+  --daylight-light:#faf9f5;
+  --daylight-blue:#2f86d6;
+  --daylight-red:#d62d25;
+  --daylight-green:#2ea765;
+  --ui-surface:#faf9f5;
+  --brand-logo-cream:#f6f3eb;
+}
+html,body{background-color:var(--ui-surface)!important}
+body{
+  color:var(--daylight-dark)!important;
+  background-image:linear-gradient(to bottom,
+    var(--daylight-dark) 0%,
+    var(--daylight-dark) 20%,
+    var(--ui-surface) 46%,
+    var(--ui-surface) 100%)!important;
+  background-color:var(--ui-surface)!important;
+}
+.app{background:transparent!important}
+.stage{background:transparent!important}
+/* Header stays dark and retains its existing light branding. */
+.app-header h1,h1{color:var(--brand-logo-cream)!important}
+.tagline{color:var(--brand-logo-cream)!important;opacity:1!important}
+
+/* 1 / 2 / 3 controls keep their dimensions and spacing, only their finish changes. */
+.dice-select{justify-content:center!important;align-items:center!important}
+.dice-option,.dice-option.active{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+.mini-die{
+  background:var(--daylight-light)!important;
+  border:1.5px solid var(--daylight-dark)!important;
+  box-shadow:none!important;
+}
+.dice-option.active .mini-die{box-shadow:0 0 0 2px rgba(17,17,17,.18)!important}
+.pip{background:var(--daylight-dark)!important;box-shadow:none!important}
+
+/* Flat full-colour action buttons. */
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  border:0!important;
+  box-shadow:none!important;
+  background-image:none!important;
+  color:#fff!important;
+  text-shadow:none!important;
+  filter:none!important;
+}
+.action-row .theme-button{background-color:var(--daylight-blue)!important}
+.action-row .roll-button{background-color:var(--daylight-red)!important}
+.action-row .main-button{background-color:var(--daylight-green)!important}
+.action-row .theme-button:hover,
+.action-row .roll-button:hover,
+.action-row .main-button:hover{filter:none!important}
+
+/* Footer order is counter first, smaller credits second, centered in the existing footer area. */
+.footer{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  background:var(--ui-surface)!important;
+  color:var(--daylight-dark)!important;
+}
+.counter{order:1!important;margin:0!important;color:var(--daylight-dark)!important}
+.credit{order:2!important;margin:0!important;font-size:70%!important;color:var(--daylight-dark)!important}
+.credit a,.credit span{color:inherit!important}
+
+/* Inverted light/dark treatment in all overlays; coloured active glows remain. */
+.theme-modal-backdrop,.pin-modal-backdrop,.main-modal-backdrop{background:rgba(250,249,245,.72)!important}
+.theme-modal-card,.pin-modal-card,.main-modal-card,.portrait-lock-card{
+  background:var(--daylight-dark)!important;
+  color:var(--daylight-light)!important;
+  border-color:var(--daylight-light)!important;
+}
+.theme-modal-card h2,.pin-modal-card h2,.main-modal-card h2,
+.pin-subtitle,.portrait-lock-title,.portrait-lock-text{color:var(--daylight-light)!important}
+.theme-modal-close,.pin-modal-close,.main-modal-close{color:var(--daylight-light)!important}
+.theme-choice,.main-choice,.pin-keypad button{
+  background:var(--daylight-light)!important;
+  color:var(--daylight-dark)!important;
+  border-color:var(--daylight-light)!important;
+}
+.theme-choice.active{box-shadow:0 0 18px rgba(47,134,214,.55)!important}
+.main-choice.active{box-shadow:0 0 18px rgba(46,167,101,.55)!important}
+.pin-display{background:var(--daylight-dark)!important}
+.portrait-lock{background:var(--daylight-light)!important}
+
+/* No green glow around the rendered main die; the texture text itself is green. */
+.dice-stage-3d.main-selected{filter:none!important}
+#sceneWrap{filter:none!important}
+
+/* v3.6.4 animation/button refinement — requested visual corrections */
+/* Remove the old stage glow entirely; selected Main is indicated by green lettering only. */
+.dice-stage-3d.main-selected::after{display:none!important}
+
+/* Richer, polished action-button finish while preserving dimensions and positions. */
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  border:0!important;
+  color:#fffdf8!important;
+  text-shadow:0 1px 0 rgba(0,0,0,.24)!important;
+  box-shadow:
+    0 5px 14px rgba(25,25,25,.07),
+    0 12px 30px rgba(20,20,20,.045),
+    inset 0 1px 0 rgba(255,255,255,.36),
+    inset 0 -2px 0 rgba(0,0,0,.12)!important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,0) 32%,rgba(0,0,0,.07) 100%)!important;
+  background-blend-mode:soft-light!important;
+  transition:transform .14s ease,filter .14s ease,box-shadow .14s ease!important;
+}
+.action-row .theme-button{background-color:#338bd8!important}
+.action-row .roll-button{background-color:#e12b23!important}
+.action-row .main-button{background-color:#32ad6d!important}
+.action-row .theme-button:active,
+.action-row .roll-button:active,
+.action-row .main-button:active{
+  transform:translateY(3px)!important;
+  box-shadow:
+    0 3px 10px rgba(25,25,25,.06),
+    0 7px 20px rgba(20,20,20,.04),
+    inset 0 1px 0 rgba(255,255,255,.28),
+    inset 0 -2px 0 rgba(0,0,0,.10)!important;
+}
+
+/* v3.6.4 splash and full-screen dice-drop layers.
+   The logo flight itself is controlled by JavaScript so there is one source
+   of truth for position, scale and handoff timing. */
+.intro-gate{
+  position:fixed!important;
+  inset:0!important;
+  z-index:500!important;
+  display:grid!important;
+  place-items:center!important;
+  background:#050505!important;
+  cursor:default!important;
+  overflow:hidden!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  transition:none!important;
+  will-change:auto;
+}
+.intro-gate.finished{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  background:transparent!important;
+}
+.splash-logo-wrap{width:min(84vw,720px);text-align:center;transform:translateY(-2vh)}
+.splash-logo{
+  color:var(--cream,#f6f3eb);
+  font-family:"UnifrakturCook",Georgia,serif;
+  font-size:clamp(72px,18vw,142px);
+  line-height:.82;
+  white-space:nowrap;
+  transform-origin:center;
+}
+.splash-progress{width:min(72vw,460px);height:12px;margin:42px auto 0;border:1px solid rgba(246,243,235,.42);border-radius:999px;overflow:hidden;background:rgba(246,243,235,.08)}
+.splash-progress span{display:block;width:0;height:100%;border-radius:inherit;background:#2faf69;box-shadow:0 0 14px rgba(47,175,105,.42);transition:width .18s linear}
+.intro-gate.logo-flight .splash-progress{opacity:0;transition:opacity .18s ease}
+.intro-gate.logo-flight .splash-logo{opacity:0!important}
+.exact-header-logo-flight{
+  transform-origin:center center!important;
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+}
+.app-header h1{transition:none!important}
+@media (min-width:900px){
+  .splash-logo{font-size:clamp(88px,9vw,142px)!important}
+}
+#sceneWrap canvas{position:relative;z-index:30!important}
+.dice-stage-3d{isolation:isolate}
+.drop-overlay-canvas{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  z-index:180!important;
+  pointer-events:none!important;
+  transform:none!important;
+}
+body.dice-drop-overlay .dice-stage-3d,
+body.dice-drop-overlay #sceneWrap{overflow:visible!important}
+
+/* Acceptance checklist addition: selector geometry and fixed-Main availability. */
+.controls{
+  width:min(100%,760px)!important;
+  margin-inline:auto!important;
+}
+.dice-select,
+.action-row{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:clamp(10px,2.4vw,16px)!important;
+  align-items:center!important;
+}
+.dice-select{
+  margin-inline:auto!important;
+  padding:0!important;
+}
+.dice-option{
+  width:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.mini-die{
+  width:clamp(62px,18vw,112px)!important;
+  height:clamp(62px,18vw,112px)!important;
+  max-width:100%!important;
+  aspect-ratio:1/1!important;
+  border-radius:clamp(16px,4vw,26px)!important;
+  box-sizing:border-box!important;
+  background:var(--daylight-light)!important;
+  border:2px solid rgba(17,17,17,.42)!important;
+}
+.dice-option.active .mini-die{
+  border-color:var(--daylight-dark)!important;
+  box-shadow:0 0 0 1px rgba(17,17,17,.18)!important;
+}
+.dice-option.main-disabled{
+  cursor:not-allowed!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.dice-option.main-disabled .mini-die{
+  opacity:.40!important;
+  filter:grayscale(1)!important;
+}
+.dice-option.main-disabled:active .mini-die{
+  transform:none!important;
+}
+.dice-count-notice{
+  min-height:1.25em;
+  margin-top:clamp(4px,.8vh,8px);
+  opacity:0;
+  pointer-events:none;
+  color:rgba(17,17,17,.62);
+  font:600 clamp(10px,2.35vw,13px)/1.25 Georgia,serif;
+  text-align:center;
+  transform:translateY(-3px);
+  transition:opacity .18s ease,transform .18s ease;
+}
+.dice-count-notice.show{
+  opacity:1;
+  transform:translateY(0);
+}
+@media (min-width:900px){
+  .controls{width:min(680px,76vw)!important}
+  .mini-die{width:96px!important;height:96px!important}
+}
+
+/* Acceptance pass: literal pixel-perfect sequential drops. */
+.dice-drop-snapshot{
+  position:fixed;
+  z-index:650;
+  pointer-events:none;
+  object-fit:fill;
+  transform-origin:center center;
+  will-change:transform;
+}
+.dice-drop-shadow{
+  position:fixed;
+  z-index:649;
+  pointer-events:none;
+  border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.32) 0%,rgba(0,0,0,.16) 42%,rgba(0,0,0,0) 76%);
+  filter:blur(6px);
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.38);
+  will-change:transform,opacity;
+}
+body.dice-drop-overlay{overflow:hidden!important}
+/* Splash fades transparently over the already-laid-out app; no black bridge frame. */
+.intro-gate{will-change:opacity}
+.intro-gate.finished{opacity:0!important;background:transparent!important}
+.exact-header-logo-flight{text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}
+
+
+/* v3.6.4 step 5.10.1 — shared raster brand logo
+   One asset is used by both the fixed header and the existing splash handoff. */
+.brand-logo-image{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.app-header h1{
+  display:block!important;
+  width:min(88vw,760px)!important;
+  height:auto!important;
+  font-size:0!important;
+  line-height:0!important;
+}
+.app-header h1 .brand-logo-image{
+  width:100%!important;
+  max-height:clamp(92px,18vw,156px)!important;
+  object-fit:contain!important;
+}
+.splash-logo{
+  width:min(84vw,720px)!important;
+  font-size:0!important;
+  line-height:0!important;
+}
+.splash-logo .brand-logo-image{
+  width:100%!important;
+  max-height:min(36vh,330px)!important;
+  object-fit:contain!important;
+}
+.exact-header-logo-flight{
+  display:block!important;
+}
+.exact-header-logo-flight .brand-logo-image{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+}
+
+/* v3.6.4 step 5.10.4 — desktop/mobile proportion parity + unified UI typography */
+:root{
+  --dice-ui-font:"Arial Rounded MT Bold","Arial Rounded MT",Arial,sans-serif;
+}
+
+/* Counter and all menu typography use the same rounded family as the dice labels. */
+.counter,
+.theme-modal-card,
+.theme-modal-card h2,
+.theme-choice,
+.theme-coming-soon,
+.pin-modal-card,
+.pin-modal-card h2,
+.pin-subtitle,
+.pin-keypad button,
+.main-modal-card,
+.main-modal-card h2,
+.main-choice{
+  font-family:var(--dice-ui-font)!important;
+}
+
+/* The slogan and counter intentionally share one visual text size. */
+.stage > .tagline,
+.counter{
+  font-size:clamp(13px,3.6vw,17px)!important;
+}
+
+/* On desktop, keep the same narrow portrait composition instead of stretching
+   the interface across the browser width. */
+@media (min-width:900px){
+  body{
+    display:flex!important;
+    justify-content:center!important;
+    overflow-x:hidden!important;
+  }
+
+  .app{
+    width:min(100vw,460px)!important;
+    min-height:100dvh!important;
+    margin:0 auto!important;
+  }
+
+  .stage{
+    width:100%!important;
+    padding:18px 12px 7px!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto!important;
+  }
+
+  .app-header{
+    width:min(92%,420px)!important;
+    margin:0 auto!important;
+    padding:0!important;
+    transform:translateY(clamp(58px,7.8dvh,78px))!important;
+    align-self:start!important;
+  }
+
+  .app-header h1{
+    width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    line-height:.74!important;
+  }
+
+  .stage > .tagline{
+    width:min(88%,400px)!important;
+    margin:clamp(74px,9.8dvh,96px) auto 0!important;
+    padding:0!important;
+    line-height:.95!important;
+    text-align:center!important;
+    align-self:start!important;
+  }
+
+  .dice-stage-3d{
+    width:100%!important;
+    height:clamp(215px,31dvh,300px)!important;
+    min-height:195px!important;
+    margin:auto!important;
+    transform:scale(1.08)!important;
+    transform-origin:center center!important;
+  }
+
+  #sceneWrap:not(.intro-hidden):not(.intro-moving){
+    width:calc(100% + 132px)!important;
+  }
+
+  .controls{
+    width:min(84%,390px)!important;
+    gap:clamp(9px,1.35dvh,13px)!important;
+    margin:0 auto!important;
+  }
+
+  .dice-select{
+    width:100%!important;
+    justify-content:space-between!important;
+  }
+
+  .mini-die{
+    width:clamp(52px,6dvh,72px)!important;
+    height:clamp(52px,6dvh,72px)!important;
+  }
+
+  .action-row{
+    width:100%!important;
+    gap:10px!important;
+  }
+
+  .action-row .theme-button,
+  .action-row .roll-button,
+  .action-row .main-button{
+    height:clamp(54px,7.4dvh,64px)!important;
+  }
+
+  .action-row .theme-button,
+  .action-row .main-button{
+    font-size:clamp(12px,1.45vw,15px)!important;
+  }
+
+  .action-row .roll-button{
+    font-size:clamp(20px,2.4vw,27px)!important;
+  }
+
+  .footer{
+    width:100%!important;
+    height:82px!important;
+    padding:7px 14px 8px!important;
+  }
+
+  .counter,
+  .stage > .tagline{
+    font-size:15px!important;
+  }
+
+  .credit{
+    font-size:12px!important;
+  }
+}
+
+/* v3.6.4 step 5.10.5 — Mobile Master Layout
+   The iPhone portrait composition is the single source of truth.
+   Desktop keeps the same narrow proportions instead of creating a separate layout. */
+:root{
+  --mobile-master-width:430px;
+}
+
+/* The three primary actions now use the same rounded family as the dice labels. */
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  font-family:var(--dice-ui-font)!important;
+  letter-spacing:0!important;
+}
+
+/* Slightly larger brand, matching the visual weight of the supplied iPhone reference. */
+@media (orientation:portrait){
+  .app-header h1{
+    width:min(94vw,430px)!important;
+  }
+
+  .app-header h1 .brand-logo-image{
+    max-height:clamp(116px,25vw,184px)!important;
+  }
+
+  /* Lower the 1/2/3 row and tighten it to the action buttons. */
+  .controls{
+    gap:3px!important;
+  }
+
+  .dice-select{
+    position:relative!important;
+    transform:translateY(9px)!important;
+    z-index:2!important;
+  }
+
+  .action-row{
+    margin-top:9px!important;
+  }
+}
+
+/* Desktop is the same portrait product canvas as iPhone. Only the surrounding
+   background grows; the internal sizing and rhythm remain mobile. */
+@media (min-width:900px) and (orientation:landscape){
+  body{
+    display:flex!important;
+    justify-content:center!important;
+    align-items:stretch!important;
+    overflow:hidden!important;
+  }
+
+  .app{
+    width:min(var(--mobile-master-width),100vw)!important;
+    height:100dvh!important;
+    min-height:0!important;
+    margin:0 auto!important;
+    grid-template-rows:minmax(0,1fr) auto!important;
+  }
+
+  .stage{
+    width:100%!important;
+    min-height:0!important;
+    height:auto!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto minmax(0,1fr) auto!important;
+    grid-template-areas:none!important;
+    align-items:center!important;
+    column-gap:0!important;
+    padding:clamp(18px,3.4dvh,32px) 12px 7px!important;
+    overflow:hidden!important;
+  }
+
+  .app-header{
+    width:100%!important;
+    max-width:none!important;
+    margin:0 auto!important;
+    padding:clamp(22px,4.5dvh,42px) 0 0!important;
+    transform:none!important;
+    align-self:start!important;
+  }
+
+  .app-header h1{
+    width:94%!important;
+    margin:0 auto!important;
+    padding:0!important;
+    line-height:0!important;
+  }
+
+  .app-header h1 .brand-logo-image{
+    width:100%!important;
+    max-height:174px!important;
+  }
+
+  .stage > .tagline{
+    width:100%!important;
+    margin:-4px auto 0!important;
+    padding:0!important;
+    font-size:15px!important;
+    line-height:1!important;
+    text-align:center!important;
+    align-self:start!important;
+  }
+
+  .dice-stage-3d{
+    grid-area:auto!important;
+    width:100%!important;
+    height:clamp(250px,35dvh,330px)!important;
+    min-height:225px!important;
+    margin:auto!important;
+    transform:scale(1.10)!important;
+    transform-origin:center center!important;
+    align-self:center!important;
+    justify-self:center!important;
+  }
+
+  #sceneWrap:not(.intro-hidden):not(.intro-moving){
+    width:calc(100% + 132px)!important;
+  }
+
+  .controls{
+    grid-area:auto!important;
+    width:min(84%,390px)!important;
+    justify-self:center!important;
+    align-self:end!important;
+    gap:3px!important;
+    margin:0 auto!important;
+  }
+
+  .dice-select{
+    width:100%!important;
+    justify-content:space-between!important;
+    align-items:center!important;
+    gap:0!important;
+    transform:translateY(9px)!important;
+  }
+
+  .mini-die{
+    width:82px!important;
+    height:82px!important;
+    border-radius:15px!important;
+  }
+
+  .action-row{
+    width:100%!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:10px!important;
+    margin:9px 0 0!important;
+  }
+
+  .action-row .theme-button,
+  .action-row .roll-button,
+  .action-row .main-button{
+    width:100%!important;
+    min-width:0!important;
+    height:64px!important;
+    padding:0 6px!important;
+    border-radius:17px!important;
+    font-family:var(--dice-ui-font)!important;
+    font-size:20px!important;
+    font-weight:700!important;
+    line-height:1!important;
+    letter-spacing:0!important;
+  }
+
+  .action-row .roll-button{
+    font-size:30px!important;
+  }
+
+  .footer{
+    grid-area:auto!important;
+    width:100%!important;
+    height:82px!important;
+    padding:7px 14px 8px!important;
+  }
+
+  .counter,
+  .stage > .tagline{
+    font-size:15px!important;
+  }
+
+  .credit{
+    font-size:12px!important;
+  }
+}
+
+/* v3.6.4 step 5.10.8 — remove control-band artefacts
+   The wide feathered action-button shadows overlapped into one rectangular haze
+   and were clipped at the stage/footer boundary on iPhone Safari. Keep each
+   control visually independent and prevent transformed control layers from
+   producing hairline compositor edges. */
+.controls,
+.dice-select,
+.action-row{
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+
+/* Preserve the approved 9px selector placement without creating a transformed
+   compositing layer around the complete selector row. */
+.dice-select{
+  top:9px!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+
+/* The selector itself may never cast a shared row shadow. */
+.dice-option,
+.dice-option.active,
+.mini-die{
+  filter:none!important;
+}
+.dice-option.active .mini-die{
+  box-shadow:inset 0 0 0 1px rgba(17,17,17,.18)!important;
+}
+
+/* Compact per-button contact shadows: soft enough to ground the buttons, but
+   no large second blur that can merge into a grey box behind the full row. */
+.action-row{
+  overflow:visible!important;
+  isolation:auto!important;
+}
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  box-shadow:
+    0 4px 7px rgba(17,17,17,.055),
+    inset 0 1px 0 rgba(255,255,255,.34),
+    inset 0 -2px 0 rgba(0,0,0,.10)!important;
+}
+.action-row .theme-button:active,
+.action-row .roll-button:active,
+.action-row .main-button:active{
+  box-shadow:
+    0 2px 4px rgba(17,17,17,.045),
+    inset 0 1px 0 rgba(255,255,255,.26),
+    inset 0 -2px 0 rgba(0,0,0,.08)!important;
+}
+
+/* Explicitly remove any inherited section edge around the controls/footer. */
+.footer{
+  border-top:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+}
+
+
+/* v3.6.4 step 5.10.11 — two-dice clearance + notice centering
+   Keep the approved control geometry, but reserve a true middle line for the
+   fixed-Main notice so it sits between both button rows instead of hugging the
+   selector. */
+.controls{
+  gap:0!important;
+}
+.controls > .dice-select{
+  top:0!important;
+  transform:none!important;
+}
+.dice-count-notice{
+  width:100%!important;
+  min-height:clamp(30px,4.2dvh,38px)!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0 8px!important;
+  box-sizing:border-box!important;
+  color:rgba(255,250,240,.94)!important;
+  font-family:var(--premium-font,-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif)!important;
+  font-size:clamp(11px,2.65vw,13px)!important;
+  font-weight:650!important;
+  line-height:1!important;
+  letter-spacing:.01em!important;
+  text-align:center!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.28)!important;
+  transform:none!important;
+}
+.dice-count-notice.show{
+  transform:none!important;
+}
+.action-row{
+  margin-top:0!important;
+}
+
+/* ========================================================================== */
+/* SIDEQUEST v3.6.4-premium-toy — visual refinement only                      */
+/* Layout, element order, sizing logic and functionality intentionally kept.  */
+/* ========================================================================== */
+:root{
+  --premium-ink:#121311;
+  --premium-charcoal:#151614;
+  --premium-charcoal-warm:#24231f;
+  --premium-panel:#2b2a26;
+  --premium-panel-soft:#34322d;
+  --premium-ivory:#f4f0e7;
+  --premium-ivory-muted:#c7c1b5;
+  --premium-line:rgba(255,250,239,.14);
+  --premium-red:#e12b23;
+  --premium-red-deep:#aa3028;
+  --premium-blue:#338bd8;
+  --premium-green:#32ad6d;
+  --premium-font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+}
+
+html,body{
+  background:#151614!important;
+}
+body{
+  font-family:var(--premium-font)!important;
+  color:var(--premium-ivory)!important;
+  background:
+    linear-gradient(180deg,
+      #111210 0%,
+      #171816 28%,
+      #1e1e1b 60%,
+      #26241f 100%)!important;
+}
+.app,.stage{background:transparent!important}
+.stage{
+  position:relative!important;
+  isolation:isolate!important;
+}
+/* A broad, feathered pool of ambient light rather than a visible gradient. */
+.stage::before{
+  content:"";
+  position:absolute;
+  z-index:-2;
+  left:50%;
+  top:37%;
+  width:min(112vw,760px);
+  height:clamp(260px,45dvh,500px);
+  transform:translate(-50%,-50%);
+  border-radius:48%;
+  background:rgba(238,231,214,.075);
+  filter:blur(88px);
+  pointer-events:none;
+}
+.stage::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:50%;
+  top:64%;
+  width:min(76vw,500px);
+  height:70px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:rgba(232,218,192,.07);
+  filter:blur(34px);
+  pointer-events:none;
+}
+
+/* Brand stays untouched; supporting type becomes calmer and quieter. */
+.tagline{
+  font-family:var(--premium-font)!important;
+  color:var(--premium-ivory-muted)!important;
+  opacity:.72!important;
+  font-weight:500!important;
+  letter-spacing:.012em!important;
+  text-shadow:none!important;
+}
+.counter,.credit,.theme-button,.roll-button,.main-button,
+.theme-modal-card,.pin-modal-card,.main-modal-card,.portrait-lock-card{
+  font-family:var(--premium-font)!important;
+}
+.counter{
+  color:rgba(244,240,231,.78)!important;
+  font-weight:650!important;
+  letter-spacing:.085em!important;
+}
+.credit,.credit a,.credit span{
+  color:rgba(244,240,231,.40)!important;
+}
+.footer{
+  color:var(--premium-ivory)!important;
+  background:linear-gradient(180deg,rgba(20,21,19,0) 0%,rgba(20,21,19,.54) 34%,rgba(20,21,19,.82) 100%)!important;
+}
+
+/* Selector dice: warm resin, gentle edge light, no hard outlines. */
+.mini-die{
+  background:
+    linear-gradient(145deg,#fffdf8 0%,#f2ede3 58%,#ddd5c8 100%)!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:16px!important;
+  box-shadow:
+    0 10px 21px rgba(0,0,0,.20),
+    0 2px 5px rgba(0,0,0,.12),
+    inset 1px 1px 0 rgba(255,255,255,.86),
+    inset -1px -2px 3px rgba(74,62,44,.12)!important;
+  transition:transform .20s cubic-bezier(.2,.8,.2,1),box-shadow .20s ease,filter .20s ease!important;
+}
+.dice-option.active .mini-die{
+  border-color:rgba(255,255,255,.55)!important;
+  box-shadow:
+    0 12px 26px rgba(0,0,0,.24),
+    0 0 0 2px rgba(244,240,231,.22),
+    0 0 24px rgba(244,235,215,.14),
+    inset 1px 1px 0 rgba(255,255,255,.92),
+    inset -1px -2px 3px rgba(74,62,44,.10)!important;
+}
+.dice-option:active .mini-die{
+  transform:translateY(1px) scale(.965)!important;
+  box-shadow:
+    0 5px 12px rgba(0,0,0,.18),
+    inset 1px 1px 0 rgba(255,255,255,.72),
+    inset -1px -2px 4px rgba(74,62,44,.14)!important;
+}
+.pip{
+  background:#22231f!important;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.16),0 1px 1px rgba(0,0,0,.16)!important;
+}
+
+/* Buttons read as three pieces of carefully finished hardware. */
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  border:1px solid rgba(255,255,255,.13)!important;
+  border-radius:18px!important;
+  color:#fffaf0!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.22)!important;
+  letter-spacing:.018em!important;
+  background-image:
+    linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,.045) 34%,rgba(0,0,0,.12) 100%)!important;
+  background-blend-mode:soft-light!important;
+  box-shadow:
+    0 10px 22px rgba(0,0,0,.20),
+    0 2px 5px rgba(0,0,0,.16),
+    inset 0 1px 0 rgba(255,255,255,.36),
+    inset 0 -1px 0 rgba(0,0,0,.18)!important;
+  transition:transform .16s cubic-bezier(.2,.8,.2,1),box-shadow .16s ease,filter .16s ease!important;
+}
+.action-row .theme-button{background-color:var(--premium-blue)!important}
+.action-row .main-button{background-color:var(--premium-green)!important}
+.action-row .roll-button{
+  background-color:var(--premium-red)!important;
+  border-color:rgba(255,221,210,.28)!important;
+  box-shadow:
+    0 13px 28px rgba(130,38,29,.28),
+    0 3px 7px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,242,235,.48),
+    inset 0 -2px 0 rgba(101,22,17,.22)!important;
+}
+.action-row .theme-button:active,
+.action-row .roll-button:active,
+.action-row .main-button:active{
+  transform:translateY(2px) scale(.982)!important;
+  box-shadow:
+    0 4px 9px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.25),
+    inset 0 -1px 0 rgba(0,0,0,.15)!important;
+}
+.action-row .theme-button:hover,
+.action-row .roll-button:hover,
+.action-row .main-button:hover{filter:brightness(1.025)!important}
+
+/* Overlays share the same warm, tactile material language. */
+.theme-modal-backdrop,.pin-modal-backdrop,.main-modal-backdrop{
+  background:rgba(10,11,10,.68)!important;
+  backdrop-filter:blur(14px) saturate(.85)!important;
+  -webkit-backdrop-filter:blur(14px) saturate(.85)!important;
+}
+.theme-modal-card,.pin-modal-card,.main-modal-card,.portrait-lock-card{
+  color:var(--premium-ivory)!important;
+  background:
+    linear-gradient(160deg,rgba(59,57,51,.98),rgba(29,30,27,.98))!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  border-radius:24px!important;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.52),
+    inset 0 1px 0 rgba(255,255,255,.16)!important;
+}
+.theme-modal-card h2,.pin-modal-card h2,.main-modal-card h2,
+.pin-subtitle,.portrait-lock-title,.portrait-lock-text{
+  color:var(--premium-ivory)!important;
+}
+.theme-choice,.main-choice,.pin-keypad button{
+  color:var(--premium-ivory)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.035))!important;
+  border:1px solid rgba(255,255,255,.13)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),0 5px 14px rgba(0,0,0,.14)!important;
+}
+.theme-choice.active,.main-choice.active{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 0 0 1px rgba(244,240,231,.16),0 7px 18px rgba(0,0,0,.20)!important;
+}
+.theme-modal-close,.pin-modal-close,.main-modal-close{
+  color:var(--premium-ivory)!important;
+}
+.pin-display{background:rgba(12,13,12,.58)!important}
+.portrait-lock{background:#181916!important}
+
+/* Preserve the quiet composition on wider displays too. */
+@media (min-width:900px) and (orientation:landscape){
+  body{
+    background:
+      linear-gradient(180deg,#111210 0%,#181916 30%,#22211d 72%,#292720 100%)!important;
+  }
+}
+
+/* v2.30 — current menu typography + tactile portrait rotation cue */
+.theme-modal-card h2,
+.pin-modal-card h2,
+.main-modal-card h2,
+.portrait-lock-title{
+  font-family:var(--premium-font,-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif)!important;
+  font-weight:750!important;
+  letter-spacing:.055em!important;
+  text-transform:uppercase!important;
+  text-shadow:none!important;
+}
+.portrait-lock-title{
+  font-size:clamp(25px,6.6vw,38px)!important;
+  line-height:1.02!important;
+}
+.portrait-lock-text{
+  font-family:var(--premium-font,-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif)!important;
+  font-size:clamp(14px,3.4vw,18px)!important;
+  font-weight:500!important;
+  line-height:1.35!important;
+  letter-spacing:.01em!important;
+  color:rgba(244,240,231,.72)!important;
+}
+.portrait-lock-die-wrap{
+  --rotation-die-size:clamp(48px,12vw,62px);
+  width:var(--rotation-die-size);
+  height:var(--rotation-die-size);
+  margin:0 auto 20px;
+  position:relative;
+  z-index:0;
+  isolation:isolate;
+  transform-origin:50% 100%;
+  animation:portraitDieBounce 2.8s cubic-bezier(.22,.72,.25,1) infinite;
+  will-change:transform;
+}
+.portrait-lock-die-wrap::after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:12%;
+  right:12%;
+  bottom:-10px;
+  height:8px;
+  border-radius:50%;
+  background:rgba(0,0,0,.42);
+  filter:blur(5px);
+  animation:portraitDieShadow 2.8s ease-in-out infinite;
+}
+.portrait-lock-die{
+  width:100%;
+  height:100%;
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.76);
+  border-radius:clamp(10px,2.5vw,14px);
+  background:radial-gradient(circle at 50% 45%,#fff 0%,#f7f3eb 58%,#d9d3c8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.96),
+    inset 0 -5px 9px rgba(88,82,71,.12),
+    0 7px 17px rgba(0,0,0,.34);
+  transform-origin:50% 50%;
+  animation:portraitDieQuarterTurn 2.8s cubic-bezier(.22,.72,.25,1) infinite;
+  will-change:transform;
+}
+.portrait-lock-pip{
+  position:absolute;
+  width:13%;
+  aspect-ratio:1;
+  border-radius:50%;
+  background:#272824;
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.18),0 1px 1px rgba(0,0,0,.18);
+}
+.portrait-lock-pip.pip-1{left:22%;top:22%}
+.portrait-lock-pip.pip-2{right:22%;top:22%}
+.portrait-lock-pip.pip-3{left:43.5%;top:43.5%}
+.portrait-lock-pip.pip-4{left:22%;bottom:22%}
+.portrait-lock-pip.pip-5{right:22%;bottom:22%}
+@keyframes portraitDieBounce{
+  0%,18%,68%,100%{transform:translate3d(0,0,0) scaleY(1)}
+  23%{transform:translate3d(0,4px,0) scaleY(.78)}
+  29%{transform:translate3d(0,-2px,0) scaleY(1.08)}
+  43%{transform:translate3d(0,-18px,0) scaleY(1)}
+  55%{transform:translate3d(0,1px,0) scaleY(.91)}
+  62%{transform:translate3d(0,0,0) scaleY(1)}
+}
+@keyframes portraitDieQuarterTurn{
+  0%,23%{transform:rotate(0deg)}
+  29%{transform:rotate(7deg)}
+  43%{transform:rotate(48deg)}
+  55%,100%{transform:rotate(90deg)}
+}
+@keyframes portraitDieShadow{
+  0%,18%,62%,100%{opacity:.72;transform:scaleX(1)}
+  23%{opacity:.84;transform:scaleX(1.12)}
+  43%{opacity:.24;transform:scaleX(.58)}
+  55%{opacity:.8;transform:scaleX(1.08)}
+}
+@media (prefers-reduced-motion:reduce){
+  .portrait-lock-die-wrap,
+  .portrait-lock-die,
+  .portrait-lock-die-wrap::after{animation:none!important}
+}
+
+/* v2.31 — rolling counter digit + persistent Main discovery hint */
+.counter{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+  font-variant-numeric:tabular-nums!important;
+}
+.counter-number{
+  display:inline-flex;
+  align-items:center;
+  line-height:1;
+}
+.counter-prefix{line-height:1}
+.counter-digit-window{
+  display:inline-block;
+  position:relative;
+  width:.68em;
+  height:1em;
+  overflow:hidden;
+  line-height:1;
+  vertical-align:top;
+}
+.counter-digit{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  transform:translate3d(0,0,0);
+  will-change:transform,opacity;
+}
+.counter-digit-new{transform:translate3d(0,110%,0)}
+.counter.counter-rolling .counter-digit-old{
+  animation:counterDigitOut .5s cubic-bezier(.22,.72,.22,1) forwards;
+}
+.counter.counter-rolling .counter-digit-new{
+  animation:counterDigitIn .5s cubic-bezier(.22,.72,.22,1) forwards;
+}
+@keyframes counterDigitOut{
+  0%{transform:translate3d(0,0,0);opacity:1}
+  100%{transform:translate3d(0,-110%,0);opacity:.25}
+}
+@keyframes counterDigitIn{
+  0%{transform:translate3d(0,110%,0);opacity:.25}
+  100%{transform:translate3d(0,0,0);opacity:1}
+}
+
+.main-hint-overlay{
+  --main-hint-center-x:50vw;
+  --main-hint-button-left:66vw;
+  --main-hint-button-width:28vw;
+  --main-hint-button-height:60px;
+  --main-hint-button-top:72vh;
+  position:fixed;
+  inset:0;
+  z-index:800;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  overflow:hidden;
+  background:rgba(7,8,7,.48);
+  backdrop-filter:blur(7px) brightness(.48) saturate(.72);
+  -webkit-backdrop-filter:blur(7px) brightness(.48) saturate(.72);
+  transition:opacity .22s ease,visibility 0s linear .22s;
+  touch-action:manipulation;
+}
+.main-hint-overlay.show{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity .22s ease;
+}
+.main-hint-message{
+  position:fixed;
+  z-index:2;
+  top:50%;
+  left:50%;
+  width:min(88vw,390px);
+  transform:translate(-50%,-50%);
+  color:var(--premium-red,#e12b23);
+  font-family:var(--premium-font,-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif);
+  font-size:clamp(20px,5.4vw,28px);
+  font-weight:780;
+  line-height:1.05;
+  letter-spacing:.045em;
+  text-align:center;
+  text-transform:uppercase;
+  text-shadow:0 2px 10px rgba(0,0,0,.46);
+}
+.main-hint-arrow{
+  position:fixed;
+  z-index:2;
+  left:calc(var(--main-hint-center-x) - 15px);
+  top:max(70px,calc(var(--main-hint-button-top) - 64px));
+  width:30px;
+  height:44px;
+  background:#fffdf8;
+  clip-path:polygon(36% 0,64% 0,64% 55%,100% 55%,50% 100%,0 55%,36% 55%);
+  animation:mainHintArrowBounce .82s cubic-bezier(.22,.72,.3,1) infinite;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.42));
+}
+@keyframes mainHintArrowBounce{
+  0%,100%{transform:translate3d(0,-4px,0)}
+  52%{transform:translate3d(0,7px,0)}
+}
+.main-hint-button-stage.action-row{
+  position:fixed!important;
+  z-index:3!important;
+  display:block!important;
+  left:var(--main-hint-button-left)!important;
+  top:var(--main-hint-button-top)!important;
+  width:var(--main-hint-button-width)!important;
+  height:var(--main-hint-button-height)!important;
+  margin:0!important;
+  max-width:none!important;
+  transform:none!important;
+  pointer-events:none!important;
+}
+.main-hint-button-stage.action-row .main-button{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  opacity:1!important;
+  pointer-events:none!important;
+}
+@media (prefers-reduced-motion:reduce){
+  .counter.counter-rolling .counter-digit-old,
+  .counter.counter-rolling .counter-digit-new,
+  .main-hint-arrow{animation-duration:.01ms!important;animation-iteration-count:1!important}
 }

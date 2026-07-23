@@ -10,5 +10,5 @@
   "missing_score_count": 0,
   "invalid_score_count": 0,
   "secret_code": "332211",
-  "keep_drawing_overlay": "hiddenMessageEl.show, red CSS var(--red), z-index 30 over dice-stage"
+  "secret_overlay": "mainHintOverlay.show, red premium text, white animated arrow, highlighted Main button"
 }

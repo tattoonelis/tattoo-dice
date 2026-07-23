@@ -2061,3 +2061,45 @@ textarea{
 }
 
 html,body,button,a,canvas{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+
+/* v3.6.4 colour-only refresh for Admin — coloured controls intentionally preserved */
+:root{
+  --black:#faf9f5;
+  --panel:#f2f0e9;
+  --panel-2:#ffffff;
+  --cream:#111111;
+  --muted:#625f58;
+  --line:#2b2b2b;
+  color-scheme:light;
+}
+html,body{
+  background:linear-gradient(to bottom,#111111 0%,#111111 25%,#faf9f5 65%,#faf9f5 100%)!important;
+  color:#111111!important;
+}
+.admin-header h1,.compact-header h1,.portrait-brand h1{color:#eee4cf!important}
+.admin-header .tagline,.admin-header .eyebrow{color:#cfc4ad!important}
+.panel,.game-panel,.stats-sheet{
+  background:#faf9f5!important;
+  color:#111111!important;
+  border-color:#2b2b2b!important;
+  box-shadow:none!important;
+}
+select,textarea,.header-button,.back-link,.header-actions .back-link{
+  background:#faf9f5!important;
+  color:#111111!important;
+  border-color:#2b2b2b!important;
+}
+.admin-pin-backdrop,.rotate-admin-overlay{background:rgba(250,249,245,.82)!important}
+.admin-pin-card,.rotate-admin-card{
+  background:#111111!important;
+  color:#faf9f5!important;
+  border-color:#faf9f5!important;
+}
+.admin-pin-card h1,.admin-pin-copy,.admin-pin-status,
+.rotate-admin-card h2,.rotate-admin-card p{color:#faf9f5!important}
+.admin-pin-display{background:#111111!important;border-color:#111111!important;box-shadow:none!important}
+.admin-pin-keypad button{background:#faf9f5!important;color:#111111!important;border-color:#faf9f5!important}
+.progress-track{background:#faf9f5!important}
+/* Explicitly preserve coloured Admin actions. */
+.roll-button,.save-button,.verdict-button,.verdict-meh,.delete-ranking-button{ }
