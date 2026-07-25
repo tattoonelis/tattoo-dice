@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=3.6.4-sidequest-v2.47" />
+  <link rel="stylesheet" href="/style.css?v=3.6.4-sidequest-v2.49" />
   <script type="importmap">
     {
       "imports": {
@@ -48,12 +48,7 @@
         <div id="sceneWrap" aria-label="Tattoo dice result"></div>
       </div>
       <div class="controls">
-        <div class="dice-select" aria-label="Aantal woorden">
-          <button class="dice-option" data-count="1" aria-label="1 woord"><span class="mini-die"><span class="pip center"></span></span></button>
-          <button class="dice-option" data-count="2" aria-label="2 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip top-right"></span></span></button>
-          <button class="dice-option active" data-count="3" aria-label="3 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip center"></span><span class="pip top-right"></span></span></button>
-        </div>
-        <div class="dice-count-notice" id="diceCountNotice" role="status" aria-live="polite"></div>
+        <div class="dice-count-notice controls-notice-slot" id="diceCountNotice" role="status" aria-live="polite"></div>
         
         <div class="action-row">
           <button class="theme-button" id="themeButton" type="button" aria-haspopup="dialog">
@@ -66,12 +61,19 @@
             <span>MAIN</span>
           </button>
         </div>
-        <div class="shake-control" id="shakeControl">
-          <button class="shake-toggle" id="shakeToggle" type="button" aria-pressed="false">
-            <span class="shake-toggle-dot" aria-hidden="true"></span>
-          <span id="shakeToggleLabel">TOGGLE SHAKE</span>
-          </button>
-          <div class="shake-status" id="shakeStatus" role="status" aria-live="polite"></div>
+        <div class="utility-row">
+          <div class="dice-select" aria-label="Aantal woorden">
+            <button class="dice-option" data-count="1" aria-label="1 woord"><span class="mini-die"><span class="pip center"></span></span></button>
+            <button class="dice-option" data-count="2" aria-label="2 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip top-right"></span></span></button>
+            <button class="dice-option active" data-count="3" aria-label="3 woorden"><span class="mini-die"><span class="pip bottom-left"></span><span class="pip center"></span><span class="pip top-right"></span></span></button>
+          </div>
+          <div class="shake-control" id="shakeControl">
+            <button class="shake-toggle" id="shakeToggle" type="button" aria-pressed="false">
+              <span class="shake-toggle-dot" aria-hidden="true"></span>
+              <span id="shakeToggleLabel">TOGGLE SHAKE</span>
+            </button>
+            <div class="shake-status" id="shakeStatus" role="status" aria-live="polite"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -159,6 +161,6 @@
       <div class="portrait-lock-text">Tattoo Dice works best in portrait mode.</div>
     </div>
   </div>
-  <script type="module" src="/script.js?v=3.6.4-sidequest-v2.47"></script>
+  <script type="module" src="/script.js?v=3.6.4-sidequest-v2.49"></script>
 </body>
 </html>

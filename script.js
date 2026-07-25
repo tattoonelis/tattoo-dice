@@ -378,6 +378,7 @@ function beginShakeRoll() {
 
     applyCanonicalDicePose(index, wordCount);
     die.userData.rolling = false;
+    die.userData.shakeSettling = false;
     die.userData.shakeRolling = true;
     die.userData.shakeLastTime = now;
     die.userData.shakePhase = Math.random() * Math.PI * 2;
@@ -386,6 +387,58 @@ function beginShakeRoll() {
   });
 
   scheduleShakeStop();
+}
+
+function startShakeSettleAnimation() {
+  const now = performance.now() / 1000;
+  const fixedMain = selectedMain !== "Random";
+  let maxEndSeconds = 0;
+
+  diceMeshes.forEach((die, index) => {
+    const pose = die.userData.layout;
+    const keepMainStill = fixedMain && index === 0;
+    die.userData.shakeRolling = false;
+
+    if (!die.visible || !pose || keepMainStill) {
+      die.userData.shakeSettling = false;
+      if (keepMainStill) syncDiceShadow(index, 1, true);
+      return;
+    }
+
+    const targetQuaternion = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(pose[3], pose[4], pose[5])
+    );
+    const startQuaternion = die.quaternion.clone().normalize();
+
+    // Quaternions q and -q describe the same pose. Keeping their dot positive
+    // guarantees the shortest physical roll into the valid landing face.
+    if (startQuaternion.dot(targetQuaternion) < 0) {
+      targetQuaternion.set(
+        -targetQuaternion.x,
+        -targetQuaternion.y,
+        -targetQuaternion.z,
+        -targetQuaternion.w
+      );
+    }
+
+    const angle = 2 * Math.acos(
+      THREE.MathUtils.clamp(startQuaternion.dot(targetQuaternion), -1, 1)
+    );
+    const duration = 0.46 + (angle / Math.PI) * 0.24 + index * 0.035;
+
+    die.userData.shakeSettling = true;
+    die.userData.shakeSettleStartQuaternion = startQuaternion;
+    die.userData.shakeSettleEndQuaternion = targetQuaternion;
+    die.userData.shakeSettleAngle = angle;
+    die.userData.startPosition.copy(die.position);
+    die.userData.startTime = now;
+    die.userData.delay = index * 0.025;
+    die.userData.duration = duration;
+    die.userData.rolling = false;
+    maxEndSeconds = Math.max(maxEndSeconds, die.userData.delay + duration);
+  });
+
+  return Math.ceil(maxEndSeconds * 1000);
 }
 
 async function finishShakeRoll() {
@@ -399,17 +452,14 @@ async function finishShakeRoll() {
     currentRoll = nextRoll;
     prepareDiceResult(nextRoll);
 
-    diceMeshes.forEach(die => {
-      die.userData.shakeRolling = false;
-    });
-
-    const rollDurationMs = startDiceAnimation({ preserveCurrentPose: true });
-    await wait(rollDurationMs + 45);
+    const settleDurationMs = startShakeSettleAnimation();
+    await wait(settleDurationMs + 45);
     incrementCounter();
   } catch (error) {
     console.error("Recovered from Shake to Roll error:", error);
     diceMeshes.forEach((die, index) => {
       die.userData.shakeRolling = false;
+      die.userData.shakeSettling = false;
       if (die.visible && die.userData.layout) applyCanonicalDicePose(index, wordCount);
     });
   } finally {
@@ -2741,11 +2791,10 @@ function traceScaledShadowCore(
   center.x /= hull.length;
   center.z /= hull.length;
 
-  context.beginPath();
-  hull.forEach((point, index) => {
+  const projectedPoints = hull.map(point => {
     const scaledX = center.x + (point.x - center.x) * footprintScale;
     const scaledZ = center.z + (point.z - center.z) * footprintScale;
-    const projected = projectShadowPointToStage(
+    return projectShadowPointToStage(
       shadow.position.x + scaledX,
       shadow.position.y,
       shadow.position.z + scaledZ,
@@ -2754,8 +2803,41 @@ function traceScaledShadowCore(
       scaleX,
       scaleY
     );
-    if (index === 0) context.moveTo(projected.x, projected.y);
-    else context.lineTo(projected.x, projected.y);
+  });
+  if (projectedPoints.length < 3) return false;
+
+  // Round the projected underside itself. The corner distance is relative to
+  // both neighbouring edges, so the radius remains natural while the shadow
+  // changes shape during Roll.
+  const roundedCorners = projectedPoints.map((point, index) => {
+    const previous = projectedPoints[(index - 1 + projectedPoints.length) % projectedPoints.length];
+    const next = projectedPoints[(index + 1) % projectedPoints.length];
+    const previousLength = Math.hypot(previous.x - point.x, previous.y - point.y);
+    const nextLength = Math.hypot(next.x - point.x, next.y - point.y);
+    const radius = Math.min(previousLength, nextLength) * 0.22;
+    return {
+      point,
+      start: {
+        x: point.x + ((previous.x - point.x) / Math.max(previousLength, 0.0001)) * radius,
+        y: point.y + ((previous.y - point.y) / Math.max(previousLength, 0.0001)) * radius
+      },
+      end: {
+        x: point.x + ((next.x - point.x) / Math.max(nextLength, 0.0001)) * radius,
+        y: point.y + ((next.y - point.y) / Math.max(nextLength, 0.0001)) * radius
+      }
+    };
+  });
+
+  context.beginPath();
+  context.moveTo(roundedCorners[0].start.x, roundedCorners[0].start.y);
+  roundedCorners.forEach((corner, index) => {
+    if (index > 0) context.lineTo(corner.start.x, corner.start.y);
+    context.quadraticCurveTo(
+      corner.point.x,
+      corner.point.y,
+      corner.end.x,
+      corner.end.y
+    );
   });
   context.closePath();
   return true;
@@ -2803,13 +2885,13 @@ function renderGroundShadowLayer() {
 
     // The feather uses the exact same projected underside as the square core.
     // At 1.4× total size it adds precisely one fifth of the original footprint
-    // to the top, bottom, left and right. Eight bands fade the edge to zero.
-    const featherSteps = 8;
+    // to the top, bottom, left and right. Twenty bands fade the edge to zero.
+    const featherSteps = 20;
     for (let step = featherSteps; step >= 1; step -= 1) {
       const progress = step / featherSteps;
       context.save();
       context.fillStyle = "#000000";
-      context.globalAlpha = THREE.MathUtils.lerp(0.060, 0.010, progress) * featherRatio;
+      context.globalAlpha = THREE.MathUtils.lerp(0.020, 0.002, progress) * featherRatio;
       context.filter = "none";
       if (
         traceScaledShadowCore(
@@ -2829,8 +2911,8 @@ function renderGroundShadowLayer() {
 
     context.save();
     context.fillStyle = "#000000";
-    context.globalAlpha = 0.52 * coreRatio;
-    context.filter = "blur(3px)";
+    context.globalAlpha = 0.46 * coreRatio;
+    context.filter = "blur(6px)";
     if (traceShadowCore(context, shadow, canvasRect, stageRect, scaleX, scaleY)) {
       context.fill();
     }
@@ -2939,7 +3021,11 @@ function applyDiceShadowVisual(index, closeness = 1, visible = true) {
   const coreMaterial = shadow.userData.coreMaterial;
   const featherMaterial = shadow.userData.featherMaterial;
 
-  const followsLiveRoll = die.userData.rolling && !introActive;
+  const followsLiveRoll = (
+    die.userData.rolling
+    || die.userData.shakeRolling
+    || die.userData.shakeSettling
+  ) && !introActive;
   const footprintQuaternion = followsLiveRoll
     ? die.quaternion
     : shadowContactQuaternion;
@@ -3273,6 +3359,7 @@ function createPersistentDiceSlot(index) {
   mesh.userData.delay = index * 0.06;
   mesh.userData.rolling = false;
   mesh.userData.shakeRolling = false;
+  mesh.userData.shakeSettling = false;
   mesh.userData.visibleFaceIndex = 4;
   mesh.userData.diceSize = 1;
   mesh.userData.materialsCommitted = true;
@@ -3833,6 +3920,45 @@ function animate() {
         die.position.z = u.base.z + Math.cos(u.shakePhase * 1.13 + index * 0.8) * 0.045 * force;
         die.scale.setScalar(getCanonicalDiceSize(die, index));
         syncDiceShadow(index, 0.54 - shakeIntensity * 0.22, true);
+        return;
+      }
+
+      if (u.shakeSettling) {
+        const p = THREE.MathUtils.clamp(
+          (t - u.startTime - u.delay) / Math.max(u.duration, 0.001),
+          0,
+          1
+        );
+        if (p <= 0) return;
+
+        // Continue from the live shake pose, then lose energy smoothly as the
+        // nearest valid landing face comes down. No second Roll or extra spins.
+        const eased = 1 - Math.pow(1 - p, 3);
+        die.quaternion.slerpQuaternions(
+          u.shakeSettleStartQuaternion,
+          u.shakeSettleEndQuaternion,
+          eased
+        );
+        die.position.x = lerp(u.startPosition.x, u.base.x, eased);
+        die.position.z = lerp(u.startPosition.z, u.base.z, eased);
+        const settleLift = Math.sin(Math.PI * p)
+          * (0.055 + Math.min(u.shakeSettleAngle || 0, Math.PI) * 0.014);
+        die.position.y = lerp(u.startPosition.y, u.base.y, eased) + settleLift;
+        die.scale.setScalar(getCanonicalDiceSize(die, index));
+
+        if (!u.materialsCommitted && p >= 0.40) {
+          commitPendingDiceMaterials(die);
+        }
+
+        const shadowStrength = THREE.MathUtils.smoothstep(p, 0.08, 1);
+        syncDiceShadow(index, 0.42 + shadowStrength * 0.58, true);
+
+        if (p >= 1) {
+          commitPendingDiceMaterials(die);
+          u.shakeSettling = false;
+          applyCanonicalDicePose(index, wordCount);
+          syncDiceShadow(index, 1, true);
+        }
         return;
       }
 

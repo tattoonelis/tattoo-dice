@@ -69,3 +69,26 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - The shake indicator is red when off and green when on.
 - CLASSIC, ROLL and RANDOM now use one matching label height.
 - Added the protected `/admin/test/` route for live HTTPS sensor testing.
+
+
+## Sidequest v2.48 — Soft Shadow + Physical Shake Settle
+
+- Rounded the dice-shaped contact shadows and replaced visible feather steps with twenty progressively transparent bands.
+- Preserved the approved total shadow footprint and the existing Drop, Idle, Roll and Fall timing.
+- Moved the compact 1/2/3 selector below the main controls, beside `TOGGLE SHAKE`.
+- The selector matches one main-button column; the Shake control fills the remaining two columns.
+- The Shake control now derives its height and internal typography from the compact selector dice.
+- Stopping a shake no longer starts the ordinary Roll animation.
+- Shaken dice now use a short, shortest-path settle into the valid canonical landing face without extra full spins.
+
+
+## Sidequest v2.49 — Pre-GitHub Polish
+
+- Kept the full 3D dice composition inside the width of the primary control row on portrait phones by scaling it uniformly.
+- Restored perfectly square 1/2/3 selector dice and aligned them with `TOGGLE SHAKE`.
+- Standardized every selector pip to the same size and optically balanced the 1, 2 and 3 patterns.
+- Made Shake shadows follow the live moving and rotating dice, including the settle phase.
+- Kept the fixed-Main notice in one centered message slot directly above the primary controls.
+- Raised all menus above live dice, Drop/Fall snapshots and transition layers.
+- Reduced the corner radius of the primary and Shake controls to an app-icon-like curve.
+- Preserved the existing Roll, Main, VFX, composition and timing behavior.
