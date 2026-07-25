@@ -27,8 +27,11 @@ const SHAKE_KEEP_THRESHOLD = 2.8;
 const SHAKE_STOP_DELAY_MS = 260;
 const SHAKE_START_WINDOW_MS = 190;
 const SHAKE_COOLDOWN_MS = 620;
+const SHAKE_SUPPORT_TIMEOUT_MS = 2400;
 let shakeEnabled = false;
 let shakeListenerAttached = false;
+let shakeMotionEventSeen = false;
+let shakeSupportTimer = null;
 let shakeRolling = false;
 let shakeFinishing = false;
 let shakeIntensity = 0;
@@ -279,9 +282,26 @@ function attachShakeListener() {
 }
 
 function detachShakeListener() {
+  clearTimeout(shakeSupportTimer);
+  shakeSupportTimer = null;
   if (!shakeListenerAttached) return;
   window.removeEventListener("devicemotion", handleDeviceMotion);
   shakeListenerAttached = false;
+}
+
+function verifyShakeSensorStream() {
+  clearTimeout(shakeSupportTimer);
+  shakeMotionEventSeen = false;
+  shakeSupportTimer = setTimeout(() => {
+    if (!shakeEnabled || shakeMotionEventSeen) return;
+
+    shakeEnabled = false;
+    localStorage.setItem(SHAKE_STORAGE_KEY, "false");
+    detachShakeListener();
+    const reason = "Shake to Roll isn’t supported on this device.";
+    setShakeInterface("disabled", reason);
+    showDiceCountNotice(reason);
+  }, SHAKE_SUPPORT_TIMEOUT_MS);
 }
 
 function getMotionMagnitude(event) {
@@ -317,6 +337,9 @@ function scheduleShakeStop() {
 }
 
 function handleDeviceMotion(event) {
+  shakeMotionEventSeen = true;
+  clearTimeout(shakeSupportTimer);
+  shakeSupportTimer = null;
   if (!shakeEnabled || document.hidden || shakeFinishing) return;
 
   const now = performance.now();
@@ -426,10 +449,19 @@ function startShakeSettleAnimation() {
     );
     const duration = 0.46 + (angle / Math.PI) * 0.24 + index * 0.035;
 
+    // Commit the predetermined result while the die is still visibly moving.
+    // Waiting until late in the settle made the face word appear to jump at
+    // the very end, even though the roll result itself was already known.
+    commitPendingDiceMaterials(die);
+
     die.userData.shakeSettling = true;
     die.userData.shakeSettleStartQuaternion = startQuaternion;
     die.userData.shakeSettleEndQuaternion = targetQuaternion;
     die.userData.shakeSettleAngle = angle;
+    die.userData.shakeSettleAxis = new THREE.Vector3(1.16, 0.91, 0.72).normalize();
+    die.userData.shakeSettleOffsetQuaternion = new THREE.Quaternion();
+    die.userData.shakeSettleForwardAngle =
+      0.34 + Math.min(angle, Math.PI) * 0.04;
     die.userData.startPosition.copy(die.position);
     die.userData.startTime = now;
     die.userData.delay = index * 0.025;
@@ -477,9 +509,10 @@ async function finishShakeRoll() {
 async function toggleShakeToRoll() {
   if (!motionSensorsSupported()) {
     const reason = window.isSecureContext
-      ? "Motion sensors are not available in this browser."
-      : "Shake to Roll needs HTTPS.";
+      ? "Shake to Roll isn’t supported on this device."
+      : "Shake to Roll requires HTTPS on this device.";
     setShakeInterface("disabled", reason);
+    showDiceCountNotice(reason);
     return;
   }
 
@@ -502,16 +535,23 @@ async function toggleShakeToRoll() {
     shakeEnabled = true;
     localStorage.setItem(SHAKE_STORAGE_KEY, "true");
     attachShakeListener();
+    verifyShakeSensorStream();
     setShakeInterface("enabled", "Shake to Roll is ready.");
   } catch (error) {
     console.warn("Shake to Roll unavailable:", error);
     shakeEnabled = false;
     localStorage.setItem(SHAKE_STORAGE_KEY, "false");
-    setShakeInterface("disabled", "Motion access is needed to use Shake to Roll.");
+    const reason = "Allow Motion & Orientation Access to use Shake to Roll.";
+    setShakeInterface("disabled", reason);
+    showDiceCountNotice(reason);
   }
 }
 
 function initialiseShakeToRoll() {
+  // The control must remain interactive even without sensor support so a tap
+  // can explain why the feature is unavailable on the current device/context.
+  shakeToggle?.addEventListener("click", toggleShakeToRoll);
+
   if (!motionSensorsSupported()) {
     setShakeInterface("disabled");
     return;
@@ -522,12 +562,12 @@ function initialiseShakeToRoll() {
   if (previouslyEnabled && typeof DeviceMotionEvent.requestPermission !== "function") {
     shakeEnabled = true;
     attachShakeListener();
+    verifyShakeSensorStream();
     setShakeInterface("enabled");
   } else {
     setShakeInterface("disabled");
   }
 
-  shakeToggle?.addEventListener("click", toggleShakeToRoll);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden && shakeRolling) finishShakeRoll();
   });
@@ -2587,23 +2627,23 @@ function makeShadowDieBottomTexture() {
   if (shadowDieBottomTexture) return shadowDieBottomTexture;
 
   const canvas = document.createElement("canvas");
-  canvas.width = 384;
-  canvas.height = 384;
+  canvas.width = 512;
+  canvas.height = 512;
   const ctx = canvas.getContext("2d");
 
-  // Compact rounded contact footprint. Its silhouette follows the rounded
-  // underside of the resin die; the feather supplies soft ambient spill
-  // without turning it into a detached circular blob.
+  // One blurred rounded-square pass. Keeping transparent canvas around the
+  // path prevents the plane edge from becoming a visible rectangle.
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.filter = "blur(18px)";
-  ctx.beginPath();
-  const inset = 44;
-  const radius = 82;
+  const inset = 92;
+  const radius = 92;
   const x = inset;
   const y = inset;
   const w = canvas.width - inset * 2;
   const h = canvas.height - inset * 2;
+  ctx.save();
+  ctx.filter = "blur(40px)";
+  ctx.fillStyle = "rgba(0,0,0,0.72)";
+  ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.lineTo(x + w - radius, y);
   ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
@@ -2614,20 +2654,6 @@ function makeShadowDieBottomTexture() {
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
-
-  const gradient = ctx.createRadialGradient(
-    canvas.width / 2,
-    canvas.height / 2,
-    18,
-    canvas.width / 2,
-    canvas.height / 2,
-    canvas.width * 0.44
-  );
-  gradient.addColorStop(0.00, "rgba(0,0,0,1)");
-  gradient.addColorStop(0.46, "rgba(0,0,0,0.82)");
-  gradient.addColorStop(0.80, "rgba(0,0,0,0.32)");
-  gradient.addColorStop(1.00, "rgba(0,0,0,0.00)");
-  ctx.fillStyle = gradient;
   ctx.fill();
   ctx.restore();
 
@@ -2870,50 +2896,32 @@ function renderGroundShadowLayer() {
 
   diceShadowMeshes.forEach(shadow => {
     if (!shadow?.visible) return;
-    const coreRatio = THREE.MathUtils.clamp(
-      (shadow.userData.coreMaterial?.opacity || 0)
-        / Math.max(0.0001, shadow.userData.baseCoreOpacity || 0.11),
+    const strength = THREE.MathUtils.clamp(
+      shadow.userData.visualOpacity || 0,
       0,
-      1.2
+      1
     );
-    const featherRatio = THREE.MathUtils.clamp(
-      (shadow.userData.featherMaterial?.opacity || 0)
-        / Math.max(0.0001, shadow.userData.baseFeatherOpacity || 0.56),
-      0,
-      1.2
-    );
+    if (strength <= 0) return;
 
     // The feather uses the exact same projected underside as the square core.
     // At 1.4× total size it adds precisely one fifth of the original footprint
     // to the top, bottom, left and right. Twenty bands fade the edge to zero.
-    const featherSteps = 20;
-    for (let step = featherSteps; step >= 1; step -= 1) {
-      const progress = step / featherSteps;
-      context.save();
-      context.fillStyle = "#000000";
-      context.globalAlpha = THREE.MathUtils.lerp(0.020, 0.002, progress) * featherRatio;
-      context.filter = "none";
-      if (
-        traceScaledShadowCore(
-          context,
-          shadow,
-          canvasRect,
-          stageRect,
-          scaleX,
-          scaleY,
-          1 + 0.4 * progress
-        )
-      ) {
-        context.fill();
-      }
-      context.restore();
-    }
-
+    const blurRadius = Math.max(12, Math.min(26, localWidth * 0.046));
     context.save();
     context.fillStyle = "#000000";
-    context.globalAlpha = 0.46 * coreRatio;
-    context.filter = "blur(6px)";
-    if (traceShadowCore(context, shadow, canvasRect, stageRect, scaleX, scaleY)) {
+    context.globalAlpha = 0.42 * strength;
+    context.filter = `blur(${blurRadius}px)`;
+    if (
+      traceScaledShadowCore(
+        context,
+        shadow,
+        canvasRect,
+        stageRect,
+        scaleX,
+        scaleY,
+        1.17
+      )
+    ) {
       context.fill();
     }
     context.restore();
@@ -2949,7 +2957,7 @@ function createShadowDieBottom(layout, index) {
     opacity: 0.28,
     depthWrite: false,
     depthTest: true,
-    alphaTest: 0.003,
+    alphaTest: 0,
     polygonOffset: true,
     polygonOffsetFactor: 1,
     polygonOffsetUnits: 1,
@@ -2976,6 +2984,7 @@ function applyDiceShadowVisual(index, closeness = 1, visible = true) {
   const amount = THREE.MathUtils.clamp(closeness, 0, 1);
   if (!visible || amount <= 0 || !die.userData.layout) {
     shadow.visible = false;
+    shadow.userData.visualOpacity = 0;
     if (shadow.userData.coreMaterial) shadow.userData.coreMaterial.opacity = 0;
     if (shadow.userData.featherMaterial) shadow.userData.featherMaterial.opacity = 0;
     return;
@@ -3049,6 +3058,7 @@ function applyDiceShadowVisual(index, closeness = 1, visible = true) {
   );
 
   const fade = THREE.MathUtils.smootherstep(amount, 0, 1);
+  shadow.userData.visualOpacity = Math.pow(fade, 1.18);
   const arrivalSpread = THREE.MathUtils.lerp(1.08, 1, fade);
   if (core) core.scale.set(arrivalSpread, 1, arrivalSpread);
   if (feather) {
@@ -3408,7 +3418,7 @@ function createPersistentShadowSlot(index) {
     opacity: 0,
     depthWrite: false,
     depthTest: true,
-    alphaTest: 0.003,
+    alphaTest: 0,
     polygonOffset: false,
     toneMapped: false,
     side: THREE.DoubleSide
@@ -3427,8 +3437,8 @@ function createPersistentShadowSlot(index) {
   group.userData.featherMesh = feather;
   group.userData.coreMaterial = coreMaterial;
   group.userData.featherMaterial = featherMaterial;
-  group.userData.baseCoreOpacity = 0.11;
-  group.userData.baseFeatherOpacity = 0.56;
+  group.userData.baseCoreOpacity = 0.035;
+  group.userData.baseFeatherOpacity = 0.68;
   group.userData.projectedPoints = SHADOW_CUBE_CORNERS.map(() => ({ x: 0, z: 0 }));
   group.userData.lowerHull = [];
   group.userData.upperHull = [];
@@ -3437,6 +3447,7 @@ function createPersistentShadowSlot(index) {
   group.userData.layout = null;
   group.userData.dropFade = null;
   group.userData.fallFade = null;
+  group.userData.visualOpacity = 0;
   scene.add(group);
   return group;
 }
@@ -3931,24 +3942,28 @@ function animate() {
         );
         if (p <= 0) return;
 
-        // Continue from the live shake pose, then lose energy smoothly as the
-        // nearest valid landing face comes down. No second Roll or extra spins.
-        const eased = 1 - Math.pow(1 - p, 3);
+        // Start in the live Shake direction, then gently hand control to the
+        // predetermined canonical landing face. The temporary forward arc
+        // returns to zero at the end, so the final pose remains exact.
+        const eased = p * p * (3 - 2 * p);
         die.quaternion.slerpQuaternions(
           u.shakeSettleStartQuaternion,
           u.shakeSettleEndQuaternion,
           eased
         );
+        const forwardAngle =
+          Math.sin(Math.PI * p) * (u.shakeSettleForwardAngle || 0);
+        u.shakeSettleOffsetQuaternion.setFromAxisAngle(
+          u.shakeSettleAxis,
+          forwardAngle
+        );
+        die.quaternion.multiply(u.shakeSettleOffsetQuaternion);
         die.position.x = lerp(u.startPosition.x, u.base.x, eased);
         die.position.z = lerp(u.startPosition.z, u.base.z, eased);
         const settleLift = Math.sin(Math.PI * p)
           * (0.055 + Math.min(u.shakeSettleAngle || 0, Math.PI) * 0.014);
         die.position.y = lerp(u.startPosition.y, u.base.y, eased) + settleLift;
         die.scale.setScalar(getCanonicalDiceSize(die, index));
-
-        if (!u.materialsCommitted && p >= 0.40) {
-          commitPendingDiceMaterials(die);
-        }
 
         const shadowStrength = THREE.MathUtils.smoothstep(p, 0.08, 1);
         syncDiceShadow(index, 0.42 + shadowStrength * 0.58, true);

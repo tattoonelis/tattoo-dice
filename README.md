@@ -92,3 +92,14 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - Raised all menus above live dice, Drop/Fall snapshots and transition layers.
 - Reduced the corner radius of the primary and Shake controls to an app-icon-like curve.
 - Preserved the existing Roll, Main, VFX, composition and timing behavior.
+
+
+## Sidequest v2.50 — Forward Shake Settle
+
+- Commits the predetermined Shake result while every affected die is still moving.
+- Removes the late visible word swap near the end of the landing motion.
+- Continues each die briefly in its live Shake direction before easing into its exact canonical result face.
+- Keeps the existing per-die delay and duration differences so the dice do not stop mechanically in sync.
+- Rebuilds every contact shadow as one continuously blurred rounded-square projection with no alpha cutoff, contour bands or hard polygon edge.
+- Shows a centered notice when Shake to Roll is unsupported, requires HTTPS or lacks motion permission.
+- Leaves the ordinary Roll, Main, VFX, controls, compositions and shadow lifecycle/timing unchanged.
