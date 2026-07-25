@@ -51,3 +51,21 @@ See `ACCEPTANCE-CHECKLIST.md` for the exact implemented behavior.
 
 
 Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall blink fix
+
+
+## Protected Test Route
+
+- `/admin/test/` opens a PIN-protected test entry using the same six-digit PIN as `/admin/`.
+- After unlocking, the current root Tattoo Dice build is loaded at the test URL.
+- The gate is client-side, matching the existing Admin protection model.
+
+
+## Sidequest v2.47 — Square Shadow + Shake Control
+
+- Removed the separate round shadow layer.
+- Kept the dice-shaped square shadow and added a transparent feather extending 20% beyond every side.
+- Kept all existing drop, idle, roll and fall shadow timing.
+- Replaced the former shake text with one full-width `TOGGLE SHAKE` button below the main controls.
+- The shake indicator is red when off and green when on.
+- CLASSIC, ROLL and RANDOM now use one matching label height.
+- Added the protected `/admin/test/` route for live HTTPS sensor testing.

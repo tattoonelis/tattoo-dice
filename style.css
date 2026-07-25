@@ -1638,7 +1638,21 @@ h1{
   pointer-events:none;
   z-index:0;
 }
-#sceneWrap{z-index:1}
+#sceneWrap{z-index:2}
+.dice-ground-shadow-canvas{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:calc(100% + 96px);
+  z-index:1;
+  pointer-events:none;
+  overflow:visible;
+}
+.controls{
+  position:relative;
+  z-index:5;
+}
 
 /* Main Selector Test v3 – requested refinements */
 .action-row .theme-button,
@@ -3131,4 +3145,99 @@ body{
   .counter.counter-rolling .counter-digit-old,
   .counter.counter-rolling .counter-digit-new,
   .main-hint-arrow{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}
+
+/* v2.45 — opt-in motion sensor input; the existing ROLL controls stay intact. */
+.controls{
+  --primary-control-gap:10px;
+}
+.action-row{
+  gap:var(--primary-control-gap)!important;
+}
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  font-size:clamp(18px,4.5vw,20px)!important;
+}
+.action-row .theme-button.compact-label,
+.action-row .main-button.compact-label{
+  font-size:clamp(12px,2.365vw,16.5px)!important;
+}
+.shake-control{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:44px;
+  margin:var(--primary-control-gap) auto 0;
+}
+.shake-control[hidden]{display:none!important}
+.shake-toggle{
+  appearance:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  min-height:44px;
+  padding:0 16px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:17px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.025)),
+    #22231f;
+  color:rgba(255,253,248,.92);
+  font-family:var(--dice-ui-font,"Arial Rounded MT Bold","Arial Rounded MT",Arial,sans-serif)!important;
+  font-size:clamp(15px,4vw,20px);
+  font-weight:700;
+  letter-spacing:0;
+  text-transform:uppercase;
+  cursor:pointer;
+  touch-action:manipulation;
+  box-shadow:
+    0 4px 7px rgba(17,17,17,.055),
+    inset 0 1px 0 rgba(255,255,255,.20),
+    inset 0 -2px 0 rgba(0,0,0,.12);
+  transition:color .18s ease,background-color .18s ease,transform .16s ease;
+}
+.shake-toggle-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#e12b23;
+  box-shadow:0 0 8px rgba(225,43,35,.54),0 0 0 1px rgba(255,255,255,.08);
+  transition:background-color .18s ease,box-shadow .18s ease;
+}
+.shake-toggle.enabled{color:rgba(255,253,248,.90)}
+.shake-toggle.enabled .shake-toggle-dot{
+  background:#45db82;
+  box-shadow:0 0 8px rgba(69,219,130,.62);
+}
+.shake-toggle.detecting{
+  color:#fff;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.025)),
+    #22231f;
+}
+.shake-toggle.detecting .shake-toggle-dot{
+  background:#fff;
+  animation:shakeReadyPulse .56s ease-in-out infinite alternate;
+}
+.shake-toggle:disabled{opacity:.55;cursor:default}
+.shake-toggle:active{transform:translateY(1px) scale(.992)}
+.shake-status{
+  position:absolute;
+  width:1px;
+  height:1px;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+}
+@keyframes shakeReadyPulse{
+  from{transform:scale(.78);opacity:.62}
+  to{transform:scale(1.22);opacity:1}
+}
+@media (prefers-reduced-motion:reduce){
+  .shake-toggle.detecting .shake-toggle-dot{animation:none!important}
 }

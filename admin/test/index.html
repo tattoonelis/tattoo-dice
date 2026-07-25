@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#151614">
+  <title>Tattoo Dice Test</title>
+  <link rel="icon" href="../assets/admin-icon-192.png">
+  <link rel="apple-touch-icon" href="../assets/admin-icon-180.png">
+  <link rel="stylesheet" href="../admin.css">
+</head>
+<body class="admin-locked">
+  <div class="admin-pin-gate" id="testPinGate" aria-hidden="false">
+    <div class="admin-pin-backdrop"></div>
+    <section class="admin-pin-card" role="dialog" aria-modal="true" aria-labelledby="testPinTitle">
+      <p class="eyebrow">Tattoo Dice</p>
+      <h1 id="testPinTitle">Test Access</h1>
+      <p class="admin-pin-copy">Enter the six-digit PIN.</p>
+
+      <div class="admin-pin-display" id="testPinDisplay" aria-label="PIN entry">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="admin-pin-keypad" id="testPinKeypad" aria-label="Numeric keypad">
+        <button type="button" data-pin-key="1">1</button>
+        <button type="button" data-pin-key="2">2</button>
+        <button type="button" data-pin-key="3">3</button>
+        <button type="button" data-pin-key="4">4</button>
+        <button type="button" data-pin-key="5">5</button>
+        <button type="button" data-pin-key="6">6</button>
+        <button type="button" data-pin-key="7">7</button>
+        <button type="button" data-pin-key="8">8</button>
+        <button type="button" data-pin-key="9">9</button>
+        <button type="button" class="pin-clear" data-pin-action="clear">C</button>
+        <button type="button" data-pin-key="0">0</button>
+        <button type="button" class="pin-back" data-pin-action="backspace">←</button>
+      </div>
+      <p class="admin-pin-status" id="testPinStatus" role="status"></p>
+    </section>
+  </div>
+
+  <script src="./test.js"></script>
+</body>
+</html>

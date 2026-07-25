@@ -1,3 +1,24 @@
+# v2.42 — overflow Ground Contact layer
+
+- Kept the approved non-hover dice behaviour from v2.41.
+- Moved only the visible Ground Contact pixels to one persistent transparent
+  layer between the background and the live WebGL dice.
+- The existing Three.js shadow groups remain the single owners of shadow
+  lifecycle, opacity and projected shape in Drop, Idle, Roll and Fall.
+- Extended the shadow layer 96 px below the dice stage so its soft feather can
+  cross the former hard canvas boundary.
+- Kept the complete shadow behind the dice, aura and 1/2/3 controls.
+- Orb, plasma, aura, composites, timings, buttons and all other visuals are
+  unchanged.
+
+# v2.41 — hover experiment removed
+
+- Restored the complete approved v2.38 dice, aura and Ground Contact system.
+- Removed all Idle hover/tilt code and its height-driven shadow behaviour.
+- Removed the separate overflow shadow canvas and silhouette masking experiment.
+- Random/Main, Roll, Drop, Fall, 1/2/3, orb, plasma, aura and controls are
+  otherwise exactly the tested v2.38 implementation.
+
 ## Sidequest v2.25 — Support dice retained during Main drop
 
 - Keeps already-landed support dice visible behind the selected Main while the
@@ -586,3 +607,73 @@ This file is the frozen baseline for all following local edits.
 - Replaced the two-piece discovery arrow with one solid white arrow shape.
 - Changed the hint copy to `CHOOSE A MAIN` and centered it in the viewport.
 - Kept orb, plasma, aura, counter, composites, timings and other visuals intact.
+# sidequest v2.33 — unified ground contact shadows
+
+- Re-enabled the three permanent shadow slots as one universal system for
+  Random and selected Main in every 1/2/3-dice composition.
+- Rebuilt the footprint as a compact feathered rounded rectangle matching the
+  rounded underside of the resin dice.
+- Drop now fades each ground contact in as its die approaches the table.
+- Idle retains one stable shadow per visible die.
+- Fall removes ground contact before the first exit frame.
+- Roll keeps the existing height-responsive shadow behaviour.
+- Dice, Main VFX, composites, positions and motion timings are unchanged.
+# sidequest v2.34 — canonical Ground Contact composites
+
+- Replaced each single floating shadow plane with one permanent Ground Contact
+  group containing a rounded underside core and a separate soft feather.
+- Anchored every contact group to the canonical idle pose rather than the
+  animated die transform.
+- Calculated the fixed contact height from each RoundedBoxGeometry pose so the
+  dense core joins the actual lowest rounded edge without a visible air gap.
+- Offset only the soft feather toward the camera so the forward Main keeps the
+  same readable grounding as the support dice.
+- Drop only fades the fixed contact group in; Fall removes it immediately.
+- Resin, orb, plasma, aura, composites, controls and all motion timings remain
+  unchanged.
+# sidequest v2.35 — larger visible Ground Contact
+
+- Enlarged the actual rounded contact core beyond the dice underside.
+- Expanded the visible feather footprint instead of only scaling its
+  transparent canvas margins.
+- Increased contact density while retaining a soft outer falloff.
+- Added canonical camera-depth compensation so forward dice expose more
+  feather without special-casing Main or changing any dice position.
+- Moved the Main Ground Contact into the same foreground render pass as its
+  resin/aura, preventing the aura pass from washing the shadow away.
+- No resin, VFX, composite, control or animation timing changes.
+# sidequest v2.36 — overhead projected Roll shadows
+
+- Established one permanent dice-light rule: directional illumination is
+  centred exactly above the dice composition.
+- Replaced the fixed rounded contact core with a downward projection of all
+  eight corners of the live 3D die.
+- The projected convex footprint now changes continuously with Roll rotation,
+  squash and horizontal travel while remaining on the ground plane.
+- Idle uses the canonical pose and Drop fades that landing footprint in.
+- Fall still removes the shadow before the exit starts.
+- A larger soft feather is rebuilt around every projected silhouette.
+- Main and support shadows use the same projection and foreground rules.
+- Orb, plasma, aura, dice composites, controls and motion timings are unchanged.
+# v2.38 — Main shadow visibility state fix
+
+- Fixed the actual Main-shadow persistence bug in the two-pass compositor.
+- Shadow visibility is now captured before the Main is temporarily hidden for
+  the rear render pass.
+- The compositor therefore restores the real Main-shadow state after every
+  frame instead of permanently restoring `false`.
+- This keeps the same shadow visible in Drop, Idle, Roll and the opening of
+  Fall; the existing fast Fall fade remains unchanged.
+- No VFX, dice, layout, timing, control or material settings were changed.
+
+# v2.37 — Main shadow full lifecycle
+
+- Made the selected Main's fixed ground-contact footprint visibly extend beyond
+  the resin/aura silhouette during Drop and Idle.
+- Kept the existing live, orientation-driven shadow behaviour during Roll.
+- Added a dedicated 150 ms Fall release so the existing contact is visible on
+  the first Fall frame and then disappears almost immediately.
+- Drop still fades the permanent ground-contact shadow into its canonical idle
+  position; no snapshot shadow or second shadow system was added.
+- Orb, plasma, aura, dice materials, composites, controls and animation timings
+  are unchanged.

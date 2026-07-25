@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=3.6.4-sidequest-v2.32" />
+  <link rel="stylesheet" href="/style.css?v=3.6.4-sidequest-v2.47" />
   <script type="importmap">
     {
       "imports": {
@@ -65,6 +65,13 @@
           <button class="main-button" id="mainButton" type="button" aria-haspopup="dialog">
             <span>MAIN</span>
           </button>
+        </div>
+        <div class="shake-control" id="shakeControl">
+          <button class="shake-toggle" id="shakeToggle" type="button" aria-pressed="false">
+            <span class="shake-toggle-dot" aria-hidden="true"></span>
+          <span id="shakeToggleLabel">TOGGLE SHAKE</span>
+          </button>
+          <div class="shake-status" id="shakeStatus" role="status" aria-live="polite"></div>
         </div>
       </div>
     </section>
@@ -152,6 +159,6 @@
       <div class="portrait-lock-text">Tattoo Dice works best in portrait mode.</div>
     </div>
   </div>
-  <script type="module" src="/script.js?v=3.6.4-sidequest-v2.32"></script>
+  <script type="module" src="/script.js?v=3.6.4-sidequest-v2.47"></script>
 </body>
 </html>

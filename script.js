@@ -19,6 +19,24 @@ let pendingDiceCount = null;
 let pendingRollRequest = false;
 let inputQueueFlushing = false;
 
+// Shake to Roll is an input layer on top of the existing result/landing
+// lifecycle. It never generates repeated button Rolls while the device moves.
+const SHAKE_STORAGE_KEY = "tattooDiceShakeEnabled";
+const SHAKE_START_THRESHOLD = 7.2;
+const SHAKE_KEEP_THRESHOLD = 2.8;
+const SHAKE_STOP_DELAY_MS = 260;
+const SHAKE_START_WINDOW_MS = 190;
+const SHAKE_COOLDOWN_MS = 620;
+let shakeEnabled = false;
+let shakeListenerAttached = false;
+let shakeRolling = false;
+let shakeFinishing = false;
+let shakeIntensity = 0;
+let shakeCandidateAt = 0;
+let shakeCooldownUntil = 0;
+let shakeStopTimer = null;
+let shakeGravity = { x: 0, y: 0, z: 0 };
+
 function diceInteractionBusy() {
   return rollInProgress || introActive || snapshotDropActive;
 }
@@ -138,6 +156,10 @@ const mainModal = document.getElementById("mainModal");
 const mainChoiceList = document.getElementById("mainChoiceList");
 const introGateEl = document.getElementById("introGate");
 const splashProgressBar = document.getElementById("splashProgressBar");
+const shakeControl = document.getElementById("shakeControl");
+const shakeToggle = document.getElementById("shakeToggle");
+const shakeToggleLabel = document.getElementById("shakeToggleLabel");
+const shakeStatus = document.getElementById("shakeStatus");
 
 const SECRET_CODE = "332211";
 const FANTASY_UNLOCK_CODE = "2311";
@@ -150,10 +172,26 @@ let introStartTime = 0;
 let introResolve = null;
 let diceMeshes = [];
 let diceShadowMeshes = [];
+let groundShadowCanvas = null;
+let groundShadowContext = null;
 let shadowDieBottomTexture = null;
 let floorGlowTexture = null;
 const shadowProjectedXAxis = new THREE.Vector3();
+const shadowScreenProjection = new THREE.Vector3();
+const shadowContactEuler = new THREE.Euler();
+const shadowContactQuaternion = new THREE.Quaternion();
+const shadowContactAxisX = new THREE.Vector3();
+const shadowContactAxisY = new THREE.Vector3();
+const shadowContactAxisZ = new THREE.Vector3();
+const shadowProjectionVector = new THREE.Vector3();
+const SHADOW_CUBE_CORNERS = [
+  [-0.5, -0.5, -0.5], [-0.5, -0.5,  0.5],
+  [-0.5,  0.5, -0.5], [-0.5,  0.5,  0.5],
+  [ 0.5, -0.5, -0.5], [ 0.5, -0.5,  0.5],
+  [ 0.5,  0.5, -0.5], [ 0.5,  0.5,  0.5]
+];
 const GROUNDED_DICE_SCALE = 1.15;
+const GROUND_SHADOW_OVERFLOW = 96;
 let snapshotDropActive = false;
 const diceTextureCache = new Map();
 let textureWarmupToken = 0;
@@ -204,6 +242,245 @@ function applyCanonicalDicePose(index, count = wordCount) {
   die.rotation.set(pose[3], pose[4], pose[5]);
   die.scale.setScalar(pose[6]);
   return true;
+}
+
+function motionSensorsSupported() {
+  return window.isSecureContext && typeof window.DeviceMotionEvent !== "undefined";
+}
+
+function setShakeInterface(state, message = "") {
+  if (!shakeControl || !shakeToggle || !shakeToggleLabel) return;
+
+  // Keep the control visible after startup on every device. If the current
+  // browser/context cannot expose motion sensors, tapping it explains why
+  // instead of silently removing the feature from the interface.
+  shakeControl.hidden = false;
+  shakeToggle.classList.toggle("enabled", state === "enabled" || state === "rolling");
+  shakeToggle.classList.toggle("detecting", state === "rolling");
+  shakeToggle.setAttribute("aria-pressed", String(state === "enabled" || state === "rolling"));
+  shakeToggle.disabled = state === "requesting";
+
+  const labels = {
+    disabled: "ENABLE SHAKE TO ROLL",
+    requesting: "REQUESTING MOTION ACCESS…",
+    enabled: "SHAKE TO ROLL: ON",
+    rolling: "SHAKING…"
+  };
+  shakeToggleLabel.textContent = "TOGGLE SHAKE";
+  const shakeIsOn = state === "enabled" || state === "rolling";
+  shakeToggle.setAttribute("aria-label", `Toggle Shake: ${shakeIsOn ? "on" : "off"}`);
+  if (shakeStatus) shakeStatus.textContent = message;
+}
+
+function attachShakeListener() {
+  if (shakeListenerAttached) return;
+  window.addEventListener("devicemotion", handleDeviceMotion, { passive: true });
+  shakeListenerAttached = true;
+}
+
+function detachShakeListener() {
+  if (!shakeListenerAttached) return;
+  window.removeEventListener("devicemotion", handleDeviceMotion);
+  shakeListenerAttached = false;
+}
+
+function getMotionMagnitude(event) {
+  const direct = event.acceleration;
+  if (
+    direct &&
+    Number.isFinite(direct.x) &&
+    Number.isFinite(direct.y) &&
+    Number.isFinite(direct.z)
+  ) {
+    return Math.hypot(direct.x, direct.y, direct.z);
+  }
+
+  const includingGravity = event.accelerationIncludingGravity;
+  if (!includingGravity) return 0;
+
+  const x = Number(includingGravity.x) || 0;
+  const y = Number(includingGravity.y) || 0;
+  const z = Number(includingGravity.z) || 0;
+  // High-pass filter for browsers that expose only acceleration including gravity.
+  const gravityBlend = 0.82;
+  shakeGravity.x = gravityBlend * shakeGravity.x + (1 - gravityBlend) * x;
+  shakeGravity.y = gravityBlend * shakeGravity.y + (1 - gravityBlend) * y;
+  shakeGravity.z = gravityBlend * shakeGravity.z + (1 - gravityBlend) * z;
+  return Math.hypot(x - shakeGravity.x, y - shakeGravity.y, z - shakeGravity.z);
+}
+
+function scheduleShakeStop() {
+  clearTimeout(shakeStopTimer);
+  shakeStopTimer = setTimeout(() => {
+    if (shakeRolling) finishShakeRoll();
+  }, SHAKE_STOP_DELAY_MS);
+}
+
+function handleDeviceMotion(event) {
+  if (!shakeEnabled || document.hidden || shakeFinishing) return;
+
+  const now = performance.now();
+  const magnitude = getMotionMagnitude(event);
+  shakeIntensity = THREE.MathUtils.lerp(
+    shakeIntensity,
+    THREE.MathUtils.clamp((magnitude - 1.2) / 13.5, 0, 1),
+    magnitude >= SHAKE_KEEP_THRESHOLD ? 0.38 : 0.12
+  );
+
+  if (shakeRolling) {
+    if (magnitude >= SHAKE_KEEP_THRESHOLD) scheduleShakeStop();
+    return;
+  }
+
+  if (now < shakeCooldownUntil || magnitude < SHAKE_START_THRESHOLD) return;
+
+  // Two deliberate motion peaks close together prevent a bump or table tap from
+  // starting a Roll.
+  if (shakeCandidateAt && now - shakeCandidateAt <= SHAKE_START_WINDOW_MS) {
+    shakeCandidateAt = 0;
+    beginShakeRoll();
+  } else {
+    shakeCandidateAt = now;
+  }
+}
+
+function beginShakeRoll() {
+  const menuOpen =
+    mainModal?.classList.contains("open") ||
+    themeModal?.classList.contains("open") ||
+    pinModal?.classList.contains("open");
+  if (
+    !shakeEnabled ||
+    shakeRolling ||
+    shakeFinishing ||
+    diceInteractionBusy() ||
+    menuOpen ||
+    !deck.length
+  ) {
+    return;
+  }
+
+  shakeRolling = true;
+  rollInProgress = true;
+  closeMainHint();
+  setRollRenderPerformanceMode(true);
+  setShakeInterface("rolling", "Keep shaking. Stop to land the dice.");
+
+  const now = performance.now() / 1000;
+  const fixedMain = selectedMain !== "Random";
+  diceMeshes.forEach((die, index) => {
+    const layout = die.userData.layout;
+    const keepMainStill = fixedMain && index === 0;
+    if (!die.visible || !layout || keepMainStill) {
+      die.userData.shakeRolling = false;
+      return;
+    }
+
+    applyCanonicalDicePose(index, wordCount);
+    die.userData.rolling = false;
+    die.userData.shakeRolling = true;
+    die.userData.shakeLastTime = now;
+    die.userData.shakePhase = Math.random() * Math.PI * 2;
+    die.userData.shakeAxisBias = 0.82 + Math.random() * 0.34;
+    setDiceShadowState(index, 0.36, true);
+  });
+
+  scheduleShakeStop();
+}
+
+async function finishShakeRoll() {
+  if (!shakeRolling || shakeFinishing) return;
+  shakeFinishing = true;
+  shakeRolling = false;
+  clearTimeout(shakeStopTimer);
+
+  try {
+    const nextRoll = makeRoll(wordCount);
+    currentRoll = nextRoll;
+    prepareDiceResult(nextRoll);
+
+    diceMeshes.forEach(die => {
+      die.userData.shakeRolling = false;
+    });
+
+    const rollDurationMs = startDiceAnimation({ preserveCurrentPose: true });
+    await wait(rollDurationMs + 45);
+    incrementCounter();
+  } catch (error) {
+    console.error("Recovered from Shake to Roll error:", error);
+    diceMeshes.forEach((die, index) => {
+      die.userData.shakeRolling = false;
+      if (die.visible && die.userData.layout) applyCanonicalDicePose(index, wordCount);
+    });
+  } finally {
+    shakeIntensity = 0;
+    shakeFinishing = false;
+    rollInProgress = false;
+    shakeCooldownUntil = performance.now() + SHAKE_COOLDOWN_MS;
+    setRollRenderPerformanceMode(false);
+    setShakeInterface(shakeEnabled ? "enabled" : "disabled");
+    syncDiceCountButtons();
+    queueMicrotask(flushPendingDiceInput);
+  }
+}
+
+async function toggleShakeToRoll() {
+  if (!motionSensorsSupported()) {
+    const reason = window.isSecureContext
+      ? "Motion sensors are not available in this browser."
+      : "Shake to Roll needs HTTPS.";
+    setShakeInterface("disabled", reason);
+    return;
+  }
+
+  if (shakeEnabled) {
+    shakeEnabled = false;
+    localStorage.setItem(SHAKE_STORAGE_KEY, "false");
+    detachShakeListener();
+    if (shakeRolling) await finishShakeRoll();
+    setShakeInterface("disabled", "Shake to Roll is off.");
+    return;
+  }
+
+  setShakeInterface("requesting");
+  try {
+    if (typeof DeviceMotionEvent.requestPermission === "function") {
+      const permission = await DeviceMotionEvent.requestPermission();
+      if (permission !== "granted") throw new Error("Motion permission was not granted");
+    }
+
+    shakeEnabled = true;
+    localStorage.setItem(SHAKE_STORAGE_KEY, "true");
+    attachShakeListener();
+    setShakeInterface("enabled", "Shake to Roll is ready.");
+  } catch (error) {
+    console.warn("Shake to Roll unavailable:", error);
+    shakeEnabled = false;
+    localStorage.setItem(SHAKE_STORAGE_KEY, "false");
+    setShakeInterface("disabled", "Motion access is needed to use Shake to Roll.");
+  }
+}
+
+function initialiseShakeToRoll() {
+  if (!motionSensorsSupported()) {
+    setShakeInterface("disabled");
+    return;
+  }
+
+  const previouslyEnabled = localStorage.getItem(SHAKE_STORAGE_KEY) === "true";
+  // iOS requires requestPermission() to be called from a fresh user gesture.
+  if (previouslyEnabled && typeof DeviceMotionEvent.requestPermission !== "function") {
+    shakeEnabled = true;
+    attachShakeListener();
+    setShakeInterface("enabled");
+  } else {
+    setShakeInterface("disabled");
+  }
+
+  shakeToggle?.addEventListener("click", toggleShakeToRoll);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && shakeRolling) finishShakeRoll();
+  });
 }
 
 const layouts = DICE_COMPOSITES; // compatibility alias; do not define poses elsewhere.
@@ -294,6 +571,11 @@ function updateActionButtonLabels() {
   if (mainLabel) {
     mainLabel.textContent = String(selectedMain || "RANDOM").toUpperCase();
   }
+
+  // CLASSIC / FANTASY and RANDOM use the same letter height as ROLL. Longer
+  // selected Main names keep the former compact size so they never clip.
+  themeButton?.classList.toggle("compact-label", (themeLabel?.textContent.length || 0) > 7);
+  mainButton?.classList.toggle("compact-label", (mainLabel?.textContent.length || 0) > 7);
 
   updateDiceCountAvailability();
 }
@@ -950,9 +1232,6 @@ function beginLiveMainAuraTransition({ zIndex, transformOrigin = "center center"
   // exactly the same white dice behind it during Drop/Fall as it does in Idle.
   // Only the Main resin colour and its internal plasma/orb are suppressed; the
   // existing DOM Main snapshot supplies those pixels during the transition.
-  diceShadowMeshes.forEach(shadow => {
-    shadow.visible = false;
-  });
   if (floor) floor.visible = false;
   sourceMaterials.forEach(material => {
     material.colorWrite = false;
@@ -1389,6 +1668,7 @@ async function init() {
   rollButton.addEventListener("click", () => {
     requestRoll();
   });
+  initialiseShakeToRoll();
 
   if (themeButton && themeModal) {
     themeButton.addEventListener("pointerup", event => {
@@ -1729,11 +2009,10 @@ async function animateSingleDieDrop(index, duration = 784) {
     : null;
   if (!liveAura) die.visible = false;
 
-  // Contact shadows are disabled in v2.22.
-  if (shadowMesh) {
-    shadowMesh.visible = false;
-    shadowMesh.material.opacity = 0;
-  }
+  // The permanent ground-contact slot fades in beneath the moving snapshot.
+  // It is not baked into the snapshot, so the same shadow becomes Idle state
+  // without a visual handoff.
+  if (shadowMesh) startDiceShadowDrop(index, duration);
   renderSceneWithDiceLayers();
 
   // Move the complete transparent canvas far enough upward that the die itself
@@ -1840,6 +2119,13 @@ function waitForPaintFrames(count = 2) {
 
 async function playCountSelectionExit() {
   if (!diceMeshes.length) return;
+
+  // Fall starts with the existing contact and releases it quickly. A selected
+  // Main keeps this same live shadow in the WebGL lifecycle as its aura.
+  diceShadowMeshes.forEach((shadow, index) => {
+    if (shadow.visible) startDiceShadowFall(index, 150);
+  });
+  renderSceneWithDiceLayers();
 
   // Keep one unchanged full-scene frame over the visible WebGL canvas while
   // individual die snapshots are captured. captureDieSnapshot temporarily
@@ -2188,17 +2474,20 @@ function setupThree() {
   // WebGL shadow map enabled added GPU work every frame without changing the
   // approved look, so leave it off for smoother mobile rolls.
   renderer.shadowMap.enabled = false;
+  ensureGroundShadowLayer();
   sceneWrap.appendChild(renderer.domElement);
 
   scene.add(new THREE.AmbientLight(0xfffbf2, 1.48));
 
   const key = new THREE.DirectionalLight(0xfff4df, 1.72);
-  key.position.set(0, 10.5, 1.2);
+  // Permanent dice-light rule: all directional illumination originates
+  // directly above the centre of the dice composition.
+  key.position.set(0, 10.5, 0);
   key.castShadow = false;
   scene.add(key);
 
   const fill = new THREE.DirectionalLight(0xe8efff, 0.38);
-  fill.position.set(0, 5.2, 5.5);
+  fill.position.set(0, 7.5, 0);
   scene.add(fill);
 
   mainGlowLight = new THREE.PointLight(MAIN_VFX_CONFIG.glowLightHex, 0, 5.2, 2);
@@ -2248,19 +2537,19 @@ function makeShadowDieBottomTexture() {
   if (shadowDieBottomTexture) return shadowDieBottomTexture;
 
   const canvas = document.createElement("canvas");
-  canvas.width = 256;
-  canvas.height = 256;
+  canvas.width = 384;
+  canvas.height = 384;
   const ctx = canvas.getContext("2d");
 
-  // Shadow-die Step 5.9: only the underside of the duplicate is visible at rest.
-  // The rounded square mirrors the physical footprint of the die instead of
-  // projecting a separate fan/blob shape away from it.
+  // Compact rounded contact footprint. Its silhouette follows the rounded
+  // underside of the resin die; the feather supplies soft ambient spill
+  // without turning it into a detached circular blob.
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
-  ctx.filter = "blur(13px)";
+  ctx.filter = "blur(18px)";
   ctx.beginPath();
-  const inset = 24;
-  const radius = 64;
+  const inset = 44;
+  const radius = 82;
   const x = inset;
   const y = inset;
   const w = canvas.width - inset * 2;
@@ -2279,14 +2568,14 @@ function makeShadowDieBottomTexture() {
   const gradient = ctx.createRadialGradient(
     canvas.width / 2,
     canvas.height / 2,
-    12,
+    18,
     canvas.width / 2,
     canvas.height / 2,
-    canvas.width * 0.46
+    canvas.width * 0.44
   );
-  gradient.addColorStop(0.00, "rgba(0,0,0,0.30)");
-  gradient.addColorStop(0.52, "rgba(0,0,0,0.22)");
-  gradient.addColorStop(0.84, "rgba(0,0,0,0.08)");
+  gradient.addColorStop(0.00, "rgba(0,0,0,1)");
+  gradient.addColorStop(0.46, "rgba(0,0,0,0.82)");
+  gradient.addColorStop(0.80, "rgba(0,0,0,0.32)");
   gradient.addColorStop(1.00, "rgba(0,0,0,0.00)");
   ctx.fillStyle = gradient;
   ctx.fill();
@@ -2295,6 +2584,258 @@ function makeShadowDieBottomTexture() {
   shadowDieBottomTexture = new THREE.CanvasTexture(canvas);
   shadowDieBottomTexture.colorSpace = THREE.SRGBColorSpace;
   return shadowDieBottomTexture;
+}
+
+function makeProjectedGroundContactGeometry() {
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(18 * 3);
+  const attribute = new THREE.BufferAttribute(positions, 3);
+  attribute.setUsage(THREE.DynamicDrawUsage);
+  geometry.setAttribute("position", attribute);
+  geometry.setDrawRange(0, 0);
+  return geometry;
+}
+
+function shadowCross(origin, a, b) {
+  return (a.x - origin.x) * (b.z - origin.z)
+    - (a.z - origin.z) * (b.x - origin.x);
+}
+
+function updateProjectedGroundContact(
+  shadow,
+  quaternion,
+  scaleX,
+  scaleY,
+  scaleZ,
+  featherScaleX,
+  featherScaleZ
+) {
+  const core = shadow.userData.coreMesh;
+  const feather = shadow.userData.featherMesh;
+  const points = shadow.userData.projectedPoints;
+  if (!core || !feather || !points) return;
+
+  SHADOW_CUBE_CORNERS.forEach((corner, index) => {
+    shadowProjectionVector
+      .set(corner[0] * scaleX, corner[1] * scaleY, corner[2] * scaleZ)
+      .applyQuaternion(quaternion);
+    points[index].x = shadowProjectionVector.x;
+    points[index].z = shadowProjectionVector.z;
+  });
+
+  points.sort((a, b) => a.x === b.x ? a.z - b.z : a.x - b.x);
+  const lower = shadow.userData.lowerHull;
+  const upper = shadow.userData.upperHull;
+  lower.length = 0;
+  upper.length = 0;
+
+  points.forEach(point => {
+    while (
+      lower.length >= 2
+      && shadowCross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0
+    ) {
+      lower.pop();
+    }
+    lower.push(point);
+  });
+
+  for (let index = points.length - 1; index >= 0; index -= 1) {
+    const point = points[index];
+    while (
+      upper.length >= 2
+      && shadowCross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0
+    ) {
+      upper.pop();
+    }
+    upper.push(point);
+  }
+
+  lower.pop();
+  upper.pop();
+  const hull = shadow.userData.projectedHull;
+  hull.length = 0;
+  hull.push(...lower, ...upper);
+
+  const attribute = core.geometry.getAttribute("position");
+  const positions = attribute.array;
+  let vertexOffset = 0;
+  for (let index = 1; index < hull.length - 1; index += 1) {
+    [hull[0], hull[index], hull[index + 1]].forEach(point => {
+      positions[vertexOffset++] = point.x;
+      positions[vertexOffset++] = 0;
+      positions[vertexOffset++] = point.z;
+    });
+  }
+  positions.fill(0, vertexOffset);
+  core.geometry.setDrawRange(0, vertexOffset / 3);
+  attribute.needsUpdate = true;
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minZ = Infinity;
+  let maxZ = -Infinity;
+  hull.forEach(point => {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minZ = Math.min(minZ, point.z);
+    maxZ = Math.max(maxZ, point.z);
+  });
+
+  // The feather is deliberately larger than the projected solid underside.
+  // Its texture supplies the rounded, soft edge while the polygon supplies the
+  // continuously changing Roll silhouette.
+  const width = Math.max(0.01, maxX - minX);
+  const depth = Math.max(0.01, maxZ - minZ);
+  feather.position.x = (minX + maxX) * 0.5;
+  feather.position.z = (minZ + maxZ) * 0.5;
+  feather.scale.set(width * featherScaleX, depth * featherScaleZ, 1);
+}
+
+function ensureGroundShadowLayer() {
+  if (groundShadowCanvas || !diceStageEl) return groundShadowCanvas;
+  groundShadowCanvas = document.createElement("canvas");
+  groundShadowCanvas.className = "dice-ground-shadow-canvas";
+  groundShadowCanvas.setAttribute("aria-hidden", "true");
+  groundShadowContext = groundShadowCanvas.getContext("2d");
+  diceStageEl.insertBefore(groundShadowCanvas, sceneWrap);
+  return groundShadowCanvas;
+}
+
+function projectShadowPointToStage(x, y, z, canvasRect, stageRect, scaleX, scaleY) {
+  shadowScreenProjection.set(x, y, z).project(camera);
+  const screenX = canvasRect.left + (shadowScreenProjection.x + 1) * 0.5 * canvasRect.width;
+  const screenY = canvasRect.top + (1 - shadowScreenProjection.y) * 0.5 * canvasRect.height;
+  return {
+    x: (screenX - stageRect.left) * scaleX,
+    y: (screenY - stageRect.top) * scaleY
+  };
+}
+
+function traceShadowCore(context, shadow, canvasRect, stageRect, scaleX, scaleY) {
+  return traceScaledShadowCore(
+    context,
+    shadow,
+    canvasRect,
+    stageRect,
+    scaleX,
+    scaleY,
+    1
+  );
+}
+
+function traceScaledShadowCore(
+  context,
+  shadow,
+  canvasRect,
+  stageRect,
+  scaleX,
+  scaleY,
+  footprintScale = 1
+) {
+  const hull = shadow.userData.projectedHull;
+  if (!hull?.length) return false;
+  const center = hull.reduce(
+    (total, point) => ({ x: total.x + point.x, z: total.z + point.z }),
+    { x: 0, z: 0 }
+  );
+  center.x /= hull.length;
+  center.z /= hull.length;
+
+  context.beginPath();
+  hull.forEach((point, index) => {
+    const scaledX = center.x + (point.x - center.x) * footprintScale;
+    const scaledZ = center.z + (point.z - center.z) * footprintScale;
+    const projected = projectShadowPointToStage(
+      shadow.position.x + scaledX,
+      shadow.position.y,
+      shadow.position.z + scaledZ,
+      canvasRect,
+      stageRect,
+      scaleX,
+      scaleY
+    );
+    if (index === 0) context.moveTo(projected.x, projected.y);
+    else context.lineTo(projected.x, projected.y);
+  });
+  context.closePath();
+  return true;
+}
+
+function renderGroundShadowLayer() {
+  if (!groundShadowCanvas || !groundShadowContext || !renderer || !camera || !diceStageEl) return;
+
+  const stageRect = diceStageEl.getBoundingClientRect();
+  const canvasRect = renderer.domElement.getBoundingClientRect();
+  const localWidth = diceStageEl.clientWidth;
+  const localHeight = diceStageEl.clientHeight;
+  if (!stageRect.width || !stageRect.height || !canvasRect.width || !canvasRect.height) return;
+
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const overlayHeight = localHeight + GROUND_SHADOW_OVERFLOW;
+  const targetWidth = Math.max(1, Math.round(localWidth * pixelRatio));
+  const targetHeight = Math.max(1, Math.round(overlayHeight * pixelRatio));
+  if (groundShadowCanvas.width !== targetWidth || groundShadowCanvas.height !== targetHeight) {
+    groundShadowCanvas.width = targetWidth;
+    groundShadowCanvas.height = targetHeight;
+    groundShadowCanvas.style.height = `${overlayHeight}px`;
+  }
+
+  const context = groundShadowContext;
+  context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  context.clearRect(0, 0, localWidth, overlayHeight);
+  const scaleX = localWidth / stageRect.width;
+  const scaleY = localHeight / stageRect.height;
+
+  diceShadowMeshes.forEach(shadow => {
+    if (!shadow?.visible) return;
+    const coreRatio = THREE.MathUtils.clamp(
+      (shadow.userData.coreMaterial?.opacity || 0)
+        / Math.max(0.0001, shadow.userData.baseCoreOpacity || 0.11),
+      0,
+      1.2
+    );
+    const featherRatio = THREE.MathUtils.clamp(
+      (shadow.userData.featherMaterial?.opacity || 0)
+        / Math.max(0.0001, shadow.userData.baseFeatherOpacity || 0.56),
+      0,
+      1.2
+    );
+
+    // The feather uses the exact same projected underside as the square core.
+    // At 1.4× total size it adds precisely one fifth of the original footprint
+    // to the top, bottom, left and right. Eight bands fade the edge to zero.
+    const featherSteps = 8;
+    for (let step = featherSteps; step >= 1; step -= 1) {
+      const progress = step / featherSteps;
+      context.save();
+      context.fillStyle = "#000000";
+      context.globalAlpha = THREE.MathUtils.lerp(0.060, 0.010, progress) * featherRatio;
+      context.filter = "none";
+      if (
+        traceScaledShadowCore(
+          context,
+          shadow,
+          canvasRect,
+          stageRect,
+          scaleX,
+          scaleY,
+          1 + 0.4 * progress
+        )
+      ) {
+        context.fill();
+      }
+      context.restore();
+    }
+
+    context.save();
+    context.fillStyle = "#000000";
+    context.globalAlpha = 0.52 * coreRatio;
+    context.filter = "blur(3px)";
+    if (traceShadowCore(context, shadow, canvasRect, stageRect, scaleX, scaleY)) {
+      context.fill();
+    }
+    context.restore();
+  });
 }
 
 function placeShadowDieBottom(shadow, die) {
@@ -2345,20 +2886,174 @@ function createShadowDieBottom(layout, index) {
   return shadow;
 }
 
+function applyDiceShadowVisual(index, closeness = 1, visible = true) {
+  const shadow = diceShadowMeshes[index];
+  const die = diceMeshes[index];
+  if (!shadow || !die) return;
+
+  const amount = THREE.MathUtils.clamp(closeness, 0, 1);
+  if (!visible || amount <= 0 || !die.userData.layout) {
+    shadow.visible = false;
+    if (shadow.userData.coreMaterial) shadow.userData.coreMaterial.opacity = 0;
+    if (shadow.userData.featherMaterial) shadow.userData.featherMaterial.opacity = 0;
+    return;
+  }
+
+  // Ground Contact belongs to the slot, not to the animated transform. It
+  // always occupies the canonical idle footprint while visibility follows the
+  // die lifecycle. This prevents the shadow from floating with a Roll/Drop.
+  const layout = shadow.userData.layout || die.userData.layout;
+  const size = shadow.userData.dieSize || die.userData.diceSize || 1;
+  const yaw = layout?.[4] || 0;
+
+  // Calculate the lowest point of the canonical rounded cube. Every count has
+  // its own idle pitch/roll, so one global floor height leaves visible gaps.
+  // The result is still a fixed idle anchor and never reads the animated die.
+  shadowContactEuler.set(layout?.[3] || 0, yaw, layout?.[5] || 0);
+  shadowContactQuaternion.setFromEuler(shadowContactEuler);
+  shadowContactAxisX.set(1, 0, 0).applyQuaternion(shadowContactQuaternion);
+  shadowContactAxisY.set(0, 1, 0).applyQuaternion(shadowContactQuaternion);
+  shadowContactAxisZ.set(0, 0, 1).applyQuaternion(shadowContactQuaternion);
+  const verticalAxisSum =
+    Math.abs(shadowContactAxisX.y)
+    + Math.abs(shadowContactAxisY.y)
+    + Math.abs(shadowContactAxisZ.y);
+  // RoundedBoxGeometry is an inner box with a 0.11-radius rounded shell. Using
+  // the sharp cube corners here would still leave the contact plate too low.
+  const roundedRadius = 0.11;
+  const verticalExtent = size * (
+    (0.5 - roundedRadius) * verticalAxisSum + roundedRadius
+  );
+  const contactY = (layout?.[1] || 0) - verticalExtent - 0.006;
+
+  shadow.position.set(
+    layout?.[0] || 0,
+    contactY + index * 0.0002,
+    layout?.[2] || 0
+  );
+  shadow.rotation.set(0, 0, 0);
+  shadow.scale.set(1, 1, 1);
+
+  const core = shadow.userData.coreMesh;
+  const feather = shadow.userData.featherMesh;
+  const coreMaterial = shadow.userData.coreMaterial;
+  const featherMaterial = shadow.userData.featherMaterial;
+
+  const followsLiveRoll = die.userData.rolling && !introActive;
+  const footprintQuaternion = followsLiveRoll
+    ? die.quaternion
+    : shadowContactQuaternion;
+  const footprintScaleX = followsLiveRoll ? die.scale.x : size;
+  const footprintScaleY = followsLiveRoll ? die.scale.y : size;
+  const footprintScaleZ = followsLiveRoll ? die.scale.z : size;
+  const featherScaleX = followsLiveRoll ? 1.58 : 1.92;
+  const featherScaleZ = followsLiveRoll ? 1.72 : 2.10;
+  if (followsLiveRoll) {
+    shadow.position.x = die.position.x;
+    shadow.position.z = die.position.z;
+  }
+  updateProjectedGroundContact(
+    shadow,
+    footprintQuaternion,
+    footprintScaleX,
+    footprintScaleY,
+    footprintScaleZ,
+    featherScaleX,
+    featherScaleZ
+  );
+
+  const fade = THREE.MathUtils.smootherstep(amount, 0, 1);
+  const arrivalSpread = THREE.MathUtils.lerp(1.08, 1, fade);
+  if (core) core.scale.set(arrivalSpread, 1, arrivalSpread);
+  if (feather) {
+    feather.scale.x *= arrivalSpread;
+    feather.scale.y *= arrivalSpread;
+  }
+  if (coreMaterial) {
+    coreMaterial.opacity =
+      (shadow.userData.baseCoreOpacity || 0.19) * Math.pow(fade, 1.10);
+  }
+  if (featherMaterial) {
+    featherMaterial.opacity =
+      (shadow.userData.baseFeatherOpacity || 0.58) * Math.pow(fade, 1.32);
+  }
+  shadow.visible = true;
+}
+
 function setDiceShadowState(index, closeness = 1, visible = true) {
   const shadow = diceShadowMeshes[index];
   if (!shadow) return;
-
-  // v2.22: contact shadows are intentionally disabled everywhere.
-  shadow.visible = false;
-  shadow.material.opacity = 0;
+  shadow.userData.dropFade = null;
+  shadow.userData.fallFade = null;
+  applyDiceShadowVisual(index, closeness, visible);
 }
 
 function syncDiceShadow(index, closeness = 1, visible = true) {
   const shadow = diceShadowMeshes[index];
   if (!shadow) return;
-  shadow.visible = false;
-  shadow.material.opacity = 0;
+  shadow.userData.dropFade = null;
+  shadow.userData.fallFade = null;
+  applyDiceShadowVisual(index, closeness, visible);
+}
+
+function startDiceShadowDrop(index, duration) {
+  const shadow = diceShadowMeshes[index];
+  if (!shadow) return;
+
+  shadow.userData.dropFade = {
+    startedAt: performance.now(),
+    duration: Math.max(1, duration)
+  };
+  shadow.userData.fallFade = null;
+  applyDiceShadowVisual(index, 0, false);
+}
+
+function startDiceShadowFall(index, duration = 150) {
+  const shadow = diceShadowMeshes[index];
+  if (!shadow) return;
+
+  shadow.userData.dropFade = null;
+  shadow.userData.fallFade = {
+    startedAt: performance.now(),
+    duration: Math.max(1, duration)
+  };
+  applyDiceShadowVisual(index, 1, true);
+}
+
+function updateDiceShadowLifecycles(nowMilliseconds) {
+  diceShadowMeshes.forEach((shadow, index) => {
+    const fall = shadow?.userData?.fallFade;
+    if (fall) {
+      const progress = THREE.MathUtils.clamp(
+        (nowMilliseconds - fall.startedAt) / fall.duration,
+        0,
+        1
+      );
+      const contact = 1 - THREE.MathUtils.smootherstep(progress, 0, 1);
+      applyDiceShadowVisual(index, contact, contact > 0.002);
+      if (progress >= 1) {
+        shadow.userData.fallFade = null;
+        applyDiceShadowVisual(index, 0, false);
+      }
+      return;
+    }
+
+    const fade = shadow?.userData?.dropFade;
+    if (!fade) return;
+
+    const progress = THREE.MathUtils.clamp(
+      (nowMilliseconds - fade.startedAt) / fade.duration,
+      0,
+      1
+    );
+    const contact = THREE.MathUtils.smoothstep(progress, 0.34, 0.96);
+    applyDiceShadowVisual(index, contact, contact > 0.002);
+
+    if (progress >= 1) {
+      shadow.userData.dropFade = null;
+      applyDiceShadowVisual(index, 1, true);
+    }
+  });
 }
 
 function getDiceTexture(text, textColor = "#111111") {
@@ -2501,7 +3196,16 @@ function renderSceneWithDiceLayers() {
 
   // Pass 1: complete rear composition, but without slot 0.
   const mainWasVisible = mainDie.visible;
+  const mainShadow = diceShadowMeshes[0];
+  // Capture every shadow state before temporarily hiding the Main. Previously
+  // this snapshot was taken after mainShadow.visible had already been set to
+  // false, so every render permanently restored the Main shadow as hidden.
+  // Roll appeared to work only because its animation re-enabled the shadow on
+  // every frame; Drop/Idle/Fall had no such per-frame rescue.
+  const shadowVisibility = diceShadowMeshes.map(shadow => shadow.visible);
+  const mainShadowWasVisible = shadowVisibility[0] || false;
   mainDie.visible = false;
+  if (mainShadow) mainShadow.visible = false;
   renderer.autoClear = true;
   renderer.render(scene, camera);
 
@@ -2509,12 +3213,12 @@ function renderSceneWithDiceLayers() {
   // permanent Main slot in front. This pipeline is identical for Random and
   // fixed Main and therefore cannot diverge between modes.
   const rearVisibility = diceMeshes.slice(1).map(die => die.visible);
-  const shadowVisibility = diceShadowMeshes.map(shadow => shadow.visible);
   const floorVisible = floor?.visible;
 
   mainDie.visible = mainWasVisible;
+  if (mainShadow) mainShadow.visible = mainShadowWasVisible;
   diceMeshes.slice(1).forEach(die => { die.visible = false; });
-  diceShadowMeshes.forEach(shadow => { shadow.visible = false; });
+  diceShadowMeshes.slice(1).forEach(shadow => { shadow.visible = false; });
   if (floor) floor.visible = false;
 
   renderer.autoClear = false;
@@ -2563,10 +3267,12 @@ function createPersistentDiceSlot(index) {
   mesh.userData.layout = null;
   mesh.userData.startRot = new THREE.Euler();
   mesh.userData.endRot = new THREE.Euler();
+  mesh.userData.startPosition = new THREE.Vector3();
   mesh.userData.startTime = 0;
   mesh.userData.duration = 1;
   mesh.userData.delay = index * 0.06;
   mesh.userData.rolling = false;
+  mesh.userData.shakeRolling = false;
   mesh.userData.visibleFaceIndex = 4;
   mesh.userData.diceSize = 1;
   mesh.userData.materialsCommitted = true;
@@ -2576,30 +3282,76 @@ function createPersistentDiceSlot(index) {
 }
 
 function createPersistentShadowSlot(index) {
-  const material = new THREE.MeshBasicMaterial({
+  const group = new THREE.Group();
+  group.position.y = -1.577 + index * 0.0002;
+  group.visible = false;
+
+  // A transparent duplicate of the rounded underside supplies the dense
+  // contact seam. It is intentionally subtle: most of it is occluded by the
+  // resin, while the exposed edge makes the die feel physically planted.
+  const coreMaterial = new THREE.MeshBasicMaterial({
+    color: 0x050505,
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    depthTest: true,
+    toneMapped: false,
+    side: THREE.DoubleSide
+  });
+  const core = new THREE.Mesh(
+    makeProjectedGroundContactGeometry(),
+    coreMaterial
+  );
+  core.position.y = 0.00035;
+  core.frustumCulled = false;
+  // Projection/state remains in Three.js; the visible pixels are drawn on the
+  // overflow layer behind the complete live dice/VFX scene.
+  core.visible = false;
+  // Ground contact renders after the additive aura so its darkest seam is not
+  // washed away, but depth testing still keeps it below the opaque resin.
+  core.renderOrder = 9;
+  group.add(core);
+
+  // A separate feather surrounds the underside. Unlike the core it extends
+  // toward the camera, so the forward Main keeps the same visible grounding as
+  // the two support dice.
+  const featherMaterial = new THREE.MeshBasicMaterial({
     map: makeShadowDieBottomTexture(),
     transparent: true,
     opacity: 0,
     depthWrite: false,
     depthTest: true,
     alphaTest: 0.003,
-    polygonOffset: true,
-    polygonOffsetFactor: 1,
-    polygonOffsetUnits: 1,
+    polygonOffset: false,
+    toneMapped: false,
     side: THREE.DoubleSide
   });
+  const feather = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    featherMaterial
+  );
+  feather.rotation.x = -Math.PI / 2;
+  feather.position.y = 0;
+  feather.renderOrder = 8;
+  feather.visible = false;
+  group.add(feather);
 
-  // Old footprint was size*1.78 x size*1.24. A unit plane plus scale is exact.
-  const geometry = new THREE.PlaneGeometry(1.78, 1.24);
-  const shadow = new THREE.Mesh(geometry, material);
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = -1.577 + index * 0.0002;
-  shadow.renderOrder = -1;
-  shadow.visible = false;
-  shadow.userData.baseOpacity = 0.24;
-  shadow.userData.dieSize = 1;
-  scene.add(shadow);
-  return shadow;
+  group.userData.coreMesh = core;
+  group.userData.featherMesh = feather;
+  group.userData.coreMaterial = coreMaterial;
+  group.userData.featherMaterial = featherMaterial;
+  group.userData.baseCoreOpacity = 0.11;
+  group.userData.baseFeatherOpacity = 0.56;
+  group.userData.projectedPoints = SHADOW_CUBE_CORNERS.map(() => ({ x: 0, z: 0 }));
+  group.userData.lowerHull = [];
+  group.userData.upperHull = [];
+  group.userData.projectedHull = [];
+  group.userData.dieSize = 1;
+  group.userData.layout = null;
+  group.userData.dropFade = null;
+  group.userData.fallFade = null;
+  scene.add(group);
+  return group;
 }
 
 function ensureDiceSlots() {
@@ -2662,12 +3414,8 @@ function applyLayoutToDiceSlot(index, word, layout, visible, animateIn = false) 
 
   updateSlotFaceTextures(die, word, layout);
 
-  shadow.userData.restYaw = layout[4];
+  shadow.userData.layout = layout;
   shadow.userData.dieSize = size;
-  shadow.scale.set(size, size, 1);
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.rotation.z = -layout[4];
-  shadow.position.set(layout[0], -1.577 + index * 0.0002, layout[2]);
   syncDiceShadow(index, animateIn ? 0 : 1, !animateIn);
 }
 
@@ -2920,7 +3668,7 @@ async function roll(options = { countIt: true }) {
   }
 }
 
-function startDiceAnimation() {
+function startDiceAnimation({ preserveCurrentPose = false } = {}) {
   const now = performance.now() / 1000;
   const fixedMain = selectedMain !== "Random";
   let maxEndSeconds = 0;
@@ -2936,8 +3684,9 @@ function startDiceAnimation() {
       return;
     }
 
-    // Roll starts from the exact same canonical composite as idle.
-    applyCanonicalDicePose(index, wordCount);
+    // Button Roll starts from the canonical composite. Shake hands its current
+    // live transform into this same landing lifecycle without a visual jump.
+    if (!preserveCurrentPose) applyCanonicalDicePose(index, wordCount);
 
     if (keepMainStill) {
       syncDiceShadow(index, 1, true);
@@ -2958,10 +3707,15 @@ function startDiceAnimation() {
     die.userData.delay = index * (0.045 + Math.random() * 0.018);
     die.userData.rolling = true;
     die.userData.startRot.copy(die.rotation);
+    die.userData.startPosition.copy(die.position);
+    const nextLandingRotation = (current, target, extraTurns) => {
+      const completedTurns = Math.ceil((current - target) / (Math.PI * 2));
+      return target + (completedTurns + extraTurns) * Math.PI * 2;
+    };
     die.userData.endRot.set(
-      p[3] + 4 * Math.PI * 2,
-      p[4] + 4 * Math.PI * 2,
-      p[5] + 2 * Math.PI * 2
+      preserveCurrentPose ? nextLandingRotation(die.rotation.x, p[3], 2) : p[3] + 4 * Math.PI * 2,
+      preserveCurrentPose ? nextLandingRotation(die.rotation.y, p[4], 2) : p[4] + 4 * Math.PI * 2,
+      preserveCurrentPose ? nextLandingRotation(die.rotation.z, p[5], 1) : p[5] + 2 * Math.PI * 2
     );
     die.userData.physicsStrength = (index === 0 ? 0.72 : 0.54) * strengthVariation;
     die.userData.wobbleAmplitude = (index === 0 ? 0.050 : 0.040) * (0.9 + Math.random() * 0.2);
@@ -3001,6 +3755,7 @@ function animate() {
   requestAnimationFrame(animate);
   const t = performance.now() / 1000;
   updateMainPlasmaTime(t);
+  updateDiceShadowLifecycles(t * 1000);
 
   if (introActive && snapshotDropActive) {
     // DOM snapshots own the visible drop. The Three scene stays frozen at the
@@ -3063,6 +3818,24 @@ function animate() {
     // Exact original ROLL movement, with only the selected Main optionally locked.
     diceMeshes.forEach((die, index) => {
       const u = die.userData;
+      if (u.shakeRolling) {
+        const delta = Math.min(Math.max(t - (u.shakeLastTime || t), 0), 0.04);
+        u.shakeLastTime = t;
+        const force = 0.34 + shakeIntensity * 0.96;
+        const speed = (5.8 + shakeIntensity * 12.5) * (u.shakeAxisBias || 1);
+        u.shakePhase = (u.shakePhase || 0) + delta * speed;
+
+        die.rotation.x += delta * speed * 1.16;
+        die.rotation.y += delta * speed * 0.91;
+        die.rotation.z += delta * speed * 0.72;
+        die.position.x = u.base.x + Math.sin(u.shakePhase * 1.31 + index) * 0.055 * force;
+        die.position.y = u.base.y + 0.08 + Math.abs(Math.sin(u.shakePhase * 1.87)) * 0.16 * force;
+        die.position.z = u.base.z + Math.cos(u.shakePhase * 1.13 + index * 0.8) * 0.045 * force;
+        die.scale.setScalar(getCanonicalDiceSize(die, index));
+        syncDiceShadow(index, 0.54 - shakeIntensity * 0.22, true);
+        return;
+      }
+
       if (!u.rolling) {
         // Static slots/shadows are already at their canonical transform.
         return;
@@ -3088,10 +3861,11 @@ function animate() {
       const squash = landingSquash(p, index);
       const wobble = dampedWobble(p, u.wobbleAmplitude, u.wobbleFrequency, u.wobblePhase);
 
-      die.position.y = u.base.y + bounce;
+      die.position.y = lerp(u.startPosition.y, u.base.y, e) + bounce;
       const rollEnvelope = Math.pow(Math.sin(Math.PI * p), 2.0);
-      die.position.x = u.base.x
+      die.position.x = lerp(u.startPosition.x, u.base.x, e)
         + Math.sin(p * Math.PI * 2.0 + index * 0.55) * rollEnvelope * 0.030;
+      die.position.z = lerp(u.startPosition.z, u.base.z, e);
       die.rotation.x += wobble;
       die.rotation.z -= wobble * 0.72;
       const canonicalSize = getCanonicalDiceSize(die, index);
@@ -3112,6 +3886,7 @@ function animate() {
   }
 
   renderSceneWithDiceLayers();
+  renderGroundShadowLayer();
 }
 
 function resizeRenderer() {
