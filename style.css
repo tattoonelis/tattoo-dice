@@ -644,9 +644,16 @@ h1{
     inset 0 -1px 0 rgba(0,0,0,.10);
 }
 .utility-row .shake-toggle{
-  padding:0 clamp(5px,1.5vw,8px)!important;
-  gap:clamp(4px,1.1vw,6px)!important;
-  font-size:clamp(10px,2.55vw,12px)!important;
+  padding:0 clamp(4px,1.1vw,6px)!important;
+  gap:clamp(3px,.8vw,5px)!important;
+  font-size:clamp(8.5px,2.25vw,10px)!important;
+  font-weight:700!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.utility-row #shakeToggleLabel,
+.action-row .main-button span{
+  white-space:nowrap!important;
 }
 
 /* A close affordance with a generous hit area, but no visible button chrome. */
@@ -1958,8 +1965,10 @@ h1{
   font-size:clamp(16px,3.5vw,22px);
   color:var(--cream-soft);
 }
-/* Show portrait lock only on touch/mobile devices. */
-@media (hover:none) and (pointer:coarse) and (orientation:landscape) and (max-height:700px){
+/* Show portrait lock on touch phones and tablets in landscape.
+   iPad landscape can be taller than 700 CSS pixels, so height cannot be the
+   device discriminator here. The coarse touch pointer keeps desktop free. */
+@media (hover:none) and (pointer:coarse) and (orientation:landscape) and (max-width:1366px){
   .portrait-lock{
     display:flex!important;
   }
@@ -3644,19 +3653,18 @@ body{
   border-radius:44%;
   background:
     radial-gradient(ellipse at 50% 55%,
-      rgba(255,255,255,.28) 0%,
-      rgba(255,255,255,.13) 32%,
-      rgba(255,255,255,.055) 53%,
-      rgba(255,255,255,0) 76%);
+      rgba(102,181,247,.28) 0%,
+      rgba(102,181,247,.13) 32%,
+      rgba(102,181,247,.055) 53%,
+      rgba(102,181,247,0) 76%);
   filter:blur(18px);
-  transform:scale(1.13);
   animation:headerAuraBreath 4.8s ease-in-out infinite;
   pointer-events:none;
 }
 
 @keyframes headerAuraBreath{
-  0%,100%{opacity:.62;transform:scale(1.10)}
-  48%{opacity:.88;transform:scale(1.17)}
+  0%,100%{opacity:.62;transform:scale(.83)}
+  48%{opacity:.88;transform:scale(.88)}
 }
 
 .app-header h1 .app-brand-logo,
@@ -3709,6 +3717,10 @@ body{
 
 .reset-button{
   color:#fffdf8!important;
+  font-size:clamp(8.5px,2.25vw,10px)!important;
+  font-weight:700!important;
+  line-height:1!important;
+  white-space:nowrap!important;
   border:1px solid rgba(255,255,255,.18)!important;
   background:
     linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.025)),
@@ -3813,5 +3825,117 @@ body{
   }
   .controls{
     transform:translateY(clamp(36px,5.25dvh,42px))!important;
+  }
+}
+
+/* v2.52.9 — one invisible, proportional mobile viewport.
+   Width is derived from both the available screen width and the stable
+   smallest viewport height. That keeps header, dice, controls and footer in
+   the same relationship in Safari and in an installed iOS/Android PWA. */
+:root{
+  --app-shell-width:min(100vw,430px);
+  --app-fit-width:clamp(
+    240px,
+    calc(64svh - 146px - env(safe-area-inset-bottom)),
+    min(calc(100vw - 24px),410px)
+  );
+}
+html,
+body{
+  background:#050505!important;
+}
+body{
+  width:100vw!important;
+  height:100svh!important;
+  min-height:100svh!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.app{
+  width:var(--app-shell-width)!important;
+  height:100svh!important;
+  max-height:100svh!important;
+  grid-template-rows:minmax(0,1fr) auto!important;
+  margin:0 auto!important;
+  background:
+    radial-gradient(circle at center 20%,rgba(255,255,255,.02),transparent 42%),
+    radial-gradient(circle at center 80%,rgba(255,255,255,.012),transparent 52%),
+    #050505!important;
+}
+.stage{
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  grid-template-rows:auto auto auto!important;
+  align-content:center!important;
+  padding:
+    max(5px,env(safe-area-inset-top))
+    max(12px,env(safe-area-inset-right))
+    0
+    max(12px,env(safe-area-inset-left))!important;
+}
+.app-header h1,
+.splash-logo,
+.controls{
+  width:var(--app-fit-width)!important;
+  max-width:410px!important;
+}
+.dice-stage-3d{
+  width:var(--app-fit-width)!important;
+  height:auto!important;
+  min-height:0!important;
+  aspect-ratio:1.05 / 1!important;
+  margin:0 auto!important;
+  transform:none!important;
+  transform-origin:center center!important;
+  overflow:hidden!important;
+}
+#sceneWrap:not(.intro-hidden):not(.intro-moving){
+  width:100%!important;
+  left:0!important;
+  right:0!important;
+  transform:none!important;
+}
+.dice-stage-3d canvas{
+  transform:none!important;
+  transform-origin:center center!important;
+}
+.controls{
+  align-self:center!important;
+  margin:0 auto!important;
+  transform:none!important;
+}
+.footer{
+  position:relative!important;
+  z-index:80!important;
+  width:100%!important;
+  height:calc(88px + env(safe-area-inset-bottom))!important;
+  min-height:0!important;
+  padding:
+    6px
+    max(14px,env(safe-area-inset-right))
+    max(7px,env(safe-area-inset-bottom))
+    max(14px,env(safe-area-inset-left))!important;
+  background:
+    linear-gradient(to top,rgba(255,255,255,.035),rgba(255,255,255,.012) 62%,transparent)!important;
+}
+.splash-progress{
+  width:min(72vw,460px)!important;
+  max-width:calc(var(--app-fit-width) - 48px)!important;
+}
+
+@supports not (height:100svh){
+  :root{
+    --app-fit-width:clamp(
+      240px,
+      calc(64vh - 146px - env(safe-area-inset-bottom)),
+      min(calc(100vw - 24px),410px)
+    );
+  }
+  body,
+  .app{
+    height:100vh!important;
+    min-height:100vh!important;
+    max-height:100vh!important;
   }
 }

@@ -247,34 +247,48 @@ function drawHeaderFlare(context, x, y, size, alpha) {
   context.globalCompositeOperation = "source-over";
   context.globalAlpha = alpha;
 
-  const glow = context.createRadialGradient(0, 0, 0, 0, 0, size * 2.35);
-  glow.addColorStop(0, "rgba(255,255,255,1)");
-  glow.addColorStop(.12, "rgba(255,255,255,.98)");
-  glow.addColorStop(.38, "rgba(255,255,255,.38)");
+  const glow = context.createRadialGradient(0, 0, 0, 0, 0, size * 1.95);
+  glow.addColorStop(0, "rgba(255,255,255,.94)");
+  glow.addColorStop(.14, "rgba(255,255,255,.62)");
+  glow.addColorStop(.42, "rgba(255,255,255,.18)");
   glow.addColorStop(1, "rgba(255,255,255,0)");
   context.fillStyle = glow;
   context.beginPath();
-  context.arc(0, 0, size * 2.35, 0, Math.PI * 2);
+  context.arc(0, 0, size * 1.95, 0, Math.PI * 2);
   context.fill();
 
-  context.strokeStyle = "rgba(255,255,255,.96)";
-  context.lineCap = "round";
-  context.lineWidth = Math.max(1, size * .10);
+  // A filled, tapered star keeps the rays crisp instead of ending in the
+  // rounded caps of the previous stroked flare. Vertical points stay longest.
+  context.fillStyle = "rgba(255,255,255,.98)";
+  context.shadowColor = "rgba(255,255,255,.48)";
+  context.shadowBlur = size * .48;
   context.beginPath();
-  context.moveTo(-size * 1.75, 0);
-  context.lineTo(size * 1.75, 0);
-  context.moveTo(0, -size * 2.65);
-  context.lineTo(0, size * 2.65);
-  context.stroke();
+  context.moveTo(0, -size * 2.78);
+  context.lineTo(size * .18, -size * .38);
+  context.lineTo(size * 1.82, 0);
+  context.lineTo(size * .18, size * .38);
+  context.lineTo(0, size * 2.78);
+  context.lineTo(-size * .18, size * .38);
+  context.lineTo(-size * 1.82, 0);
+  context.lineTo(-size * .18, -size * .38);
+  context.closePath();
+  context.fill();
 
-  context.globalAlpha *= .72;
-  context.lineWidth = Math.max(.8, size * .07);
+  // Four shorter diagonal needles preserve the original sparkle silhouette
+  // while using pointed diamonds rather than soft lines.
+  context.globalAlpha *= .68;
+  context.shadowBlur = size * .30;
   context.beginPath();
-  context.moveTo(-size * 1.05, -size * 1.05);
-  context.lineTo(size * 1.05, size * 1.05);
-  context.moveTo(size * 1.05, -size * 1.05);
-  context.lineTo(-size * 1.05, size * 1.05);
-  context.stroke();
+  context.moveTo(0, -size * .10);
+  context.lineTo(size * .94, -size * .94);
+  context.lineTo(size * .10, 0);
+  context.lineTo(size * .94, size * .94);
+  context.lineTo(0, size * .10);
+  context.lineTo(-size * .94, size * .94);
+  context.lineTo(-size * .10, 0);
+  context.lineTo(-size * .94, -size * .94);
+  context.closePath();
+  context.fill();
   context.restore();
 }
 
@@ -4383,6 +4397,13 @@ function resizeRenderer() {
 
   renderer.setSize(width, height, false);
   camera.aspect = width / height;
+  // Keep the full stage available for Drop/Roll/Fall, but frame the complete
+  // dice + shadow component slightly wider on portrait devices. Shrinking the
+  // stage itself clips animation travel and makes the dice feel boxed in.
+  const useCompactPortraitCamera =
+    window.innerHeight >= window.innerWidth &&
+    width <= 430;
+  camera.fov = useCompactPortraitCamera ? 36 : 29;
 
   if (isLandscape && height < 620) {
     camera.position.z = 6.55;

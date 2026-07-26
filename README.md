@@ -113,3 +113,21 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - Rebuilds every contact shadow as one continuously blurred rounded-square projection with no alpha cutoff, contour bands or hard polygon edge.
 - Shows a centered notice when Shake to Roll is unsupported, requires HTTPS or lacks motion permission.
 - Leaves the ordinary Roll, Main, VFX, controls, compositions and shadow lifecycle/timing unchanged.
+
+
+## Sidequest v2.52.13 — Adaptive Mobile Viewport
+
+- Fits the complete header, dice, controls and footer inside one invisible proportional mobile shell.
+- Uses both the available device width and stable viewport height so Safari and installed iOS/Android PWAs keep the same composition.
+- Removes the old nested stage sizing that could push utility controls behind the footer.
+- Keeps the complete 1/2/3 dice composition centered and smaller through the
+  portrait camera, without shrinking its animation area or changing canonical poses.
+- Starts on a black background before the loading UI and external styles are available.
+- Restores the landscape rotation screen for touch iPads as well as phones.
+- Matches RESET typography to TOGGLE SHAKE.
+- Refines header flares into softly glowing, sharp four-point stars.
+- Reduces the header aura to 75% of its former footprint and colours it with
+  the same blue used by the Theme button.
+- Keeps TOGGLE SHAKE and the dynamic Main/Random label on a single line at
+  narrow mobile widths.
+- Uses one identical font size, weight and line height for TOGGLE SHAKE and RESET.
