@@ -42,6 +42,7 @@ let shakeCandidateAt = 0;
 let shakeCooldownUntil = 0;
 let shakeStopTimer = null;
 let shakeGravity = { x: 0, y: 0, z: 0 };
+const SHAKE_MAIN_LOCAL_AXIS = new THREE.Vector3(0, 0, 1);
 
 function diceInteractionBusy() {
   return rollInProgress || introActive || snapshotDropActive;
@@ -365,25 +366,42 @@ function initialiseHeaderFlares() {
         context.clearRect(0, 0, rect.width, rect.height);
         // The guide map supplies positions only. Both the permanent marker and
         // every travelling flare use the same doubled visual unit.
-        const unit = Math.max(15.2, rect.width * .044);
-        const livingScale = 1 + Math.sin(now * .0031) * .13 + Math.sin(now * .00137) * .055;
+        const unit = Math.max(9.88, rect.width * .0286);
+        const livingScale = 1 + Math.sin(now * .00155) * .13 + Math.sin(now * .00068) * .055;
         drawHeaderFlare(
           context,
           bluePoint.x * rect.width,
           bluePoint.y * rect.height,
           unit * 1.16 * livingScale,
-          .80 + Math.sin(now * .0024) * .12
+          .80 + Math.sin(now * .0012) * .12
         );
 
         if (now >= nextFlareAt && liveFlares.length < 3) {
-          const point = pathPoints[Math.floor(Math.random() * pathPoints.length)];
-          liveFlares.push({
-            ...point,
-            bornAt: now,
-            lifetime: 2200 + Math.random() * 1200,
-            scale: .62 + Math.random() * .36
-          });
-          nextFlareAt = now + 700 + Math.random() * 500;
+          let point = null;
+          const occupiedPoints = [bluePoint, ...liveFlares];
+          for (let attempt = 0; attempt < 18; attempt++) {
+            const candidate = pathPoints[Math.floor(Math.random() * pathPoints.length)];
+            const hasRoom = occupiedPoints.every(occupied => {
+              const deltaX = candidate.x - occupied.x;
+              const deltaY = candidate.y - occupied.y;
+              return Math.hypot(deltaX, deltaY) >= .16;
+            });
+            if (hasRoom) {
+              point = candidate;
+              break;
+            }
+          }
+          if (point) {
+            liveFlares.push({
+              ...point,
+              bornAt: now,
+              lifetime: 4200 + Math.random() * 1400,
+              scale: .62 + Math.random() * .36
+            });
+            nextFlareAt = now + 1600 + Math.random() * 800;
+          } else {
+            nextFlareAt = now + 650;
+          }
         }
 
         for (let index = liveFlares.length - 1; index >= 0; index--) {
@@ -395,8 +413,8 @@ function initialiseHeaderFlares() {
           }
           // Short soft arrival, followed by a deliberately long smooth fade.
           // This removes the visible cut at the end of the old lifetime.
-          const fadeInProgress = Math.min(1, progress / .30);
-          const fadeOutProgress = Math.min(1, Math.max(0, (1 - progress) / .70));
+          const fadeInProgress = Math.min(1, progress / .32);
+          const fadeOutProgress = Math.min(1, Math.max(0, (1 - progress) / .45));
           const smoothIn = fadeInProgress * fadeInProgress * (3 - 2 * fadeInProgress);
           const smoothOut = fadeOutProgress * fadeOutProgress * (3 - 2 * fadeOutProgress);
           const envelope = smoothIn * smoothOut;
@@ -804,14 +822,27 @@ function beginShakeRoll() {
   diceMeshes.forEach((die, index) => {
     const layout = die.userData.layout;
     const keepMainStill = fixedMain && index === 0;
-    if (!die.visible || !layout || keepMainStill) {
+    if (!die.visible || !layout) {
       die.userData.shakeRolling = false;
+      die.userData.shakeMainWobble = false;
       return;
     }
 
     applyCanonicalDicePose(index, wordCount);
     die.userData.rolling = false;
     die.userData.shakeSettling = false;
+    die.userData.shakeMainSettling = false;
+    if (keepMainStill) {
+      die.userData.shakeRolling = false;
+      die.userData.shakeMainWobble = true;
+      die.userData.shakeLastTime = now;
+      die.userData.shakePhase = Math.random() * Math.PI * 2;
+      die.userData.shakeMainBaseQuaternion.copy(die.quaternion);
+      syncDiceShadow(index, 1, true);
+      return;
+    }
+
+    die.userData.shakeMainWobble = false;
     die.userData.shakeRolling = true;
     die.userData.shakeLastTime = now;
     die.userData.shakePhase = Math.random() * Math.PI * 2;
@@ -831,10 +862,11 @@ function startShakeSettleAnimation() {
     const pose = die.userData.layout;
     const keepMainStill = fixedMain && index === 0;
     die.userData.shakeRolling = false;
+    die.userData.shakeMainWobble = false;
 
-    if (!die.visible || !pose || keepMainStill) {
+    if (!die.visible || !pose) {
       die.userData.shakeSettling = false;
-      if (keepMainStill) syncDiceShadow(index, 1, true);
+      die.userData.shakeMainSettling = false;
       return;
     }
 
@@ -842,6 +874,19 @@ function startShakeSettleAnimation() {
       new THREE.Euler(pose[3], pose[4], pose[5])
     );
     const startQuaternion = die.quaternion.clone().normalize();
+
+    if (keepMainStill) {
+      die.userData.shakeSettling = false;
+      die.userData.shakeMainSettling = true;
+      die.userData.shakeMainSettleStartQuaternion.copy(startQuaternion);
+      die.userData.shakeMainSettleEndQuaternion.copy(targetQuaternion);
+      die.userData.startTime = now;
+      die.userData.delay = 0;
+      die.userData.duration = 0.34;
+      die.userData.startPosition.copy(die.position);
+      maxEndSeconds = Math.max(maxEndSeconds, die.userData.duration);
+      return;
+    }
 
     // Quaternions q and -q describe the same pose. Keeping their dot positive
     // guarantees the shortest physical roll into the valid landing face.
@@ -902,6 +947,8 @@ async function finishShakeRoll() {
     diceMeshes.forEach((die, index) => {
       die.userData.shakeRolling = false;
       die.userData.shakeSettling = false;
+      die.userData.shakeMainWobble = false;
+      die.userData.shakeMainSettling = false;
       if (die.visible && die.userData.layout) applyCanonicalDicePose(index, wordCount);
     });
   } finally {
@@ -3849,6 +3896,12 @@ function createPersistentDiceSlot(index) {
   mesh.userData.rolling = false;
   mesh.userData.shakeRolling = false;
   mesh.userData.shakeSettling = false;
+  mesh.userData.shakeMainWobble = false;
+  mesh.userData.shakeMainSettling = false;
+  mesh.userData.shakeMainBaseQuaternion = new THREE.Quaternion();
+  mesh.userData.shakeMainOffsetQuaternion = new THREE.Quaternion();
+  mesh.userData.shakeMainSettleStartQuaternion = new THREE.Quaternion();
+  mesh.userData.shakeMainSettleEndQuaternion = new THREE.Quaternion();
   mesh.userData.visibleFaceIndex = 4;
   mesh.userData.diceSize = 1;
   mesh.userData.materialsCommitted = true;
@@ -4395,6 +4448,47 @@ function animate() {
     // Exact original ROLL movement, with only the selected Main optionally locked.
     diceMeshes.forEach((die, index) => {
       const u = die.userData;
+      if (u.shakeMainWobble) {
+        const delta = Math.min(Math.max(t - (u.shakeLastTime || t), 0), 0.04);
+        u.shakeLastTime = t;
+        const speed = 2.4 + shakeIntensity * 3.2;
+        const amplitude = 0.035 + shakeIntensity * 0.055;
+        u.shakePhase = (u.shakePhase || 0) + delta * speed;
+        u.shakeMainOffsetQuaternion.setFromAxisAngle(
+          SHAKE_MAIN_LOCAL_AXIS,
+          Math.sin(u.shakePhase) * amplitude
+        );
+        die.quaternion.copy(u.shakeMainBaseQuaternion);
+        die.quaternion.multiply(u.shakeMainOffsetQuaternion);
+        die.position.copy(u.base);
+        die.scale.setScalar(getCanonicalDiceSize(die, index));
+        syncDiceShadow(index, 1, true);
+        return;
+      }
+
+      if (u.shakeMainSettling) {
+        const p = THREE.MathUtils.clamp(
+          (t - u.startTime) / Math.max(u.duration, 0.001),
+          0,
+          1
+        );
+        const eased = 1 - Math.pow(1 - p, 3);
+        die.quaternion.slerpQuaternions(
+          u.shakeMainSettleStartQuaternion,
+          u.shakeMainSettleEndQuaternion,
+          eased
+        );
+        die.position.copy(u.base);
+        die.scale.setScalar(getCanonicalDiceSize(die, index));
+        syncDiceShadow(index, 1, true);
+        if (p >= 1) {
+          u.shakeMainSettling = false;
+          applyCanonicalDicePose(index, wordCount);
+          syncDiceShadow(index, 1, true);
+        }
+        return;
+      }
+
       if (u.shakeRolling) {
         const delta = Math.min(Math.max(t - (u.shakeLastTime || t), 0), 0.04);
         u.shakeLastTime = t;

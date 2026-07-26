@@ -156,3 +156,13 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - Keeps the enlarged sparkles elegant with a narrow centre and long needle points.
 - Carries the blue header aura into the loading screen and matches its background
   to the app for a seamless handoff.
+- Reduces header sparkles to 65%, slows their complete rhythm and prevents
+  simultaneous sparkles from clustering on the same part of the logo.
+- Keeps the footer question-mark glyph at the same responsive letter height as
+  the counter.
+- Prevents the portrait iPad stage track from exceeding its 430px app shell,
+  keeping the complete header, dice and control rows centred and usable.
+- Uses one shared blue header-aura configuration during loading and idle, so
+  the glow no longer loses intensity at the handoff.
+- Lets a selected Main gently wobble around its local front/back axis during
+  Shake to Roll, then eases it back to its exact canonical idle pose.

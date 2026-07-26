@@ -3649,30 +3649,17 @@ body{
   content:"";
   position:absolute;
   z-index:0;
-  inset:2% -5% -3%;
+  inset:-5% -8% -7%;
   border-radius:44%;
-  background:
-    radial-gradient(ellipse at 50% 55%,
-      rgba(102,181,247,.40) 0%,
-      rgba(102,181,247,.20) 32%,
-      rgba(102,181,247,.085) 53%,
-      rgba(102,181,247,0) 76%);
-  filter:blur(22px);
-  animation:headerAuraBreath 4.8s ease-in-out infinite;
-  pointer-events:none;
-}
-
-/* The loading screen sits on an uninterrupted black field, so its aura needs
-   a little more visible spread than the in-app copy to read as the same glow. */
-.splash-logo .header-artwork::before{
-  inset:-5% -8% -7%!important;
   background:
     radial-gradient(ellipse at 50% 55%,
       rgba(102,181,247,.58) 0%,
       rgba(102,181,247,.30) 34%,
       rgba(102,181,247,.13) 56%,
-      rgba(102,181,247,0) 79%)!important;
-  filter:blur(24px)!important;
+      rgba(102,181,247,0) 79%);
+  filter:blur(24px);
+  animation:headerAuraBreath 4.8s ease-in-out infinite;
+  pointer-events:none;
 }
 
 /* Match the app canvas during loading so the handoff changes only the content,
@@ -4057,7 +4044,7 @@ html{
 .footer .help-button{
   width:clamp(30px,9.3cqw,40px)!important;
   height:clamp(30px,9.3cqw,40px)!important;
-  font-size:clamp(20px,5.6cqw,24px)!important;
+  font-size:clamp(11px,3.3cqw,14px)!important;
 }
 
 /* Final header polish: reclaim the unused top air. The artwork, aura, flare
@@ -4068,6 +4055,28 @@ html{
 @media (max-height:640px){
   .app-header{
     transform:translateY(28px)!important;
+  }
+}
+
+/* Portrait tablets previously allowed the single stage grid track to grow to
+   the header's intrinsic width, even though the app shell itself is 430px.
+   Keep that one track bounded so the complete composition stays centred. */
+@media (orientation:portrait) and (min-width:521px){
+  .stage{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .app-header{
+    width:100%!important;
+    min-width:0!important;
+  }
+  .app-header h1{
+    width:min(100%,410px)!important;
+    margin-inline:auto!important;
+  }
+  .dice-stage-3d,
+  .controls{
+    justify-self:center!important;
+    margin-inline:auto!important;
   }
 }
 
