@@ -52,6 +52,16 @@ See `ACCEPTANCE-CHECKLIST.md` for the exact implemented behavior.
 
 Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall blink fix
 
+## Sidequest v2.51 — Header, Reset & Guided Help
+
+- The supplied illustrated logo is used in the app header; the loading screen keeps its existing logo.
+- The supplied red guide remains invisible and drives a maximum of two random light flares.
+- The supplied blue marker has one permanent, gently breathing star flare.
+- Reset returns to Classic, Random and 3 dice through the existing Fall → Drop lifecycle.
+- Reset does not increment the roll counter and preserves the Shake setting.
+- Menu close controls are visually reduced to a loose white cross.
+- A footer help control opens a five-step guided tour in the existing overlay style.
+
 
 ## Protected Test Route
 

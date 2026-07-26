@@ -570,6 +570,245 @@ h1{
   }
 }
 
+/* v2.51 — approved illustrated header, balanced utility row and guided help. */
+.app-header h1{
+  width:min(88vw,390px)!important;
+  max-width:390px!important;
+}
+.header-artwork{
+  position:relative;
+  display:block;
+  width:100%;
+  aspect-ratio:1600 / 980;
+}
+.app-header h1 .app-brand-logo{
+  position:absolute;
+  inset:0;
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+}
+.header-flare-canvas{
+  position:absolute;
+  inset:0;
+  display:block;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+  mix-blend-mode:screen;
+  filter:saturate(1.05);
+}
+
+/* CLASSIC / 1-2-3, ROLL / Shake and MAIN / Reset are three fixed columns. */
+.utility-row{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.utility-row .shake-control{
+  grid-column:2;
+}
+.reset-button{
+  appearance:none;
+  grid-column:3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-width:0;
+  height:100%;
+  padding:0 8px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:14px;
+  background-color:var(--premium-green,#32ad6d);
+  background-image:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,.045) 34%,rgba(0,0,0,.12) 100%);
+  background-blend-mode:soft-light;
+  color:#fffaf0;
+  font-family:var(--dice-ui-font,"Arial Rounded MT Bold","Arial Rounded MT",Arial,sans-serif);
+  font-size:clamp(11px,3vw,14px);
+  font-weight:700;
+  line-height:1;
+  letter-spacing:0;
+  text-shadow:0 1px 1px rgba(0,0,0,.22);
+  box-shadow:
+    0 4px 7px rgba(17,17,17,.055),
+    inset 0 1px 0 rgba(255,255,255,.30),
+    inset 0 -2px 0 rgba(0,0,0,.12);
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.reset-button:active{
+  transform:translateY(1px) scale(.985);
+  box-shadow:
+    0 2px 4px rgba(17,17,17,.045),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 -1px 0 rgba(0,0,0,.10);
+}
+.utility-row .shake-toggle{
+  padding:0 clamp(5px,1.5vw,8px)!important;
+  gap:clamp(4px,1.1vw,6px)!important;
+  font-size:clamp(10px,2.55vw,12px)!important;
+}
+
+/* A close affordance with a generous hit area, but no visible button chrome. */
+.theme-modal-close,
+.pin-modal-close,
+.main-modal-close,
+.overlay-close{
+  appearance:none!important;
+  width:44px!important;
+  height:44px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:rgba(255,253,248,.88)!important;
+  font-family:Arial,sans-serif!important;
+  font-size:31px!important;
+  font-weight:200!important;
+  line-height:44px!important;
+  text-align:center!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.34)!important;
+  cursor:pointer;
+}
+.theme-modal-close:active,
+.pin-modal-close:active,
+.main-modal-close:active,
+.overlay-close:active{
+  transform:scale(.90)!important;
+  opacity:.72;
+}
+
+.footer{
+  position:relative;
+}
+.help-button{
+  appearance:none;
+  position:absolute;
+  right:max(17px,env(safe-area-inset-right));
+  bottom:calc(13px + env(safe-area-inset-bottom));
+  display:grid;
+  place-items:center;
+  width:25px;
+  height:25px;
+  padding:0;
+  border:1px solid rgba(255,253,248,.44);
+  border-radius:50%;
+  background:transparent;
+  color:rgba(255,253,248,.72);
+  font-family:var(--premium-font,-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif);
+  font-size:15px;
+  font-weight:650;
+  line-height:1;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.help-button:active{
+  transform:scale(.92);
+  color:#fff;
+  border-color:rgba(255,255,255,.75);
+}
+
+.help-tour-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1700;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  overflow:hidden;
+  background:rgba(7,8,7,.50);
+  backdrop-filter:blur(8px) brightness(.46) saturate(.72);
+  -webkit-backdrop-filter:blur(8px) brightness(.46) saturate(.72);
+  transition:opacity .20s ease,visibility 0s linear .20s;
+  touch-action:manipulation;
+}
+.help-tour-overlay.show{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transition:opacity .20s ease;
+}
+.help-tour-close{
+  position:fixed;
+  z-index:5;
+  top:calc(10px + env(safe-area-inset-top));
+  right:max(10px,env(safe-area-inset-right));
+}
+.help-tour-message{
+  position:fixed;
+  z-index:3;
+  top:43%;
+  left:50%;
+  width:min(86vw,380px);
+  transform:translate(-50%,-50%);
+  text-align:center;
+  pointer-events:none;
+}
+.help-tour-title{
+  color:var(--premium-red,#e12b23);
+  font-family:var(--dice-ui-font,"Arial Rounded MT Bold","Arial Rounded MT",Arial,sans-serif);
+  font-size:clamp(20px,5.2vw,27px);
+  font-weight:800;
+  line-height:1.05;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+  text-shadow:0 2px 10px rgba(0,0,0,.46);
+}
+.help-tour-copy{
+  margin-top:10px;
+  color:rgba(255,253,248,.90);
+  font-family:var(--premium-font,-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif);
+  font-size:clamp(13px,3.45vw,16px);
+  font-weight:560;
+  line-height:1.28;
+}
+.help-tour-progress{
+  margin-top:16px;
+  color:rgba(255,253,248,.42);
+  font-size:12px;
+  letter-spacing:.45em;
+}
+.help-tour-progress .active{
+  color:#fff;
+  text-shadow:0 0 8px rgba(255,255,255,.44);
+}
+.help-tour-target{
+  position:fixed;
+  z-index:4;
+  pointer-events:none;
+}
+.help-tour-target > *{
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  transform:none!important;
+  pointer-events:none!important;
+}
+.help-tour-target .dice-select{
+  top:0!important;
+  display:flex!important;
+}
+.help-tour-arrow{
+  position:fixed;
+  z-index:4;
+  width:28px;
+  height:42px;
+  background:#fffdf8;
+  clip-path:polygon(36% 0,64% 0,64% 55%,100% 55%,50% 100%,0 55%,36% 55%);
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.42));
+  animation:helpTourArrowBounce .82s cubic-bezier(.22,.72,.3,1) infinite;
+  pointer-events:none;
+}
+@keyframes helpTourArrowBounce{
+  0%,100%{transform:translate3d(0,-4px,0)}
+  52%{transform:translate3d(0,7px,0)}
+}
+@media (prefers-reduced-motion:reduce){
+  .help-tour-arrow{animation:none!important}
+  .header-flare-canvas{display:none!important}
+}
+
 /* Tablet portrait gets a slightly wider but still balanced control zone. */
 @media (orientation:portrait) and (min-width:521px){
   :root{
@@ -2105,7 +2344,7 @@ body{
   transform-origin:center;
 }
 .splash-progress{width:min(72vw,460px);height:12px;margin:42px auto 0;border:1px solid rgba(246,243,235,.42);border-radius:999px;overflow:hidden;background:rgba(246,243,235,.08)}
-.splash-progress span{display:block;width:0;height:100%;border-radius:inherit;background:#2faf69;box-shadow:0 0 14px rgba(47,175,105,.42);transition:width .18s linear}
+.splash-progress span{display:block;width:0;height:100%;border-radius:inherit;background:#54844a;box-shadow:0 0 14px rgba(84,132,74,.42);transition:width .18s linear}
 .intro-gate.logo-flight .splash-progress{opacity:0;transition:opacity .18s ease}
 .intro-gate.logo-flight .splash-logo{opacity:0!important}
 .exact-header-logo-flight{
@@ -3365,6 +3604,195 @@ body{
 .utility-row .shake-toggle{
   border-radius:14px!important;
 }
+
+/* v2.52 — exact header composition and supplied button colours.
+   This block intentionally lives at EOF so older responsive rules cannot
+   separate the logo from its perfectly aligned flare map. */
+:root{
+  --tattoo-dice-blue:#66b5f7;
+  --tattoo-dice-red:#c5352a;
+  --tattoo-dice-green:#54844a;
+  --header-composite-width:min(calc(100vw - 24px),410px);
+}
+
+.app-header h1,
+.splash-logo{
+  width:var(--header-composite-width)!important;
+  max-width:410px!important;
+  height:auto!important;
+  margin-inline:auto!important;
+  font-size:0!important;
+  line-height:0!important;
+  overflow:visible!important;
+}
+
+.header-artwork{
+  position:relative!important;
+  isolation:isolate;
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:1600 / 980!important;
+  overflow:visible!important;
+}
+
+.header-artwork::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  inset:8% 2% 4%;
+  border-radius:44%;
+  background:
+    radial-gradient(ellipse at 50% 55%,
+      rgba(255,255,255,.28) 0%,
+      rgba(255,255,255,.13) 32%,
+      rgba(255,255,255,.055) 53%,
+      rgba(255,255,255,0) 76%);
+  filter:blur(18px);
+  transform:scale(1.13);
+  animation:headerAuraBreath 4.8s ease-in-out infinite;
+  pointer-events:none;
+}
+
+@keyframes headerAuraBreath{
+  0%,100%{opacity:.62;transform:scale(1.10)}
+  48%{opacity:.88;transform:scale(1.17)}
+}
+
+.app-header h1 .app-brand-logo,
+.splash-logo .app-brand-logo{
+  position:absolute!important;
+  z-index:1;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  transform:none!important;
+}
+
+.header-flare-canvas{
+  position:absolute!important;
+  z-index:2;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  pointer-events:none!important;
+}
+
+.splash-logo-wrap{
+  width:100%!important;
+  display:grid!important;
+  place-items:center!important;
+}
+
+.intro-gate.logo-flight .splash-logo{
+  opacity:1!important;
+}
+
+.stage > .tagline{
+  display:none!important;
+}
+
+.action-row .theme-button{
+  background-color:var(--tattoo-dice-blue)!important;
+}
+.action-row .roll-button{
+  background-color:var(--tattoo-dice-red)!important;
+}
+.action-row .main-button{
+  background-color:var(--tattoo-dice-green)!important;
+}
+
+.reset-button{
+  color:#fffdf8!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.095),rgba(255,255,255,.025)),
+    #22231f!important;
+  box-shadow:
+    0 4px 9px rgba(0,0,0,.24),
+    inset 0 1px 0 rgba(255,255,255,.14),
+    inset 0 -1px 0 rgba(0,0,0,.32)!important;
+}
+
+.footer .help-button{
+  top:auto!important;
+  bottom:calc(13px + env(safe-area-inset-bottom))!important;
+}
+
+@media (orientation:landscape) and (max-height:620px){
+  :root{
+    --header-composite-width:min(40vw,360px);
+  }
+  .header-artwork::before{
+    filter:blur(12px);
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .header-artwork::before{
+    animation:none!important;
+  }
+}
+
+/* v2.52.5 — one quiet close affordance for every menu.
+   The 44px touch target remains, but only the slim white × is visible. */
+.theme-modal-close,
+.pin-modal-close,
+.main-modal-close,
+.overlay-close{
+  appearance:none!important;
+  display:grid!important;
+  place-items:center!important;
+  width:44px!important;
+  height:44px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:rgba(255,255,255,.82)!important;
+  font-family:Arial,sans-serif!important;
+  font-size:28px!important;
+  font-weight:200!important;
+  line-height:1!important;
+  text-shadow:0 1px 7px rgba(0,0,0,.42)!important;
+  filter:none!important;
+}
+.theme-modal-close:hover,
+.pin-modal-close:hover,
+.main-modal-close:hover,
+.overlay-close:hover{
+  color:#fff!important;
+  filter:none!important;
+}
+.theme-modal-close:active,
+.pin-modal-close:active,
+.main-modal-close:active,
+.overlay-close:active{
+  transform:scale(.90)!important;
+  opacity:.68!important;
+}
+
+/* The fixed header size is now the permanent theme-header contract.
+   In portrait, center the actual dice composition in the clear band between
+   that header and the controls, while returning the complete controls group
+   to its former lower resting position. */
+@media (orientation:portrait) and (max-width:520px){
+  .dice-stage-3d{
+    transform:
+      translateY(clamp(52px,7.8dvh,64px))
+      scale(1.28)!important;
+    transform-origin:center center!important;
+  }
+  .controls{
+    transform:translateY(clamp(36px,5.25dvh,42px))!important;
+  }
+}
 .theme-modal,
 .main-modal,
 .pin-modal{
@@ -3374,11 +3802,16 @@ body{
   /* Uniform scaling only: the cubes retain their exact 3D proportions while
      the complete composition stays inside the primary-button width. */
   .dice-stage-3d{
-    transform:scale(.88)!important;
+    transform:
+      translateY(clamp(52px,7.8dvh,64px))
+      scale(1.28)!important;
     transform-origin:center center!important;
   }
   .dice-stage-3d canvas{
     transform:scale(1)!important;
     transform-origin:center center!important;
+  }
+  .controls{
+    transform:translateY(clamp(36px,5.25dvh,42px))!important;
   }
 }

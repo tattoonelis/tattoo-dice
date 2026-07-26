@@ -17,6 +17,8 @@ let currentRoll = [];
 // the scene. Latest requested count wins; Roll queues at most once.
 let pendingDiceCount = null;
 let pendingRollRequest = false;
+let pendingResetRequest = false;
+let openingResetInterruptRequested = false;
 let inputQueueFlushing = false;
 
 // Shake to Roll is an input layer on top of the existing result/landing
@@ -57,7 +59,12 @@ async function flushPendingDiceInput() {
   inputQueueFlushing = true;
 
   try {
-    if (Number.isInteger(pendingDiceCount) && pendingDiceCount !== wordCount) {
+    if (pendingResetRequest) {
+      pendingResetRequest = false;
+      pendingDiceCount = null;
+      pendingRollRequest = false;
+      await performOpeningReset();
+    } else if (Number.isInteger(pendingDiceCount) && pendingDiceCount !== wordCount) {
       const nextCount = pendingDiceCount;
       pendingDiceCount = null;
       await transitionDiceCount(nextCount);
@@ -73,7 +80,7 @@ async function flushPendingDiceInput() {
     inputQueueFlushing = false;
     syncDiceCountButtons();
 
-    if (!diceInteractionBusy() && (pendingDiceCount !== null || pendingRollRequest)) {
+    if (!diceInteractionBusy() && (pendingResetRequest || pendingDiceCount !== null || pendingRollRequest)) {
       queueMicrotask(flushPendingDiceInput);
     }
   }
@@ -115,6 +122,29 @@ function requestRoll() {
 
   pendingRollRequest = true;
   flushPendingDiceInput();
+}
+
+function requestOpeningReset() {
+  closeMainHint();
+  closeHelpTour();
+  setThemeModalState(false);
+  setMainModalState(false);
+  setPinModalState(false);
+
+  pendingResetRequest = true;
+  pendingDiceCount = null;
+  pendingRollRequest = false;
+
+  // Reset owns the next scene transition. If a Main/count drop is still in
+  // progress, do not finish dropping the remaining dice only to make them
+  // fall out again. The current die may complete its active frame sequence;
+  // playTopDrop then exits before starting another die and hands directly to
+  // the queued opening reset.
+  if (introActive && snapshotDropActive) {
+    openingResetInterruptRequested = true;
+  }
+
+  if (!diceInteractionBusy()) flushPendingDiceInput();
 }
 
 let activeTheme = localStorage.getItem("tattooDiceActiveTheme") || "classic";
@@ -163,11 +193,274 @@ const shakeControl = document.getElementById("shakeControl");
 const shakeToggle = document.getElementById("shakeToggle");
 const shakeToggleLabel = document.getElementById("shakeToggleLabel");
 const shakeStatus = document.getElementById("shakeStatus");
+const resetButton = document.getElementById("resetButton");
+const helpButton = document.getElementById("helpButton");
+const helpTourOverlay = document.getElementById("helpTourOverlay");
+const helpTourClose = document.getElementById("helpTourClose");
+const helpTourTitle = document.getElementById("helpTourTitle");
+const helpTourCopy = document.getElementById("helpTourCopy");
+const helpTourProgress = document.getElementById("helpTourProgress");
+const helpTourArrow = document.getElementById("helpTourArrow");
+const helpTourTarget = document.getElementById("helpTourTarget");
+const headerFlareCanvas = document.getElementById("headerFlareCanvas");
 
 const SECRET_CODE = "332211";
 const FANTASY_UNLOCK_CODE = "2311";
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
+
+const HELP_TOUR_STEPS = [
+  {
+    title: "CHOOSE YOUR STYLE",
+    copy: "Choose Classic or unlock another tattoo style.",
+    target: () => themeButton
+  },
+  {
+    title: "CHOOSE YOUR DICE",
+    copy: "Roll 1, 2 or 3 tattoo subjects.",
+    target: () => document.querySelector(".utility-row .dice-select")
+  },
+  {
+    title: "ROLL YOUR IDEA",
+    copy: "Tap Roll, or enable Shake and move your device.",
+    target: () => rollButton
+  },
+  {
+    title: "CHOOSE A MAIN",
+    copy: "Lock one subject and combine it with 1 or 2 additional dice.",
+    target: () => mainButton
+  },
+  {
+    title: "START FRESH",
+    copy: "Reset returns to Classic, Random and 3 dice.",
+    target: () => resetButton
+  }
+];
+let helpTourIndex = 0;
+
+function drawHeaderFlare(context, x, y, size, alpha) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(-Math.PI / 16);
+  // Keep every sparkle optically white, even when it crosses the coloured
+  // artwork underneath. Additive blending inherited that underlying colour.
+  context.globalCompositeOperation = "source-over";
+  context.globalAlpha = alpha;
+
+  const glow = context.createRadialGradient(0, 0, 0, 0, 0, size * 2.35);
+  glow.addColorStop(0, "rgba(255,255,255,1)");
+  glow.addColorStop(.12, "rgba(255,255,255,.98)");
+  glow.addColorStop(.38, "rgba(255,255,255,.38)");
+  glow.addColorStop(1, "rgba(255,255,255,0)");
+  context.fillStyle = glow;
+  context.beginPath();
+  context.arc(0, 0, size * 2.35, 0, Math.PI * 2);
+  context.fill();
+
+  context.strokeStyle = "rgba(255,255,255,.96)";
+  context.lineCap = "round";
+  context.lineWidth = Math.max(1, size * .10);
+  context.beginPath();
+  context.moveTo(-size * 1.75, 0);
+  context.lineTo(size * 1.75, 0);
+  context.moveTo(0, -size * 2.65);
+  context.lineTo(0, size * 2.65);
+  context.stroke();
+
+  context.globalAlpha *= .72;
+  context.lineWidth = Math.max(.8, size * .07);
+  context.beginPath();
+  context.moveTo(-size * 1.05, -size * 1.05);
+  context.lineTo(size * 1.05, size * 1.05);
+  context.moveTo(size * 1.05, -size * 1.05);
+  context.lineTo(-size * 1.05, size * 1.05);
+  context.stroke();
+  context.restore();
+}
+
+function initialiseHeaderFlares() {
+  const flareCanvases = document.querySelectorAll(".header-flare-canvas");
+  if (!flareCanvases.length || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const mapImage = new Image();
+  mapImage.decoding = "async";
+  mapImage.src = "assets/tattoo-dice-flare-map.png";
+  mapImage.addEventListener("load", () => {
+    const scanCanvas = document.createElement("canvas");
+    const scanWidth = 420;
+    const scanHeight = Math.max(1, Math.round(scanWidth * mapImage.naturalHeight / mapImage.naturalWidth));
+    scanCanvas.width = scanWidth;
+    scanCanvas.height = scanHeight;
+    const scanContext = scanCanvas.getContext("2d", { willReadFrequently: true });
+    scanContext.drawImage(mapImage, 0, 0, scanWidth, scanHeight);
+    const pixels = scanContext.getImageData(0, 0, scanWidth, scanHeight).data;
+    const pathPoints = [];
+    let blueX = 0;
+    let blueY = 0;
+    let blueCount = 0;
+
+    for (let y = 0; y < scanHeight; y += 2) {
+      for (let x = 0; x < scanWidth; x += 2) {
+        const offset = (y * scanWidth + x) * 4;
+        const red = pixels[offset];
+        const green = pixels[offset + 1];
+        const blue = pixels[offset + 2];
+        const alpha = pixels[offset + 3];
+        if (alpha < 70) continue;
+
+        if (red > 165 && red > green * 1.65 && red > blue * 1.55) {
+          pathPoints.push({ x: x / scanWidth, y: y / scanHeight });
+        } else if (blue > 135 && blue > red * 1.4 && blue > green * 1.08) {
+          blueX += x / scanWidth;
+          blueY += y / scanHeight;
+          blueCount += 1;
+        }
+      }
+    }
+
+    if (!pathPoints.length || !blueCount) return;
+    const bluePoint = { x: blueX / blueCount, y: blueY / blueCount };
+    flareCanvases.forEach((canvas, canvasIndex) => {
+      const context = canvas.getContext("2d");
+      const liveFlares = [];
+      let nextFlareAt = performance.now() + 650 + canvasIndex * 180;
+
+      const resizeCanvas = () => {
+        const rect = canvas.getBoundingClientRect();
+        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+        const targetWidth = Math.max(1, Math.round(rect.width * pixelRatio));
+        const targetHeight = Math.max(1, Math.round(rect.height * pixelRatio));
+        if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+          canvas.width = targetWidth;
+          canvas.height = targetHeight;
+        }
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        return rect;
+      };
+
+      const animateFlares = now => {
+        const rect = resizeCanvas();
+        context.clearRect(0, 0, rect.width, rect.height);
+        // The guide map supplies positions only. Both the permanent marker and
+        // every travelling flare use the same doubled visual unit.
+        const unit = Math.max(7.6, rect.width * .022);
+        const livingScale = 1 + Math.sin(now * .0031) * .13 + Math.sin(now * .00137) * .055;
+        drawHeaderFlare(
+          context,
+          bluePoint.x * rect.width,
+          bluePoint.y * rect.height,
+          unit * 1.16 * livingScale,
+          .80 + Math.sin(now * .0024) * .12
+        );
+
+        if (now >= nextFlareAt && liveFlares.length < 5) {
+          const point = pathPoints[Math.floor(Math.random() * pathPoints.length)];
+          liveFlares.push({
+            ...point,
+            bornAt: now,
+            lifetime: 850 + Math.random() * 650,
+            scale: .62 + Math.random() * .36
+          });
+          nextFlareAt = now + 190 + Math.random() * 420;
+        }
+
+        for (let index = liveFlares.length - 1; index >= 0; index--) {
+          const flare = liveFlares[index];
+          const progress = (now - flare.bornAt) / flare.lifetime;
+          if (progress >= 1) {
+            liveFlares.splice(index, 1);
+            continue;
+          }
+          const envelope = Math.sin(Math.PI * progress);
+          drawHeaderFlare(
+            context,
+            flare.x * rect.width,
+            flare.y * rect.height,
+            unit * flare.scale * (.72 + envelope * .42),
+            envelope * .82
+          );
+        }
+
+        canvas._flareAnimationFrame = requestAnimationFrame(animateFlares);
+      };
+
+      cancelAnimationFrame(canvas._flareAnimationFrame);
+      canvas._flareAnimationFrame = requestAnimationFrame(animateFlares);
+    });
+  }, { once: true });
+}
+
+function positionHelpTourStep() {
+  if (!helpTourOverlay?.classList.contains("show") || !helpTourTarget || !helpTourArrow) return;
+  const step = HELP_TOUR_STEPS[helpTourIndex];
+  const source = step?.target();
+  if (!source) return;
+
+  const rect = source.getBoundingClientRect();
+  const clone = source.cloneNode(true);
+  clone.removeAttribute?.("id");
+  clone.querySelectorAll?.("[id]").forEach(element => element.removeAttribute("id"));
+  helpTourTarget.className = "help-tour-target";
+  if (source.matches(".theme-button,.roll-button,.main-button")) {
+    helpTourTarget.classList.add("action-row");
+  } else if (source.matches(".dice-select,.reset-button,.shake-toggle")) {
+    helpTourTarget.classList.add("utility-row");
+  }
+  helpTourTarget.replaceChildren(clone);
+  Object.assign(helpTourTarget.style, {
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`
+  });
+  Object.assign(helpTourArrow.style, {
+    left: `${rect.left + rect.width / 2 - 14}px`,
+    top: `${Math.max(74, rect.top - 54)}px`
+  });
+}
+
+function renderHelpTourStep() {
+  const step = HELP_TOUR_STEPS[helpTourIndex];
+  if (!step || !helpTourTitle || !helpTourCopy || !helpTourProgress) return;
+  helpTourTitle.textContent = step.title;
+  helpTourCopy.textContent = step.copy;
+  helpTourProgress.innerHTML = HELP_TOUR_STEPS
+    .map((_, index) => `<span class="${index === helpTourIndex ? "active" : ""}">●</span>`)
+    .join("");
+  requestAnimationFrame(positionHelpTourStep);
+}
+
+function openHelpTour() {
+  if (!helpTourOverlay || diceInteractionBusy()) {
+    if (diceInteractionBusy()) showDiceCountNotice("Finish the current animation first.");
+    return;
+  }
+  closeMainHint();
+  setThemeModalState(false);
+  setMainModalState(false);
+  setPinModalState(false);
+  helpTourIndex = 0;
+  helpTourOverlay.classList.add("show");
+  helpTourOverlay.setAttribute("aria-hidden", "false");
+  renderHelpTourStep();
+}
+
+function closeHelpTour() {
+  if (!helpTourOverlay) return;
+  helpTourOverlay.classList.remove("show");
+  helpTourOverlay.setAttribute("aria-hidden", "true");
+  helpTourTarget?.replaceChildren();
+}
+
+function advanceHelpTour() {
+  if (!helpTourOverlay?.classList.contains("show")) return;
+  if (helpTourIndex >= HELP_TOUR_STEPS.length - 1) {
+    closeHelpTour();
+    return;
+  }
+  helpTourIndex += 1;
+  renderHelpTourStep();
+}
 
 let scene, camera, renderer, floor, floorGlow;
 let introActive = false;
@@ -670,6 +963,14 @@ function updateActionButtonLabels() {
   updateDiceCountAvailability();
 }
 
+function updateMainMenuSelection() {
+  mainChoiceList?.querySelectorAll(".main-choice").forEach(choice => {
+    const active = choice.dataset.main === selectedMain;
+    choice.classList.toggle("active", active);
+    choice.setAttribute("aria-pressed", String(active));
+  });
+}
+
 function updateThemeMenu() {
   if (!classicThemeChoice || !fantasyThemeChoice) return;
 
@@ -747,8 +1048,8 @@ function setMainModalState(open) {
 }
 
 const MAIN_VFX_CONFIG = {
-  colorHex: 0x35ff83,
-  glowLightHex: 0x38d879,
+  colorHex: 0x54844a,
+  glowLightHex: 0x54844a,
   glowIntensity: 1.15,
   orbBaseRadius: 0.8096
 };
@@ -1701,6 +2002,7 @@ async function init() {
   disablePageZoom();
   requestPortraitLock();
   setupThree();
+  initialiseHeaderFlares();
 
   // Requested startup state: Random every time.
   selectedMain = "Random";
@@ -1759,6 +2061,25 @@ async function init() {
     requestRoll();
   });
   initialiseShakeToRoll();
+
+  resetButton?.addEventListener("click", () => {
+    requestOpeningReset();
+  });
+
+  helpButton?.addEventListener("click", event => {
+    event.preventDefault();
+    openHelpTour();
+  });
+  helpTourClose?.addEventListener("pointerup", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    closeHelpTour();
+  }, { passive: false });
+  helpTourOverlay?.addEventListener("pointerup", event => {
+    if (event.target.closest("#helpTourClose")) return;
+    event.preventDefault();
+    advanceHelpTour();
+  }, { passive: false });
 
   if (themeButton && themeModal) {
     themeButton.addEventListener("pointerup", event => {
@@ -1826,6 +2147,7 @@ async function init() {
         setThemeModalState(false);
         setMainModalState(false);
         setPinModalState(false);
+        closeHelpTour();
       }
     });
   }
@@ -1845,6 +2167,8 @@ async function init() {
   }
 
   window.addEventListener("resize", resizeRenderer);
+  window.addEventListener("resize", positionHelpTourStep, { passive: true });
+  window.addEventListener("orientationchange", positionHelpTourStep, { passive: true });
 }
 
 function wait(ms) {
@@ -1868,59 +2192,22 @@ async function animateSplashLogoToHeader() {
   const to = headerLogo.getBoundingClientRect();
   if (!from.width || !from.height || !to.width || !to.height) return;
 
-  const headerStyle = getComputedStyle(headerLogo);
-  const flyer = document.createElement("div");
-  flyer.className = "exact-header-logo-flight";
-  flyer.innerHTML = headerLogo.innerHTML;
-  flyer.setAttribute("aria-hidden", "true");
-  Object.assign(flyer.style, {
-    position: "fixed",
-    left: `${to.left}px`,
-    top: `${to.top}px`,
-    width: `${to.width}px`,
-    height: `${to.height}px`,
-    margin: "0",
-    padding: "0",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxSizing: "border-box",
-    font: headerStyle.font,
-    fontFamily: headerStyle.fontFamily,
-    fontSize: headerStyle.fontSize,
-    fontWeight: headerStyle.fontWeight,
-    lineHeight: headerStyle.lineHeight,
-    letterSpacing: headerStyle.letterSpacing,
-    color: headerStyle.color,
-    textShadow: headerStyle.textShadow,
-    WebkitTextStroke: headerStyle.webkitTextStroke,
-    whiteSpace: "nowrap",
-    zIndex: "700",
-    pointerEvents: "none",
-    transformOrigin: "center center",
-    willChange: "transform"
-  });
-  document.body.appendChild(flyer);
-
   const sourceCenterX = from.left + from.width / 2;
   const sourceCenterY = from.top + from.height / 2;
   const targetCenterX = to.left + to.width / 2;
   const targetCenterY = to.top + to.height / 2;
-  const dx = sourceCenterX - targetCenterX;
-  const dy = sourceCenterY - targetCenterY;
-  const sx = from.width / to.width;
-  const sy = from.height / to.height;
-  const startTransform = `translate3d(${dx}px, ${dy}px, 0) scale(${sx}, ${sy})`;
+  const dx = targetCenterX - sourceCenterX;
+  const dy = targetCenterY - sourceCenterY;
 
-  flyer.style.transform = startTransform;
   headerLogo.style.opacity = "0";
-  splashLogo.style.opacity = "0";
   introGateEl.classList.add("logo-flight");
   await nextPaint(2);
 
-  const logoFlight = flyer.animate([
-    { transform: startTransform },
-    { transform: "translate3d(0,0,0) scale(1,1)" }
+  // The real splash artwork moves as one rigid layer. Splash and header use
+  // the exact same dimensions, so no scale, warp or raster handoff is needed.
+  const logoFlight = splashLogo.animate([
+    { transform: "translate3d(0,0,0)" },
+    { transform: `translate3d(${dx}px,${dy}px,0)` }
   ], {
     duration: 780,
     easing: "cubic-bezier(.22,.78,.22,1)",
@@ -1929,14 +2216,9 @@ async function animateSplashLogoToHeader() {
 
   await logoFlight.finished.catch(() => {});
 
-  // Atomic handoff: the black splash disappears in the same paint in which
-  // the real header becomes visible. The clone remains above both for two
-  // complete frames, so there can be no empty or black bridge frame.
-  flyer.style.transform = "translate3d(0,0,0) scale(1,1)";
   headerLogo.style.opacity = "1";
   introGateEl.classList.add("finished");
   await nextPaint(2);
-  flyer.remove();
 }
 
 function nextPaint(frameCount = 1) {
@@ -2357,6 +2639,66 @@ async function playCountSelectionExit() {
   resumeMainPlasmaAnimation();
 }
 
+async function performOpeningReset() {
+  if (rollInProgress || introActive || snapshotDropActive) {
+    pendingResetRequest = true;
+    return;
+  }
+
+  introIsStartup = false;
+  openingResetInterruptRequested = false;
+  introActive = true;
+  snapshotDropActive = true;
+
+  try {
+    const needsClassicDeck = activeTheme !== "classic";
+    if (needsClassicDeck) {
+      activeTheme = "classic";
+      fantasyUnlocked = false;
+      localStorage.setItem("tattooDiceActiveTheme", activeTheme);
+      await loadDeck();
+      await warmDiceTextures({ awaitCompletion: true });
+      validateDeckScores();
+      buildMainMenu();
+    }
+
+    await playCountSelectionExit();
+
+    selectedMain = "Random";
+    localStorage.setItem("tattooDiceSelectedMain", selectedMain);
+    localStorage.setItem(mainStorageKey(activeTheme), selectedMain);
+    wordCount = 3;
+    currentRoll = makeRoll(3);
+    renderDice(currentRoll, false);
+    setMainTintProgress(0);
+    updateMainSelectionGlow();
+    updateThemeMenu();
+    updateMainMenuSelection();
+    updateActionButtonLabels();
+
+    diceMeshes.forEach(die => { die.visible = false; });
+    diceShadowMeshes.forEach((_, index) => setDiceShadowState(index, 0, false));
+    renderSceneWithDiceLayers();
+
+    snapshotDropActive = false;
+    introActive = false;
+    await playTopDrop(false);
+  } catch (error) {
+    console.error("Recovered from opening reset error:", error);
+  } finally {
+    snapshotDropActive = false;
+    introActive = false;
+    document.body.classList.remove("dice-drop-overlay");
+    enforceActiveDiceSlots();
+    updateThemeMenu();
+    updateMainMenuSelection();
+    updateActionButtonLabels();
+    syncDiceCountButtons();
+    renderSceneWithDiceLayers();
+    queueMicrotask(flushPendingDiceInput);
+  }
+}
+
 async function transitionDiceCount(requestedCount) {
   if (![1, 2, 3].includes(requestedCount)) return;
 
@@ -2469,8 +2811,10 @@ async function playTopDrop(isStartup = false) {
     renderSceneWithDiceLayers();
 
     for (const index of sequence) {
+      if (openingResetInterruptRequested) break;
       if (index >= wordCount || !diceMeshes[index]?.userData.layout) continue;
       await animateSingleDieDrop(index, 784);
+      if (openingResetInterruptRequested) break;
       await wait(70);
     }
   } catch (error) {
