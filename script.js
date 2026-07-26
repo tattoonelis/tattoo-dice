@@ -20,6 +20,7 @@ let pendingRollRequest = false;
 let pendingResetRequest = false;
 let openingResetInterruptRequested = false;
 let inputQueueFlushing = false;
+let activeTopDropAnimation = null;
 
 // Shake to Roll is an input layer on top of the existing result/landing
 // lifecycle. It never generates repeated button Rolls while the device moves.
@@ -142,6 +143,7 @@ function requestOpeningReset() {
   // the queued opening reset.
   if (introActive && snapshotDropActive) {
     openingResetInterruptRequested = true;
+    activeTopDropAnimation?.cancel();
   }
 
   if (!diceInteractionBusy()) flushPendingDiceInput();
@@ -241,7 +243,8 @@ let helpTourIndex = 0;
 function drawHeaderFlare(context, x, y, size, alpha) {
   context.save();
   context.translate(x, y);
-  context.rotate(-Math.PI / 16);
+  // Mirror the approved sparkle lean without changing its sharp silhouette.
+  context.rotate(Math.PI / 16);
   // Keep every sparkle optically white, even when it crosses the coloured
   // artwork underneath. Additive blending inherited that underlying colour.
   context.globalCompositeOperation = "source-over";
@@ -372,7 +375,7 @@ function initialiseHeaderFlares() {
           liveFlares.push({
             ...point,
             bornAt: now,
-            lifetime: 850 + Math.random() * 650,
+            lifetime: 1200 + Math.random() * 850,
             scale: .62 + Math.random() * .36
           });
           nextFlareAt = now + 190 + Math.random() * 420;
@@ -385,7 +388,13 @@ function initialiseHeaderFlares() {
             liveFlares.splice(index, 1);
             continue;
           }
-          const envelope = Math.sin(Math.PI * progress);
+          // Short soft arrival, followed by a deliberately long smooth fade.
+          // This removes the visible cut at the end of the old lifetime.
+          const fadeInProgress = Math.min(1, progress / .18);
+          const fadeOutProgress = Math.min(1, Math.max(0, (1 - progress) / .64));
+          const smoothIn = fadeInProgress * fadeInProgress * (3 - 2 * fadeInProgress);
+          const smoothOut = fadeOutProgress * fadeOutProgress * (3 - 2 * fadeOutProgress);
+          const envelope = smoothIn * smoothOut;
           drawHeaderFlare(
             context,
             flare.x * rect.width,
@@ -415,18 +424,19 @@ function positionHelpTourStep() {
   clone.removeAttribute?.("id");
   clone.querySelectorAll?.("[id]").forEach(element => element.removeAttribute("id"));
   helpTourTarget.className = "help-tour-target";
-  if (source.matches(".theme-button,.roll-button,.main-button")) {
-    helpTourTarget.classList.add("action-row");
-  } else if (source.matches(".dice-select,.reset-button,.shake-toggle")) {
-    helpTourTarget.classList.add("utility-row");
-  }
+  // Restore the same selector context as the real control without allowing
+  // that row layout to resize the fixed-position portal itself.
+  if (source.closest(".action-row")) helpTourTarget.classList.add("action-row");
+  if (source.closest(".utility-row")) helpTourTarget.classList.add("utility-row");
   helpTourTarget.replaceChildren(clone);
-  Object.assign(helpTourTarget.style, {
-    left: `${rect.left}px`,
-    top: `${rect.top}px`,
-    width: `${rect.width}px`,
-    height: `${rect.height}px`
-  });
+  helpTourTarget.style.setProperty("left", `${rect.left}px`, "important");
+  helpTourTarget.style.setProperty("top", `${rect.top}px`, "important");
+  helpTourTarget.style.setProperty("width", `${rect.width}px`, "important");
+  helpTourTarget.style.setProperty("height", `${rect.height}px`, "important");
+  clone.style.setProperty("width", "100%", "important");
+  clone.style.setProperty("height", "100%", "important");
+  clone.style.setProperty("margin", "0", "important");
+  clone.style.setProperty("transform", "none", "important");
   Object.assign(helpTourArrow.style, {
     left: `${rect.left + rect.width / 2 - 14}px`,
     top: `${Math.max(74, rect.top - 54)}px`
@@ -1062,8 +1072,8 @@ function setMainModalState(open) {
 }
 
 const MAIN_VFX_CONFIG = {
-  colorHex: 0x54844a,
-  glowLightHex: 0x54844a,
+  colorHex: 0x35ff83,
+  glowLightHex: 0x38d879,
   glowIntensity: 1.15,
   orbBaseRadius: 0.8096
 };
@@ -1732,7 +1742,7 @@ function applyLiveDiceMotion(state, index, motion) {
   die.scale.copy(base.scale);
 }
 
-function runSynchronizedDiceMotions(state, tracks) {
+function runSynchronizedDiceMotions(state, tracks, { shouldAbort = null } = {}) {
   if (!state || !tracks?.length) return Promise.resolve();
 
   tracks.forEach(track => {
@@ -1744,6 +1754,10 @@ function runSynchronizedDiceMotions(state, tracks) {
     const startedAt = performance.now();
 
     const tick = now => {
+      if (shouldAbort?.()) {
+        resolve();
+        return;
+      }
       const elapsed = now - startedAt;
       let complete = true;
 
@@ -2425,6 +2439,7 @@ async function animateSingleDieDrop(index, duration = 784) {
   };
   const baseDropFrames = dropFrames.map(frame => ({ ...frame, opacity: 1 }));
   const drop = image.animate(baseDropFrames, dropOptions);
+  activeTopDropAnimation = drop;
   const dropFinished = liveAura
     ? runSynchronizedDiceMotions(liveAura, [{
         animation: drop,
@@ -2433,10 +2448,23 @@ async function animateSingleDieDrop(index, duration = 784) {
         duration,
         delay: 0,
         bezier: [0.36, 0.02, 0.24, 1]
-      }])
+      }], { shouldAbort: () => openingResetInterruptRequested })
     : drop.finished.catch(() => {});
 
   await dropFinished;
+  if (activeTopDropAnimation === drop) activeTopDropAnimation = null;
+
+  // Reset is allowed to take ownership immediately. Do not reveal the
+  // interrupted die at its idle pose before the opening reset begins.
+  if (openingResetInterruptRequested) {
+    image.remove();
+    if (liveAura) endLiveMainAuraTransition({ renderAfterRestore: false });
+    die.visible = false;
+    setDiceShadowState(index, 0, false);
+    renderSceneWithDiceLayers();
+    if (isSelectedMain) resumeMainPlasmaAnimation();
+    return;
+  }
 
   // Atomic handoff: remove the DOM snapshot before revealing the real mesh,
   // then render both changes in the same JavaScript turn. The browser therefore

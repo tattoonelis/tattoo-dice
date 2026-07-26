@@ -115,7 +115,7 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - Leaves the ordinary Roll, Main, VFX, controls, compositions and shadow lifecycle/timing unchanged.
 
 
-## Sidequest v2.52.13 — Adaptive Mobile Viewport
+## Sidequest v2.52.15 — Final Responsive Polish
 
 - Fits the complete header, dice, controls and footer inside one invisible proportional mobile shell.
 - Uses both the available device width and stable viewport height so Safari and installed iOS/Android PWAs keep the same composition.
@@ -131,3 +131,20 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - Keeps TOGGLE SHAKE and the dynamic Main/Random label on a single line at
   narrow mobile widths.
 - Uses one identical font size, weight and line height for TOGGLE SHAKE and RESET.
+- Scales every control label, button height, gap, selector die and pip from the
+  actual controls width, preventing clipped text in mobile Safari and PWAs.
+- Prevents automatic iOS text inflation from changing the approved proportions.
+- Raises the complete live header group and its splash-flight destination.
+- Mirrors header sparkles and gives travelling flares a longer smooth fade.
+- Restores the earlier neon Main VFX colours (`#35FF83` / `#38D879`) while
+  preserving the current brand green on buttons and loading UI.
+- Enlarges and strengthens the blue header aura.
+- Copies guided-tour targets at their exact computed position, size and finish
+  instead of rebuilding them inside a second layout grid.
+- Keeps a safe top and side margin around the complete header on short mobile
+  browser windows while moving its artwork, aura and flares as one group.
+- Paints the document and loading gate black inline before external CSS or
+  JavaScript can load, eliminating the white pre-loading frame.
+- Lets RESET interrupt an active Main/count drop immediately and hand control
+  straight to one clean opening reset, without revealing an idle Main between
+  the interrupted animation and the reset.

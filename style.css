@@ -792,10 +792,6 @@ h1{
   transform:none!important;
   pointer-events:none!important;
 }
-.help-tour-target .dice-select{
-  top:0!important;
-  display:flex!important;
-}
 .help-tour-arrow{
   position:fixed;
   z-index:4;
@@ -3649,22 +3645,22 @@ body{
   content:"";
   position:absolute;
   z-index:0;
-  inset:8% 2% 4%;
+  inset:2% -5% -3%;
   border-radius:44%;
   background:
     radial-gradient(ellipse at 50% 55%,
-      rgba(102,181,247,.28) 0%,
-      rgba(102,181,247,.13) 32%,
-      rgba(102,181,247,.055) 53%,
+      rgba(102,181,247,.40) 0%,
+      rgba(102,181,247,.20) 32%,
+      rgba(102,181,247,.085) 53%,
       rgba(102,181,247,0) 76%);
-  filter:blur(18px);
+  filter:blur(22px);
   animation:headerAuraBreath 4.8s ease-in-out infinite;
   pointer-events:none;
 }
 
 @keyframes headerAuraBreath{
-  0%,100%{opacity:.62;transform:scale(.83)}
-  48%{opacity:.88;transform:scale(.88)}
+  0%,100%{opacity:.74;transform:scale(1.05)}
+  48%{opacity:.96;transform:scale(1.12)}
 }
 
 .app-header h1 .app-brand-logo,
@@ -3938,4 +3934,130 @@ body{
     min-height:100vh!important;
     max-height:100vh!important;
   }
+}
+
+/* v2.52.14 — the complete control system scales from its real container.
+   This avoids iOS text inflation and keeps labels, button bodies, selector
+   dice and pips in the same proportions on short or narrow phones. */
+html{
+  -webkit-text-size-adjust:100%!important;
+  text-size-adjust:100%!important;
+}
+.app{
+  container-type:inline-size;
+  container-name:tattoo-dice-app;
+}
+.controls{
+  container-type:inline-size;
+  container-name:tattoo-dice-controls;
+  --primary-control-gap:clamp(6px,3cqw,10px)!important;
+}
+.action-row{
+  gap:var(--primary-control-gap)!important;
+}
+.action-row .theme-button,
+.action-row .roll-button,
+.action-row .main-button{
+  height:clamp(44px,19.45cqw,64px)!important;
+  min-height:0!important;
+  padding-inline:clamp(4px,2cqw,8px)!important;
+  border-radius:clamp(10px,4.25cqw,14px)!important;
+  font-size:clamp(12px,5.47cqw,18px)!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.action-row .theme-button.compact-label,
+.action-row .main-button.compact-label{
+  font-size:clamp(10px,4.55cqw,15px)!important;
+}
+.action-row .theme-button span,
+.action-row .roll-button span,
+.action-row .main-button span{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.utility-row{
+  --utility-height:clamp(22px,10cqw,34px)!important;
+  height:var(--utility-height)!important;
+  column-gap:var(--primary-control-gap)!important;
+  margin-top:var(--primary-control-gap)!important;
+}
+.utility-row .dice-select{
+  column-gap:clamp(2px,1.1cqw,4px)!important;
+}
+.utility-row .mini-die{
+  inline-size:calc(var(--utility-height) - 1px)!important;
+  block-size:calc(var(--utility-height) - 1px)!important;
+  width:calc(var(--utility-height) - 1px)!important;
+  height:calc(var(--utility-height) - 1px)!important;
+  border-radius:clamp(6px,2.4cqw,8px)!important;
+}
+.utility-row .mini-die .pip{
+  width:clamp(3.5px,1.5cqw,5px)!important;
+  height:clamp(3.5px,1.5cqw,5px)!important;
+  min-width:clamp(3.5px,1.5cqw,5px)!important;
+  min-height:clamp(3.5px,1.5cqw,5px)!important;
+}
+.utility-row .shake-toggle,
+.utility-row .reset-button{
+  padding-inline:clamp(3px,1.5cqw,6px)!important;
+  border-radius:clamp(7px,3.1cqw,11px)!important;
+  font-size:clamp(7px,2.6cqw,10px)!important;
+  font-weight:700!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+.utility-row .shake-toggle{
+  gap:clamp(2px,1cqw,4px)!important;
+}
+.utility-row .shake-toggle-dot{
+  width:clamp(5px,2.1cqw,8px)!important;
+  height:clamp(5px,2.1cqw,8px)!important;
+}
+.controls-notice-slot{
+  min-height:clamp(24px,10.5cqw,36px)!important;
+  font-size:clamp(9px,3.4cqw,12px)!important;
+  line-height:1.15!important;
+}
+.footer .counter{
+  font-size:clamp(11px,3.3cqw,14px)!important;
+}
+.footer .credit{
+  font-size:clamp(9px,2.8cqw,12px)!important;
+}
+.footer .help-button{
+  width:clamp(30px,9.3cqw,40px)!important;
+  height:clamp(30px,9.3cqw,40px)!important;
+  font-size:clamp(20px,5.6cqw,24px)!important;
+}
+
+/* Final header polish: reclaim the unused top air. The artwork, aura, flare
+   canvas and splash-flight destination all move together with this parent. */
+.app-header{
+  transform:translateY(calc(-1 * clamp(2px,.75svh,8px)))!important;
+}
+@media (max-height:640px){
+  .app-header{
+    transform:translateY(5px)!important;
+  }
+}
+
+/* Tour clones are already exact computed-style copies. Keep the portal itself
+   neutral so no action/utility grid can resize or relocate the highlighted UI. */
+.help-tour-target{
+  display:block!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  container-type:normal!important;
+}
+.help-tour-target > *{
+  max-width:none!important;
+  max-height:none!important;
+  box-sizing:border-box!important;
 }
