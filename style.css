@@ -4080,8 +4080,60 @@ html{
   }
 }
 
-/* Tour clones are already exact computed-style copies. Keep the portal itself
-   neutral so no action/utility grid can resize or relocate the highlighted UI. */
+/* v2.52.22 — tablet/desktop frame.
+   Keep the approved 430px UI composition centred, but let its background fill
+   the complete viewport and give only the WebGL render surface extra horizontal
+   breathing room. Its height stays tied to the same phone-tested fit formula,
+   so dice size and all controls remain unchanged while the support dice can no
+   longer be clipped by the narrow app column. */
+@media (min-width:521px){
+  html,
+  body{
+    background:
+      radial-gradient(circle at center 20%,rgba(255,255,255,.02),transparent 42%),
+      radial-gradient(circle at center 80%,rgba(255,255,255,.012),transparent 52%),
+      #050505!important;
+  }
+  .app{
+    background:transparent!important;
+    overflow:visible!important;
+  }
+  .stage{
+    grid-template-columns:minmax(0,1fr)!important;
+    overflow:visible!important;
+  }
+  .app-header{
+    width:100%!important;
+    min-width:0!important;
+    transform:translateY(clamp(20px,2.4svh,26px))!important;
+  }
+  .app-header h1{
+    width:min(100%,410px)!important;
+    margin-inline:auto!important;
+  }
+  .dice-stage-3d{
+    width:min(560px,calc(100vw - 32px))!important;
+    max-width:none!important;
+    height:clamp(
+      228px,
+      calc((64svh - 146px - env(safe-area-inset-bottom)) * .95238),
+      390px
+    )!important;
+    aspect-ratio:auto!important;
+    justify-self:center!important;
+    left:50%!important;
+    transform:translateX(-50%)!important;
+    overflow:hidden!important;
+  }
+  .controls{
+    justify-self:center!important;
+    margin-inline:auto!important;
+  }
+}
+
+/* The tour now lifts the actual live control into this neutral portal. Its
+   already-computed metrics are frozen before the move, so the highlighted
+   button is always identical to the responsive control the user was viewing. */
 .help-tour-target{
   display:block!important;
   min-width:0!important;

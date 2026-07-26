@@ -246,6 +246,7 @@ const HELP_TOUR_STEPS = [
 ];
 let helpTourIndex = 0;
 let helpTourHeaderState = null;
+let helpTourControlState = null;
 
 function drawHeaderFlare(context, x, y, size, alpha) {
   context.save();
@@ -446,15 +447,67 @@ const HELP_TOUR_STYLE_PROPERTIES = [
   "color", "background", "border", "borderRadius", "boxShadow", "opacity"
 ];
 
-function copyHelpTourRenderedMetrics(source, clone) {
-  if (!(source instanceof Element) || !(clone instanceof Element)) return;
+function freezeHelpTourRenderedMetrics(source, records) {
+  if (!(source instanceof Element)) return;
+  records.push({
+    element: source,
+    originalStyle: source.getAttribute("style")
+  });
   const computed = getComputedStyle(source);
   HELP_TOUR_STYLE_PROPERTIES.forEach(property => {
-    clone.style.setProperty(property, computed[property], "important");
+    const cssProperty = property.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
+    source.style.setProperty(cssProperty, computed[property], "important");
   });
-  Array.from(source.children).forEach((child, index) => {
-    copyHelpTourRenderedMetrics(child, clone.children[index]);
+  Array.from(source.children).forEach(child => {
+    freezeHelpTourRenderedMetrics(child, records);
   });
+}
+
+function restoreHelpTourControl() {
+  const state = helpTourControlState;
+  if (!state) return;
+  const { source, parent, nextSibling, placeholder, styleRecords } = state;
+  if (nextSibling?.parentNode === parent) parent.insertBefore(source, nextSibling);
+  else parent.append(source);
+  placeholder?.remove();
+  styleRecords.forEach(({ element, originalStyle }) => {
+    if (originalStyle === null) element.removeAttribute("style");
+    else element.setAttribute("style", originalStyle);
+  });
+  helpTourControlState = null;
+  helpTourTarget?.replaceChildren();
+}
+
+function liftControlIntoHelpTour(source, rect) {
+  const parent = source?.parentNode;
+  if (!source || !parent || !helpTourTarget) return false;
+
+  const placeholder = source.cloneNode(true);
+  placeholder.removeAttribute?.("id");
+  placeholder.querySelectorAll?.("[id]").forEach(element => element.removeAttribute("id"));
+  placeholder.setAttribute?.("aria-hidden", "true");
+  placeholder.style.setProperty("visibility", "hidden", "important");
+  placeholder.style.setProperty("pointer-events", "none", "important");
+
+  const nextSibling = source.nextSibling;
+  parent.insertBefore(placeholder, source);
+  const styleRecords = [];
+  freezeHelpTourRenderedMetrics(source, styleRecords);
+
+  helpTourControlState = {
+    source,
+    parent,
+    nextSibling,
+    placeholder,
+    styleRecords
+  };
+  helpTourTarget.replaceChildren(source);
+  source.style.setProperty("width", "100%", "important");
+  source.style.setProperty("height", "100%", "important");
+  source.style.setProperty("margin", "0", "important");
+  source.style.setProperty("transform", "none", "important");
+  source.style.setProperty("pointer-events", "none", "important");
+  return true;
 }
 
 function positionHelpTourHeader() {
@@ -516,34 +569,19 @@ function restoreHeaderAfterHelpTour() {
 
 function positionHelpTourStep() {
   if (!helpTourOverlay?.classList.contains("show") || !helpTourTarget || !helpTourArrow) return;
+  restoreHelpTourControl();
   positionHelpTourHeader();
   const step = HELP_TOUR_STEPS[helpTourIndex];
   const source = step?.target();
   if (!source) return;
 
   const rect = source.getBoundingClientRect();
-  const clone = source.cloneNode(true);
-  clone.removeAttribute?.("id");
-  clone.querySelectorAll?.("[id]").forEach(element => element.removeAttribute("id"));
-  copyHelpTourRenderedMetrics(source, clone);
-  clone.querySelectorAll?.("span").forEach(span => {
-    span.style.setProperty("overflow", "visible", "important");
-    span.style.setProperty("text-overflow", "clip", "important");
-  });
   helpTourTarget.className = "help-tour-target";
-  // Restore the same selector context as the real control without allowing
-  // that row layout to resize the fixed-position portal itself.
-  if (source.closest(".action-row")) helpTourTarget.classList.add("action-row");
-  if (source.closest(".utility-row")) helpTourTarget.classList.add("utility-row");
-  helpTourTarget.replaceChildren(clone);
   helpTourTarget.style.setProperty("left", `${rect.left}px`, "important");
   helpTourTarget.style.setProperty("top", `${rect.top}px`, "important");
   helpTourTarget.style.setProperty("width", `${rect.width}px`, "important");
   helpTourTarget.style.setProperty("height", `${rect.height}px`, "important");
-  clone.style.setProperty("width", "100%", "important");
-  clone.style.setProperty("height", "100%", "important");
-  clone.style.setProperty("margin", "0", "important");
-  clone.style.setProperty("transform", "none", "important");
+  liftControlIntoHelpTour(source, rect);
   Object.assign(helpTourArrow.style, {
     left: `${rect.left + rect.width / 2 - 14}px`,
     top: `${Math.max(74, rect.top - 54)}px`
@@ -582,6 +620,7 @@ function closeHelpTour() {
   if (!helpTourOverlay) return;
   helpTourOverlay.classList.remove("show");
   document.body.classList.remove("help-tour-open");
+  restoreHelpTourControl();
   restoreHeaderAfterHelpTour();
   helpTourOverlay.setAttribute("aria-hidden", "true");
   helpTourTarget?.replaceChildren();

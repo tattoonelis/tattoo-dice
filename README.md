@@ -52,6 +52,14 @@ See `ACCEPTANCE-CHECKLIST.md` for the exact implemented behavior.
 
 Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall blink fix
 
+## v2.52.24 — Responsive tablet/desktop canvas + live tour controls
+
+- The app background now fills the complete tablet/desktop viewport while the approved UI column remains centred.
+- The WebGL render surface alone receives extra horizontal room on larger screens, preventing the two support dice from being clipped.
+- Render height still uses the established phone-tested height formula, so dice size, controls, footer and animation timing do not change.
+- The tablet/desktop header offset is reduced to restore safe visual space above the dice without changing the phone layout.
+- The help tour now shows the actual live responsive controls instead of reconstructed copies, keeping button fonts and proportions identical at every screen size.
+
 ## Sidequest v2.51 — Header, Reset & Guided Help
 
 - The supplied illustrated logo is used in the app header; the loading screen keeps its existing logo.
