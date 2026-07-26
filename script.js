@@ -228,6 +228,11 @@ const HELP_TOUR_STEPS = [
     target: () => rollButton
   },
   {
+    title: "SHAKE TO ROLL",
+    copy: "Turn it on, then shake your phone or tablet to roll.",
+    target: () => shakeToggle
+  },
+  {
     title: "CHOOSE A MAIN",
     copy: "Lock one subject and combine it with 1 or 2 additional dice.",
     target: () => mainButton
@@ -239,6 +244,7 @@ const HELP_TOUR_STEPS = [
   }
 ];
 let helpTourIndex = 0;
+let helpTourHeaderState = null;
 
 function drawHeaderFlare(context, x, y, size, alpha) {
   context.save();
@@ -250,46 +256,45 @@ function drawHeaderFlare(context, x, y, size, alpha) {
   context.globalCompositeOperation = "source-over";
   context.globalAlpha = alpha;
 
-  const glow = context.createRadialGradient(0, 0, 0, 0, 0, size * 1.95);
-  glow.addColorStop(0, "rgba(255,255,255,.94)");
-  glow.addColorStop(.14, "rgba(255,255,255,.62)");
-  glow.addColorStop(.42, "rgba(255,255,255,.18)");
+  const glow = context.createRadialGradient(0, 0, 0, 0, 0, size * 1.58);
+  glow.addColorStop(0, "rgba(255,255,255,.52)");
+  glow.addColorStop(.08, "rgba(255,255,255,.30)");
+  glow.addColorStop(.34, "rgba(255,255,255,.10)");
   glow.addColorStop(1, "rgba(255,255,255,0)");
   context.fillStyle = glow;
   context.beginPath();
-  context.arc(0, 0, size * 1.95, 0, Math.PI * 2);
+  context.arc(0, 0, size * 1.72, 0, Math.PI * 2);
   context.fill();
 
-  // A filled, tapered star keeps the rays crisp instead of ending in the
-  // rounded caps of the previous stroked flare. Vertical points stay longest.
+  // A very narrow waist prevents the centre becoming a heavy white diamond.
+  // The long needle points carry the sparkle, with almost no visual bulk.
   context.fillStyle = "rgba(255,255,255,.98)";
-  context.shadowColor = "rgba(255,255,255,.48)";
-  context.shadowBlur = size * .48;
+  context.shadowColor = "rgba(255,255,255,.34)";
+  context.shadowBlur = size * .22;
   context.beginPath();
-  context.moveTo(0, -size * 2.78);
-  context.lineTo(size * .18, -size * .38);
-  context.lineTo(size * 1.82, 0);
-  context.lineTo(size * .18, size * .38);
-  context.lineTo(0, size * 2.78);
-  context.lineTo(-size * .18, size * .38);
-  context.lineTo(-size * 1.82, 0);
-  context.lineTo(-size * .18, -size * .38);
+  context.moveTo(0, -size * 3.24);
+  context.lineTo(size * .035, -size * .095);
+  context.lineTo(size * 2.02, 0);
+  context.lineTo(size * .035, size * .095);
+  context.lineTo(0, size * 3.24);
+  context.lineTo(-size * .035, size * .095);
+  context.lineTo(-size * 2.02, 0);
+  context.lineTo(-size * .035, -size * .095);
   context.closePath();
   context.fill();
 
-  // Four shorter diagonal needles preserve the original sparkle silhouette
-  // while using pointed diamonds rather than soft lines.
-  context.globalAlpha *= .68;
-  context.shadowBlur = size * .30;
+  // Fine diagonal needles complete the star without thickening its centre.
+  context.globalAlpha *= .48;
+  context.shadowBlur = size * .12;
   context.beginPath();
-  context.moveTo(0, -size * .10);
-  context.lineTo(size * .94, -size * .94);
-  context.lineTo(size * .10, 0);
-  context.lineTo(size * .94, size * .94);
-  context.lineTo(0, size * .10);
-  context.lineTo(-size * .94, size * .94);
-  context.lineTo(-size * .10, 0);
-  context.lineTo(-size * .94, -size * .94);
+  context.moveTo(0, -size * .018);
+  context.lineTo(size * 1.02, -size * 1.02);
+  context.lineTo(size * .018, 0);
+  context.lineTo(size * 1.02, size * 1.02);
+  context.lineTo(0, size * .018);
+  context.lineTo(-size * 1.02, size * 1.02);
+  context.lineTo(-size * .018, 0);
+  context.lineTo(-size * 1.02, -size * 1.02);
   context.closePath();
   context.fill();
   context.restore();
@@ -360,7 +365,7 @@ function initialiseHeaderFlares() {
         context.clearRect(0, 0, rect.width, rect.height);
         // The guide map supplies positions only. Both the permanent marker and
         // every travelling flare use the same doubled visual unit.
-        const unit = Math.max(7.6, rect.width * .022);
+        const unit = Math.max(15.2, rect.width * .044);
         const livingScale = 1 + Math.sin(now * .0031) * .13 + Math.sin(now * .00137) * .055;
         drawHeaderFlare(
           context,
@@ -370,15 +375,15 @@ function initialiseHeaderFlares() {
           .80 + Math.sin(now * .0024) * .12
         );
 
-        if (now >= nextFlareAt && liveFlares.length < 5) {
+        if (now >= nextFlareAt && liveFlares.length < 3) {
           const point = pathPoints[Math.floor(Math.random() * pathPoints.length)];
           liveFlares.push({
             ...point,
             bornAt: now,
-            lifetime: 1200 + Math.random() * 850,
+            lifetime: 2200 + Math.random() * 1200,
             scale: .62 + Math.random() * .36
           });
-          nextFlareAt = now + 190 + Math.random() * 420;
+          nextFlareAt = now + 700 + Math.random() * 500;
         }
 
         for (let index = liveFlares.length - 1; index >= 0; index--) {
@@ -390,8 +395,8 @@ function initialiseHeaderFlares() {
           }
           // Short soft arrival, followed by a deliberately long smooth fade.
           // This removes the visible cut at the end of the old lifetime.
-          const fadeInProgress = Math.min(1, progress / .18);
-          const fadeOutProgress = Math.min(1, Math.max(0, (1 - progress) / .64));
+          const fadeInProgress = Math.min(1, progress / .30);
+          const fadeOutProgress = Math.min(1, Math.max(0, (1 - progress) / .70));
           const smoothIn = fadeInProgress * fadeInProgress * (3 - 2 * fadeInProgress);
           const smoothOut = fadeOutProgress * fadeOutProgress * (3 - 2 * fadeOutProgress);
           const envelope = smoothIn * smoothOut;
@@ -413,8 +418,87 @@ function initialiseHeaderFlares() {
   }, { once: true });
 }
 
+const HELP_TOUR_STYLE_PROPERTIES = [
+  "alignItems", "justifyContent", "display", "position",
+  "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight",
+  "padding", "margin", "gap", "gridTemplateColumns", "gridTemplateRows",
+  "top", "right", "bottom", "left", "transform", "transformOrigin",
+  "fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing",
+  "textAlign", "textTransform", "whiteSpace", "textOverflow", "overflow",
+  "color", "background", "border", "borderRadius", "boxShadow", "opacity"
+];
+
+function copyHelpTourRenderedMetrics(source, clone) {
+  if (!(source instanceof Element) || !(clone instanceof Element)) return;
+  const computed = getComputedStyle(source);
+  HELP_TOUR_STYLE_PROPERTIES.forEach(property => {
+    clone.style.setProperty(property, computed[property], "important");
+  });
+  Array.from(source.children).forEach((child, index) => {
+    copyHelpTourRenderedMetrics(child, clone.children[index]);
+  });
+}
+
+function positionHelpTourHeader() {
+  const state = helpTourHeaderState;
+  if (!state?.placeholder?.isConnected || !state.header) return;
+  const style = state.header.style;
+  style.setProperty("position", "fixed", "important");
+  style.setProperty("left", `${state.left}px`, "important");
+  style.setProperty("top", `${state.top}px`, "important");
+  style.setProperty("width", `${state.width}px`, "important");
+  style.setProperty("height", `${state.height}px`, "important");
+  style.setProperty("margin", "0", "important");
+  style.setProperty("transform", "none", "important");
+  style.setProperty("z-index", "1", "important");
+  style.setProperty("pointer-events", "none", "important");
+}
+
+function liftHeaderIntoHelpTour() {
+  if (helpTourHeaderState || !helpTourOverlay) return;
+  const header = document.querySelector(".app-header");
+  const parent = header?.parentNode;
+  if (!header || !parent) return;
+
+  const rect = header.getBoundingClientRect();
+  const placeholder = document.createElement("div");
+  placeholder.className = "help-tour-header-placeholder";
+  Object.assign(placeholder.style, {
+    width: `${rect.width}px`,
+    height: `${rect.height}px`
+  });
+  parent.insertBefore(placeholder, header);
+
+  helpTourHeaderState = {
+    header,
+    parent,
+    nextSibling: header.nextSibling,
+    placeholder,
+    originalStyle: header.getAttribute("style"),
+    left: rect.left,
+    top: rect.top,
+    width: rect.width,
+    height: rect.height
+  };
+  helpTourOverlay.prepend(header);
+  positionHelpTourHeader();
+}
+
+function restoreHeaderAfterHelpTour() {
+  const state = helpTourHeaderState;
+  if (!state) return;
+  const { header, parent, nextSibling, placeholder, originalStyle } = state;
+  if (nextSibling?.parentNode === parent) parent.insertBefore(header, nextSibling);
+  else parent.append(header);
+  placeholder?.remove();
+  if (originalStyle === null) header.removeAttribute("style");
+  else header.setAttribute("style", originalStyle);
+  helpTourHeaderState = null;
+}
+
 function positionHelpTourStep() {
   if (!helpTourOverlay?.classList.contains("show") || !helpTourTarget || !helpTourArrow) return;
+  positionHelpTourHeader();
   const step = HELP_TOUR_STEPS[helpTourIndex];
   const source = step?.target();
   if (!source) return;
@@ -423,6 +507,11 @@ function positionHelpTourStep() {
   const clone = source.cloneNode(true);
   clone.removeAttribute?.("id");
   clone.querySelectorAll?.("[id]").forEach(element => element.removeAttribute("id"));
+  copyHelpTourRenderedMetrics(source, clone);
+  clone.querySelectorAll?.("span").forEach(span => {
+    span.style.setProperty("overflow", "visible", "important");
+    span.style.setProperty("text-overflow", "clip", "important");
+  });
   helpTourTarget.className = "help-tour-target";
   // Restore the same selector context as the real control without allowing
   // that row layout to resize the fixed-position portal itself.
@@ -464,6 +553,8 @@ function openHelpTour() {
   setMainModalState(false);
   setPinModalState(false);
   helpTourIndex = 0;
+  document.body.classList.add("help-tour-open");
+  liftHeaderIntoHelpTour();
   helpTourOverlay.classList.add("show");
   helpTourOverlay.setAttribute("aria-hidden", "false");
   renderHelpTourStep();
@@ -472,6 +563,8 @@ function openHelpTour() {
 function closeHelpTour() {
   if (!helpTourOverlay) return;
   helpTourOverlay.classList.remove("show");
+  document.body.classList.remove("help-tour-open");
+  restoreHeaderAfterHelpTour();
   helpTourOverlay.setAttribute("aria-hidden", "true");
   helpTourTarget?.replaceChildren();
 }

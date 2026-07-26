@@ -736,6 +736,10 @@ h1{
   pointer-events:auto;
   transition:opacity .20s ease;
 }
+.help-tour-header-placeholder{
+  display:block;
+  pointer-events:none;
+}
 .help-tour-close{
   position:fixed;
   z-index:5;
@@ -3658,6 +3662,28 @@ body{
   pointer-events:none;
 }
 
+/* The loading screen sits on an uninterrupted black field, so its aura needs
+   a little more visible spread than the in-app copy to read as the same glow. */
+.splash-logo .header-artwork::before{
+  inset:-5% -8% -7%!important;
+  background:
+    radial-gradient(ellipse at 50% 55%,
+      rgba(102,181,247,.58) 0%,
+      rgba(102,181,247,.30) 34%,
+      rgba(102,181,247,.13) 56%,
+      rgba(102,181,247,0) 79%)!important;
+  filter:blur(24px)!important;
+}
+
+/* Match the app canvas during loading so the handoff changes only the content,
+   never the character or brightness of the background. */
+.intro-gate{
+  background:
+    radial-gradient(circle at center 20%,rgba(255,255,255,.02),transparent 42%),
+    radial-gradient(circle at center 80%,rgba(255,255,255,.012),transparent 52%),
+    #050505!important;
+}
+
 @keyframes headerAuraBreath{
   0%,100%{opacity:.74;transform:scale(1.05)}
   48%{opacity:.96;transform:scale(1.12)}
@@ -4037,11 +4063,11 @@ html{
 /* Final header polish: reclaim the unused top air. The artwork, aura, flare
    canvas and splash-flight destination all move together with this parent. */
 .app-header{
-  transform:translateY(calc(-1 * clamp(2px,.75svh,8px)))!important;
+  transform:translateY(clamp(36px,4.6svh,42px))!important;
 }
 @media (max-height:640px){
   .app-header{
-    transform:translateY(5px)!important;
+    transform:translateY(28px)!important;
   }
 }
 

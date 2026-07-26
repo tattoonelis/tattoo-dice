@@ -148,3 +148,11 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
 - Lets RESET interrupt an active Main/count drop immediately and hand control
   straight to one clean opening reset, without revealing an idle Main between
   the interrupted animation and the reset.
+- Moves the complete header group downward into the approved safe zone.
+- Limits travelling header sparkles to three and gives each one a slower,
+  longer fade-in and fade-out.
+- Adds TOGGLE SHAKE to the guided tour and keeps the complete live header
+  unblurred above the tour overlay.
+- Keeps the enlarged sparkles elegant with a narrow centre and long needle points.
+- Carries the blue header aura into the loading screen and matches its background
+  to the app for a seamless handoff.
