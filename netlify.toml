@@ -5,3 +5,13 @@
   from = "/admin"
   to = "/admin/"
   status = 301
+
+[[redirects]]
+  from = "/generator"
+  to = "/generator/"
+  status = 301
+
+[[headers]]
+  for = "/generator/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"

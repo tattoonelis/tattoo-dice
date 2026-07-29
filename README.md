@@ -1,5 +1,13 @@
 # Tattoo Dice v3.1.3 – Auto Roll + Main Reset
 
+## Combined preview release V0.2.53
+
+- The public root remains the approved v2.52.24 app.
+- The current development build is isolated under `/generator/`.
+- `/generator/` is protected by the same six-digit PIN as Admin and Admin Test.
+- The public root contains no Favorites or Generator controls from the development build.
+- This remains a preview release until the product owner explicitly approves V1.0.0.
+
 - Selecting a Main immediately closes the Main menu.
 - A fresh roll starts immediately after the Main selection.
 - Switching Theme resets Main to Random.
@@ -44,15 +52,6 @@ A separate ranking interface is included at `/admin/`. See `admin/README.md` and
 ## Acceptance-complete animation pass
 See `ACCEPTANCE-CHECKLIST.md` for the exact implemented behavior.
 
-## v2.54.32 — Generator polish, first-paint guard and unique rolls
-
-- Replaced the Generator artwork with the supplied clown illustration and kept the complete drawing visible.
-- The Generator title and its aura now fade out when the speech bubble enters.
-- The splash logo image is attached only after it has fully decoded, preventing a white image placeholder before the loading screen.
-- Short desktop layouts uniformly scale the approved phone composition without changing the phone layout.
-- Roll selection now compares normalized subject names across every slot and when expanding from 1 to 2 or 3 dice.
-- Added an accessible result label so complete rolls can be verified without changing the visible UI.
-
 
 ## UX polish
 - When a fixed Main is active, the 1-Dice selector remains visible but dimmed.
@@ -60,109 +59,6 @@ See `ACCEPTANCE-CHECKLIST.md` for the exact implemented behavior.
 
 
 Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall blink fix
-
-## v2.54.14 — Favorites deck and interaction polish
-
-- Previous-roll dice now settle with a slower, readable horizontal swipe.
-- Exact side-face words are preserved when restoring the previous roll.
-- Starting a Roll or changing the 1/2/3 composition immediately resets the favorite heart.
-- Favorites use an opaque, permanent playing-card deck with A/2/3 heart layouts.
-- Favorite cards can be swiped forward and backward with matching deliberate timing.
-- The completed Generator reveal now shows a red “I’LL DRAW IT MYSELF” action.
-- MENU and MAIN open and close in sync with a background fade into blur.
-
-## v2.54.15 — Fixed Favorites deck
-
-- Favorites from every theme now live in one chronological deck: newest above oldest.
-- Cards can be drawn off the deck to either the left or right.
-- RESTACK returns every drawn card without changing the saved order.
-- The deck underneath is permanent; the live top card never changes size.
-- Playing-card hearts are larger, separated like dice pips and use matte lighting.
-- Words sit inside the broad center of each heart and may wrap instead of clipping.
-- REMOVE FAVORITE now uses the exact home-screen heart and throws the card upward.
-- Fantasy code entry keeps its existing PIN behavior in the same visual proportions as the menus, without an UNLOCK title.
-
-## v2.54.16 — Prepared Favorites cards
-
-- The complete next favorite card, including hearts and words, is already
-  rendered beneath the current card before a swipe begins.
-- Hearts scale by subject count: one is largest, two are slightly smaller and
-  three retain the most spacing.
-- Heart groups have more vertical spread and use more of the available card.
-- Labels sit below the heart notch in the broad red area.
-- Longer subjects remain on one line and progressively reduce in size instead
-  of clipping or entering the notch.
-- The matte gloss pass moves more slowly across the card.
-
-## v2.54.17 — Matched heart labels
-
-- Uses the approved Eagle card as the optical text-position reference.
-- Labels on two- and three-subject cards now sit equally low in the broad red
-  area of their hearts, clear of the top notch.
-- Heart size, spacing, deck preparation and swipe behavior remain unchanged.
-
-## v2.54.18 — Transparent Generate plasma
-
-- Keeps the existing shared Main Dice plasma shader.
-- Replaces the opaque ivory Generate surface with a smoked translucent resin.
-- Renders the live plasma beneath a thin glass/resin finish and the button text.
-- Increases plasma contrast while preserving the existing green aura.
-
-## v2.54.19 — Light-resin Generate
-
-- Restores the approved light ivory Main Dice material language.
-- Keeps the shared live plasma and layered resin construction from v2.54.18.
-- Uses black dice-style lettering and a translucent light finish instead of a
-  dark smoked surface.
-
-## v2.54.20 — Responsive Guide
-
-- Removes the duplicate illustrated heart/card and dice demonstrations.
-- Highlights only the real current interface controls and dice stage.
-- Positions each message and arrow in the available space around its target.
-- Uses a horizontal swipe arrow for the Previous Roll step.
-
-## v2.54.21 — Stable Guide + About
-
-- Reorders the Guide from top to bottom and left to right.
-- Keeps the title, explanation and eight page dots in fixed positions.
-- Removes Guide arrows and uses the real Previous Roll dice movement instead.
-- Adds the complete About copy.
-- Temporarily removes Privacy from the Menu.
-
-## v2.54.25 — Result Heart + Unified Theme Selector
-
-- The Favorite heart is now a non-layout overlay at the lower-left of the complete dice result, outside the dice geometry.
-- The theme selector is one menu row with the exact same dimensions and surface as the other menu choices.
-- The arrows remain fixed while only the centered theme name moves.
-- Browsing never activates or unlocks a theme.
-- Closing the menu applies the previewed theme; a locked preview opens its PIN screen only after closing.
-- The centered theme name now uses the exact same font size, weight and family as every other menu row.
-
-## v2.53.1 — Full-page Favorites and AI Image
-
-- Favorite heart is now an overlay inside the dice viewport.
-- Menu and Main popups use their matching blue/green button materials.
-- Theme arrows preview only; the centre field confirms the theme.
-- Favorites and AI Image Generator are dedicated app pages with the original
-  footer and credit position.
-- Favorites use larger red hearts, opaque stacked cards and page-level controls.
-- AI generation pauses at 89%, reveals blurred artwork from 80% and clears it
-  at 100% before dropping the message bubble.
-- Existing dice engine, Roll/Shake, Main VFX, shadows and composites are
-  unchanged.
-
-## v2.53.0 — Menu, Favorites, Previous Roll & AI Image
-
-- The existing blue Theme button is now the Menu entry; Theme remains inline inside that popup.
-- Complete roll states can be saved locally as Favorites with a fixed heart control.
-- Favorites open as a prebuilt heart-card stack with Pointer Events navigation.
-- One previous completed Roll or Shake result can be restored by swiping/dragging right across the dice stage.
-- Guide now lives inside Menu and includes Favorites and Previous Roll demonstrations.
-- AI Image is a local easter egg that uses actual Favorite combinations and never calls an AI or external service.
-- About and Privacy screen shells are present without temporary content.
-- Existing dice, VFX, shadow, Roll, Shake, count, Main and responsive systems remain the v2.52.24 implementation.
-- See `V2.53.0-IMPLEMENTATION-AND-TEST-REPORT.md` for state ownership, cleanup and test coverage.
 
 ## v2.52.24 — Responsive tablet/desktop canvas + live tour controls
 
@@ -286,27 +182,3 @@ Current VFX iteration: v3.6.4-step-5.10.29 — Outer-shell plasma + pre-fall bli
   the glow no longer loses intensity at the handoff.
 - Lets a selected Main gently wobble around its local front/back axis during
   Shake to Roll, then eases it back to its exact canonical idle pose.
-
-## v2.53.2 — Previous Roll + stable AI page
-
-- Restores a one-level Previous Roll gesture: after a Roll, drag/swipe the dice
-  to the right to bring the previous result back.
-- Preserves the captured dice-stage aspect ratio during that drag so the dice
-  cannot stretch or warp while moving.
-- Applies the same aspect-ratio lock to the existing Drop/Fall captures.
-- Moves the favorite heart down by approximately its own height while keeping
-  it as a non-layout overlay inside the dice stage.
-- Shows the short `SWIPE RIGHT: LAST ROLL` hint for ten seconds after the
-  first settled Roll (`DRAG RIGHT` on pointer devices).
-- Moves Menu and Main close controls outside the top-right of their panels.
-- Keeps THEME above its theme selector while grouping both inside one component.
-- Enlarges the AI generator window to match the visual weight of Favorites.
-- Matches its width to the complete three-button control row and gives the
-  generator a lighter material than the app background.
-- Places the favorite selector inside the generator and replaces it in-place
-  with “I’LL DRAW IT MYSELF” when generation finishes.
-- Adds the fixed bottom row: BACK TO DICES, GENERATE and SAVE IMAGE.
-- Locks Back and Save while generation is running, pauses at 89%, and reports
-  IMAGE FINISHED at 100%.
-- Rebuilds GENERATE as an ivory resin control with white-hot green plasma veins
-  and an emerald aura, matching the selected animated Main Dice language.
