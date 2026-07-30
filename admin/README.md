@@ -130,3 +130,19 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - Admin Ranking subtitle is forced red.
 - F*CK NO, MEH? and H*LL YES remain on one row.
 - Verified MEH save, stats and ranking support.
+
+## V0.2.53 Admin ranking refresh
+- Admin access and ranking use the supplied Tattoo Dice Admin header.
+- UI colors, rounded font, dice materials and Roll motion match the generator build.
+- The ranking workflow now exposes only 2-dice and 3-dice testing.
+- Targets are tracked per theme and per count: 500 two-dice tests and 1000 three-dice tests.
+- Existing Supabase records, ranking math and `tattoo-dice-admin-rankings.csv` remain compatible.
+- Standout combinations use the Tattoo Dice heart interaction and are exported separately as `tattoo-dice-admin-highlights.csv`.
+- Public root, `/generator/` and `/admin/test/` are intentionally untouched.
+
+### Clean testing workspace
+- Ranking always tests Random combinations; fixed Main selection is intentionally hidden.
+- The primary screen contains the dice, standout heart, optional note, three verdicts and one compact Menu / 1–2–3 / Roll row.
+- One die remains visible but disabled.
+- Theme selection, statistics, rankings and exports live in the Admin menu.
+- Progress and V0.2.53 use the same footer positions as the Tattoo Dice counter and credits.

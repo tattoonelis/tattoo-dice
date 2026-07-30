@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Dice Admin">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./admin.css">
+  <link rel="stylesheet" href="./admin-ranking.css?v=16">
   <script type="importmap">
     {
       "imports": {
@@ -33,9 +33,8 @@
 
   <div class="admin-pin-gate" id="adminPinGate" aria-hidden="false">
     <div class="admin-pin-backdrop"></div>
-    <section class="admin-pin-card" role="dialog" aria-modal="true" aria-labelledby="adminPinTitle">
-      <p class="eyebrow">Tattoo Dice</p>
-      <h1 id="adminPinTitle">Admin Access</h1>
+    <section class="admin-pin-card" role="dialog" aria-modal="true" aria-label="Tattoo Dice Admin access">
+      <img class="admin-access-logo" src="./assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
       <p class="admin-pin-copy">Enter the six-digit PIN.</p>
 
       <div class="admin-pin-display" id="adminPinDisplay" aria-label="PIN entry">
@@ -66,34 +65,43 @@
   <div id="milestoneOverlay" class="milestone-overlay" aria-hidden="true" hidden><div class="milestone-card"><span id="milestonePercent" class="milestone-percent">5%</span><p id="milestoneText">Nice. 5% done. We’re officially rolling.</p><small>Tap anywhere to continue</small></div></div><div class="desktop-stage">
   <main class="admin-shell portrait-shell">
     <header class="portrait-header centered-header">
-      <button id="statsToggle" class="icon-button" type="button">STATS</button>
-
-      <div class="portrait-brand"><h1>Tattoo Dice</h1><p class="admin-subtitle">Admin Ranking</p></div>
-
-      <a class="icon-button icon-link" href="../">BACK</a>
+      <div class="portrait-brand">
+        <img class="admin-ranking-logo" src="./assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
+      </div>
     </header>
 
     <section class="portrait-card vote-card">
       <div class="compact-controls centered-controls">
-        <label>
-          <span>Theme</span>
-          <select id="themeSelect">
+        <div class="theme-stepper" aria-label="Theme">
+          <button id="themePrevious" class="theme-arrow" type="button" aria-label="Previous theme">‹</button>
+          <div class="theme-value-wrap">
+            <span id="themeValue" class="theme-value">CLASSIC</span>
+          </div>
+          <button id="themeNext" class="theme-arrow" type="button" aria-label="Next theme">›</button>
+          <select id="themeSelect" class="native-control" tabindex="-1" aria-hidden="true">
             <option value="classic">Classic</option>
             <option value="fantasy">Fantasy</option>
           </select>
-        </label>
+        </div>
 
-        <label>
-          <span>Dice</span>
-          <select id="diceCount">
-            <option value="1">1</option>
+        <div class="admin-dice-count" role="group" aria-label="Number of dice">
+          <button class="admin-count-die admin-count-die-disabled" type="button" aria-label="One die is not available" disabled>
+            <span class="admin-mini-die admin-mini-die-one" aria-hidden="true"><i></i></span>
+          </button>
+          <button class="admin-count-die" type="button" data-dice-count="2" aria-label="Test two dice">
+            <span class="admin-mini-die admin-mini-die-two" aria-hidden="true"><i></i><i></i></span>
+          </button>
+          <button class="admin-count-die active" type="button" data-dice-count="3" aria-label="Test three dice">
+            <span class="admin-mini-die admin-mini-die-three" aria-hidden="true"><i></i><i></i><i></i></span>
+          </button>
+          <select id="diceCount" class="native-control" tabindex="-1" aria-hidden="true">
             <option value="2">2</option>
             <option value="3" selected>3</option>
           </select>
-        </label>
+        </div>
 
-        <label>
-          <span>Main</span>
+        <label class="main-control">
+          <span>MAIN</span>
           <select id="mainSelect">
             <option value="Random">Random</option>
           </select>
@@ -107,6 +115,11 @@
 
       <section class="dice-stage" aria-live="polite">
         <div id="adminDiceScene" class="admin-dice-scene" aria-label="Tattoo Dice result"></div>
+        <button id="highlightToggle" class="admin-highlight-toggle" type="button" aria-pressed="false" aria-label="Mark this combination as special">
+          <svg class="admin-heart-icon" viewBox="0 0 32 29" aria-hidden="true">
+            <path d="M16 27.2 3.1 15.1C-3.9 8.5 5.8-3.1 13.7 3.3L16 5.2l2.3-1.9c7.9-6.4 17.6 5.2 10.6 11.8L16 27.2Z"/>
+          </svg>
+        </button>
       </section>
 
       <section class="portrait-judge centered-judge">
@@ -124,17 +137,25 @@
         <div id="statusMessage" class="status-message" role="status"></div>
       </section>
 
+      <div id="adminControlDeck" class="admin-control-deck">
+        <button id="statsToggle" class="admin-utility-button admin-menu-button" type="button">MENU</button>
+        <div id="diceCountSlot" class="dice-count-slot"></div>
+        <button id="rollButton" class="admin-utility-button admin-roll-button" type="button">ROLL</button>
+      </div>
+
       <footer class="portrait-progress">
-        <div class="progress-heading">
-          <span id="progressTheme">Classic progress</span>
-          <small><span id="progressCount">0</span> / 3000</small>
-        </div>
+        <span id="progressTheme" hidden>CLASSIC · 3 DICE</span>
         <div class="progress-track">
           <div id="progressFill" class="progress-fill"></div>
+          <span class="progress-count-inside"><span id="progressCount">0</span> / <span id="progressTarget">1000</span></span>
           <strong id="progressPercent">0.0%</strong>
         </div>
       </footer>
     </section>
+
+    <footer id="adminFooterSlot" class="admin-footer-slot">
+      <div class="admin-version">V0.2.53</div>
+    </footer>
   </main>
 </div>
 
@@ -142,12 +163,11 @@
   <div class="stats-backdrop" data-close-stats></div>
   <section class="stats-sheet">
     <header class="stats-header">
-      <div>
-        <p class="eyebrow">Tattoo Dice</p>
-        <h2>Training Data</h2>
-      </div>
-      <button class="icon-button" data-close-stats type="button">CLOSE</button>
+      <h2>ADMIN MENU</h2>
+      <button class="stats-close" data-close-stats type="button" aria-label="Close menu">×</button>
     </header>
+
+    <div id="menuControlsSlot" class="menu-controls-slot"></div>
 
     <div class="stat-grid">
       <div><strong id="totalRatings">0</strong><span>ratings</span></div>
@@ -162,6 +182,7 @@
       <div>
         <button id="refreshButton" class="small-button" type="button">Refresh</button>
         <button id="exportButton" class="small-button" type="button">Export CSV</button>
+        <button id="exportHighlightsButton" class="small-button" type="button">Export Highlights</button>
       </div>
     </div>
 
@@ -192,9 +213,11 @@
     <div id="recentList" class="recent-list">
       <p class="empty-cell">No notes yet.</p>
     </div>
+
+    <a class="menu-back-link" href="../">BACK TO DICES</a>
   </section>
 </aside>
 
-  <script type="module" src="./admin.js"></script>
+  <script type="module" src="./admin.js?v=16"></script>
 </body>
 </html>

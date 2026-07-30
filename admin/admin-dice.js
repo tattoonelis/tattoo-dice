@@ -11,15 +11,14 @@ let diceMeshes = [];
 let running = false;
 
 const layouts = {
-  1: [[0.00, -0.24, 0.34, -0.82, 0.10, 0.00, 2.42]],
   2: [
-    [-0.92, -0.30, 0.38, -0.82, 0.20, -0.06, 1.92],
-    [ 0.92, -0.08,-0.52, -0.78,-0.28,  0.10, 1.72]
+    [-1.18, -0.30, 0.38, -0.82, 0.20, -0.06, 1.92],
+    [ 1.18, -0.08,-0.52, -0.78,-0.28,  0.10, 1.72]
   ],
   3: [
-    [ 0.00, -0.34, 0.56, -0.82, 0.10, 0.00, 2.06],
-    [-2.06, -0.04,-0.66, -0.78, 0.36,-0.13, 1.66],
-    [ 2.06, -0.04,-0.66, -0.78,-0.36, 0.13, 1.66]
+    [ 0.00, -0.34, 0.78, -0.68, 0.00, 0.00, 2.06],
+    [-1.84, -0.04,-0.52, -0.66,-0.04,-0.01, 1.66],
+    [ 1.84, -0.04,-0.52, -0.66, 0.04, 0.01, 1.66]
   ]
 };
 
@@ -41,22 +40,26 @@ export function initAdminDice(element){
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1,2.5));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.02;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   host.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffffff,1.35));
+  scene.add(new THREE.AmbientLight(0xffffff,1.22));
 
-  const key = new THREE.DirectionalLight(0xfff4dd,2.15);
-  key.position.set(-2.8,8.8,7.2);
+  const key = new THREE.DirectionalLight(0xfff8ec,2.22);
+  key.position.set(0,9.4,4.8);
   key.castShadow = true;
   key.shadow.mapSize.set(2048,2048);
   scene.add(key);
 
-  const fill = new THREE.DirectionalLight(0xe6efff,.28);
-  fill.position.set(4.5,4.6,2.4);
+  const fill = new THREE.DirectionalLight(0xddeeff,.22);
+  fill.position.set(3.8,4.4,2.8);
   scene.add(fill);
+
+  const rim = new THREE.DirectionalLight(0xffeee0,.16);
+  rim.position.set(-4.2,3.2,-2.6);
+  scene.add(rim);
 
   floor = new THREE.Mesh(
     new THREE.PlaneGeometry(20,12),
@@ -104,11 +107,12 @@ export function showAdminDice(words, animateRoll = true){
     mesh.userData.layout = p;
     mesh.userData.startRot = new THREE.Euler();
     mesh.userData.endRot = new THREE.Euler();
+    mesh.userData.startPosition = mesh.position.clone();
     mesh.userData.startTime = 0;
     mesh.userData.duration = 1;
     mesh.userData.delay = index * .06;
     mesh.userData.rolling = false;
-    mesh.castShadow = index === 0;
+    mesh.castShadow = true;
     mesh.receiveShadow = true;
     scene.add(mesh);
     diceMeshes.push(mesh);
@@ -124,10 +128,10 @@ function createTextDie(finalWord,layout){
 
   const materials = allFaces.map(faceWord => new THREE.MeshPhysicalMaterial({
     map:makeTextTexture(faceWord),
-    roughness:.36,
+    roughness:.26,
     metalness:0,
-    clearcoat:.22,
-    clearcoatRoughness:.42,
+    clearcoat:.48,
+    clearcoatRoughness:.24,
     transparent:false,
     opacity:1,
     depthTest:true,
@@ -185,16 +189,16 @@ function makeTextTexture(text){
   ctx.imageSmoothingQuality = "high";
 
   const bg = ctx.createLinearGradient(0,0,1024,1024);
-  bg.addColorStop(0,"#fff9eb");
-  bg.addColorStop(.62,"#eadfcc");
-  bg.addColorStop(1,"#c7bda8");
+  bg.addColorStop(0,"#fffdf8");
+  bg.addColorStop(.62,"#f6f1e8");
+  bg.addColorStop(1,"#e4ddd2");
   ctx.fillStyle = bg;
   ctx.fillRect(0,0,1024,1024);
 
   const shine = ctx.createRadialGradient(330,245,70,512,512,790);
   shine.addColorStop(0,"rgba(255,255,255,.20)");
   shine.addColorStop(.55,"rgba(255,255,255,.04)");
-  shine.addColorStop(1,"rgba(0,0,0,.075)");
+  shine.addColorStop(1,"rgba(67,52,36,.060)");
   ctx.fillStyle = shine;
   ctx.fillRect(0,0,1024,1024);
 
@@ -283,38 +287,33 @@ function startDiceAnimation(){
     die.userData.delay = index*(.045 + Math.random()*.018);
     die.userData.rolling = true;
     die.userData.startRot.copy(die.rotation);
+    die.userData.startPosition.copy(die.position);
     die.userData.endRot.set(
       p[3] + 4*Math.PI*2,
       p[4] + 4*Math.PI*2,
       p[5] + 2*Math.PI*2
     );
     die.userData.physicsStrength = (index === 0 ? .72 : .54)*strengthVariation;
-    die.userData.wobbleAmplitude = (index === 0 ? .085 : .065)*(.9+Math.random()*.2);
-    die.userData.wobbleFrequency = 10.5 + Math.random()*2.2;
+    die.userData.wobbleAmplitude = (index === 0 ? .050 : .040)*(.9+Math.random()*.2);
+    die.userData.wobbleFrequency = 6.2 + Math.random()*1.4;
     die.userData.wobblePhase = Math.random()*Math.PI*2;
   });
 }
 
 function landingBounce(progress,strength=.54){
-  if(progress < .58) return Math.sin(progress/.58*Math.PI)*strength*.86;
-  if(progress < .77) return Math.sin((progress-.58)/.19*Math.PI)*strength*.72;
-  if(progress < .91) return Math.sin((progress-.77)/.14*Math.PI)*strength*.36;
-  return Math.sin(Math.min((progress-.91)/.09,1)*Math.PI)*strength*.14;
+  const arc = Math.sin(Math.PI*THREE.MathUtils.clamp(progress,0,1));
+  return arc*arc*strength;
 }
 
-function landingSquash(progress,index=0){
-  const impact1 = Math.exp(-Math.pow((progress-.58)/.020,2));
-  const impact2 = Math.exp(-Math.pow((progress-.77)/.017,2));
-  const impact3 = Math.exp(-Math.pow((progress-.91)/.013,2));
-  const amount = (impact1*.075 + impact2*.034 + impact3*.014)*(index === 0 ? 1 : .84);
-  return {y:1-amount,xz:1+amount*.64};
+function landingSquash(){
+  return {y:1,xz:1};
 }
 
 function dampedWobble(progress,amplitude,frequency,phase){
-  const start = .66;
+  const start = .72;
   if(progress <= start) return 0;
   const local = (progress-start)/(1-start);
-  return Math.sin(local*frequency+phase)*amplitude*Math.exp(-4.8*local);
+  return Math.sin(local*frequency+phase)*amplitude*Math.exp(-5.6*local);
 }
 
 function animate(){
@@ -327,32 +326,30 @@ function animate(){
     if(elapsed < 0) return;
 
     const progress = Math.min(Math.max(elapsed/die.userData.duration,0),1);
-    const spinProgress = Math.min(progress/.58,1);
-    const easedSpin = easeInOutCubic(spinProgress);
+    const easedSpin = easeInOutCubic(progress);
     const p = die.userData.layout;
 
-    if(progress < .58){
-      die.rotation.x = lerp(die.userData.startRot.x,die.userData.endRot.x,easedSpin);
-      die.rotation.y = lerp(die.userData.startRot.y,die.userData.endRot.y,easedSpin);
-      die.rotation.z = lerp(die.userData.startRot.z,die.userData.endRot.z,easedSpin);
-    }else{
-      die.rotation.x = p[3];
-      die.rotation.y = p[4];
-      die.rotation.z = p[5] + dampedWobble(
-        progress,
-        die.userData.wobbleAmplitude,
-        die.userData.wobbleFrequency,
-        die.userData.wobblePhase
-      );
-    }
+    die.rotation.x = lerp(die.userData.startRot.x,die.userData.endRot.x,easedSpin);
+    die.rotation.y = lerp(die.userData.startRot.y,die.userData.endRot.y,easedSpin);
+    die.rotation.z = lerp(die.userData.startRot.z,die.userData.endRot.z,easedSpin);
 
     const bounce = landingBounce(progress,die.userData.physicsStrength);
-    die.position.x = die.userData.base.x;
-    die.position.y = die.userData.base.y + bounce;
-    die.position.z = die.userData.base.z;
+    const rollEnvelope = Math.pow(Math.sin(Math.PI*progress),2);
+    die.position.x = lerp(die.userData.startPosition.x,die.userData.base.x,easedSpin)
+      + Math.sin(progress*Math.PI*2+index*.55)*rollEnvelope*.030;
+    die.position.y = lerp(die.userData.startPosition.y,die.userData.base.y,easedSpin)+bounce;
+    die.position.z = lerp(die.userData.startPosition.z,die.userData.base.z,easedSpin);
 
     const squash = landingSquash(progress,index);
     die.scale.set(squash.xz,squash.y,squash.xz);
+    const wobble = dampedWobble(
+      progress,
+      die.userData.wobbleAmplitude,
+      die.userData.wobbleFrequency,
+      die.userData.wobblePhase
+    );
+    die.rotation.x += wobble;
+    die.rotation.z -= wobble*.72;
 
     if(progress >= 1){
       die.userData.rolling = false;
@@ -371,8 +368,26 @@ function resize(){
   const rect = host.getBoundingClientRect();
   const width = Math.max(1,rect.width);
   const height = Math.max(1,rect.height);
+  const isLandscape = width > height;
+  const useCompactPortraitCamera =
+    window.innerHeight >= window.innerWidth &&
+    width <= 430;
+
   renderer.setSize(width,height,false);
   camera.aspect = width/height;
+  camera.fov = useCompactPortraitCamera ? 36 : 29;
+
+  if(isLandscape && height < 620){
+    camera.position.set(0,6.65,6.55);
+    camera.lookAt(0,-.58,0);
+  }else if(width >= 900){
+    camera.position.set(0,7.25,7.55);
+    camera.lookAt(0,-.62,0);
+  }else{
+    camera.position.set(0,6.75,6.85);
+    camera.lookAt(0,-.62,0);
+  }
+
   camera.updateProjectionMatrix();
 }
 
