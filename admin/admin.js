@@ -6,7 +6,7 @@ let lastTouchEnd=0;
 document.addEventListener("touchend",e=>{const now=Date.now();if(now-lastTouchEnd<=300)e.preventDefault();lastTouchEnd=now;},{passive:false});
 }
 
-import { initAdminDice, setAdminDiceDeck, showAdminDice } from "./admin-dice.js?v=16";
+import { initAdminDice, setAdminDiceDeck, showAdminDice } from "./admin-dice.js?v=18";
 
 function initAdminPwa(){
   if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}

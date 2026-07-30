@@ -835,9 +835,9 @@ th{color:var(--admin-muted);font:900 8px/1 var(--dice-font);letter-spacing:.05em
   display:none;
 }
 .vote-card .notes-label textarea{
-  height:clamp(56px,7dvh,66px);
-  min-height:56px;
-  max-height:66px;
+  height:clamp(82px,12dvh,104px);
+  min-height:82px;
+  max-height:104px;
   background:rgba(38,40,36,.78);
 }
 .verdict-actions{
@@ -1019,6 +1019,19 @@ th{color:var(--admin-muted);font:900 8px/1 var(--dice-font);letter-spacing:.05em
   background:rgba(11,38,59,.32);
   border-color:rgba(255,255,255,.2);
 }
+.table-wrap{
+  max-height:min(32dvh,250px);
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+}
+.table-wrap thead th{
+  position:sticky;
+  z-index:2;
+  top:0;
+  background:#286da7;
+  box-shadow:0 1px rgba(255,255,255,.14);
+}
 .stat-grid strong{
   color:#fff;
 }
@@ -1073,6 +1086,9 @@ th{color:var(--admin-muted);font:900 8px/1 var(--dice-font);letter-spacing:.05em
   letter-spacing:.12em;
 }
 @media (max-width:420px){
+  .admin-shell{
+    min-height:calc(100dvh - 70px);
+  }
   .portrait-header{
     min-height:142px;
     margin-bottom:-46px;
@@ -1101,5 +1117,121 @@ th{color:var(--admin-muted);font:900 8px/1 var(--dice-font);letter-spacing:.05em
   }
   .stats-sheet{
     padding:17px 14px;
+  }
+}
+@media (max-width:420px) and (max-height:700px){
+  .admin-shell{
+    min-height:calc(100dvh - 30px);
+  }
+  .vote-card .notes-label textarea{
+    height:64px;
+    min-height:64px;
+    max-height:64px;
+  }
+}
+
+/* V0.2.53 admin menu: the panel stays fixed; rankings scroll inside it. */
+.stats-sheet{
+  height:min(90dvh,720px);
+  max-height:min(90dvh,720px);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.stats-header{
+  position:relative;
+  flex:0 0 auto;
+  justify-content:center;
+}
+.stats-header h2{
+  width:100%;
+  text-align:center;
+}
+.stats-close{
+  position:absolute;
+  top:50%;
+  right:0;
+  transform:translateY(-50%);
+}
+.menu-controls-slot{
+  flex:0 0 auto;
+  margin:12px 0 10px;
+}
+.stat-grid{
+  flex:0 0 auto;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:6px;
+  margin:8px 0 10px;
+}
+.stat-grid>div{
+  padding:10px 3px;
+  border-radius:12px;
+}
+.stat-grid strong{
+  font-size:clamp(16px,4.8vw,20px);
+}
+.stat-grid span{
+  font-size:clamp(6px,1.8vw,8px);
+}
+.stats-toolbar:not(.notes-toolbar){
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin:8px 0;
+}
+.stats-toolbar:not(.notes-toolbar)>div{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:7px;
+  width:100%;
+  order:1;
+}
+.stats-toolbar:not(.notes-toolbar)>h3{
+  order:2;
+  width:100%;
+  text-align:center;
+  white-space:nowrap;
+}
+.stats-toolbar:not(.notes-toolbar) .small-button{
+  width:100%;
+  min-width:0;
+  min-height:40px;
+  padding:0 5px;
+  font-size:clamp(7px,2.15vw,10px);
+  line-height:1.05;
+}
+.table-wrap{
+  flex:1 1 auto;
+  min-height:150px;
+  max-height:none;
+  overflow:auto;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  -webkit-overflow-scrolling:touch;
+}
+.notes-toolbar{
+  flex:0 0 auto;
+  justify-content:center;
+  margin:10px 0 6px;
+}
+.notes-toolbar h3{
+  text-align:center;
+}
+.recent-list{
+  flex:0 0 auto;
+  max-height:64px;
+  overflow:auto;
+  overscroll-behavior:contain;
+}
+.menu-back-link{
+  flex:0 0 auto;
+  min-height:40px;
+  margin-top:10px;
+}
+@media (max-width:420px){
+  .stats-sheet{
+    height:min(92dvh,700px);
+    max-height:min(92dvh,700px);
   }
 }
