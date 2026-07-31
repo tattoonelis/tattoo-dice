@@ -677,3 +677,14 @@ This file is the frozen baseline for all following local edits.
   position; no snapshot shadow or second shadow system was added.
 - Orb, plasma, aura, dice materials, composites, controls and animation timings
   are unchanged.
+# V0.2.54 — Canon manager
+
+- Added the isolated, PIN-protected `/canon/` internal mobile curation route.
+- Seeded all 86 Classic subjects from `Tattoo_Dice_Classic_Deck_Rating_v2_Multi_Slot.xlsx`.
+- Added Dog as a separate subject with Wolf's exact score, weight, slots, themes, family, possibilities and known Moon relation.
+- Kept subject input to seven groups: Identity, Themes, Dice, Score, Family, Possibilities and Knowledge.
+- Added immediate local autosave and optional cross-device Supabase synchronization.
+- Added safe full-canon backup import/export and Admin ranking/highlight CSV import.
+- Added isolated per-theme runtime JSON export so paid decks do not need to ship together in a future app binary.
+- Added targeted testing for new, changed and removed subjects instead of restarting the full ranking run.
+- Left the public root, public deck files, Generator, Admin Ranking, dice animations and existing storage untouched.

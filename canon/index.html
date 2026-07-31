@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#080a0b">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Tattoo Dice Canon</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="../admin/assets/admin-icon-180.png">
+  <link rel="stylesheet" href="./canon.css?v=1">
+</head>
+<body class="canon-locked">
+  <div class="pin-gate" id="pinGate" role="dialog" aria-modal="true" aria-label="Tattoo Dice Canon access">
+    <div class="pin-backdrop"></div>
+    <section class="pin-card">
+      <img src="../admin/assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
+      <h1>CANON</h1>
+      <p>Enter the six-digit PIN.</p>
+      <div class="pin-dots" id="pinDots" aria-label="PIN entry"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="pin-keypad" id="pinKeypad" aria-label="Numeric keypad">
+        <button data-pin="1">1</button><button data-pin="2">2</button><button data-pin="3">3</button>
+        <button data-pin="4">4</button><button data-pin="5">5</button><button data-pin="6">6</button>
+        <button data-pin="7">7</button><button data-pin="8">8</button><button data-pin="9">9</button>
+        <button class="danger" data-action="clear">C</button><button data-pin="0">0</button><button class="success" data-action="back">⌫</button>
+      </div>
+      <p class="pin-status" id="pinStatus" role="status"></p>
+    </section>
+  </div>
+
+  <main class="phone-shell" id="app" aria-hidden="true">
+    <header class="app-header">
+      <img src="../admin/assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
+      <div class="canon-title">
+        <span>CURATION TOOL</span>
+        <strong>CANON</strong>
+        <em id="storageBadge">LOADING</em>
+      </div>
+    </header>
+
+    <nav class="mode-tabs" aria-label="Canon sections">
+      <button class="active" data-view="subject">SUBJECT</button>
+      <button data-view="test">TEST <span id="queueBadge">0</span></button>
+      <button data-view="export">EXPORT</button>
+    </nav>
+
+    <section class="view active" id="subjectView" data-view-panel="subject">
+      <div class="subject-picker">
+        <label for="subjectSearch">SELECT SUBJECT</label>
+        <div class="search-row">
+          <input id="subjectSearch" type="search" autocomplete="off" placeholder="Search a word…">
+          <button id="newSubjectButton" type="button" aria-label="Add subject">＋</button>
+        </div>
+        <div class="search-results" id="searchResults" hidden></div>
+        <div class="subject-meta"><strong id="subjectPosition">1 / 87</strong><span id="changeBadge">BASELINE</span><span id="historySummary">No test history</span></div>
+      </div>
+
+      <form id="subjectForm" autocomplete="off">
+        <section class="field-group identity-group">
+          <div class="group-title"><b>1</b><span>IDENTITY</span></div>
+          <div class="identity-row">
+            <input id="nameInput" aria-label="Subject name" maxlength="60">
+            <label class="active-toggle"><input id="activeInput" type="checkbox"><span>ACTIVE</span></label>
+          </div>
+        </section>
+
+        <section class="field-group">
+          <div class="group-title"><b>2</b><span>THEMES</span><small>multiple</small></div>
+          <div class="chip-grid theme-chips" id="themeChips"></div>
+        </section>
+
+        <section class="field-group">
+          <div class="group-title"><b>3</b><span>DICE</span><small>multiple</small></div>
+          <div class="chip-grid three" id="slotChips">
+            <button type="button" data-slot="main">MAIN</button>
+            <button type="button" data-slot="detail">DETAIL</button>
+            <button type="button" data-slot="effect">EFFECT</button>
+          </div>
+        </section>
+
+        <section class="field-group rating-group">
+          <div class="group-title"><b>4</b><span>SCORE</span><small id="weightLabel">weight 12</small></div>
+          <div class="score-row" id="scoreButtons">
+            <button type="button" data-score="0">0<small>RARE</small></button>
+            <button type="button" data-score="1">1<small>LOW</small></button>
+            <button type="button" data-score="2">2<small>GOOD</small></button>
+            <button type="button" data-score="3">3<small>CORE</small></button>
+          </div>
+        </section>
+
+        <section class="field-group family-group">
+          <div class="group-title"><b>5</b><span>FAMILY</span><small>prevents duplicates</small></div>
+          <input id="familyInput" aria-label="Family" maxlength="60" placeholder="e.g. feline">
+        </section>
+
+        <section class="field-group">
+          <div class="group-title"><b>6</b><span>POSSIBILITIES</span><small>multiple</small></div>
+          <div class="chip-grid uses-grid" id="useChips"></div>
+        </section>
+
+        <section class="field-group knowledge-group">
+          <div class="group-title"><b>7</b><span>KNOWLEDGE</span><small>notes + relations</small></div>
+          <textarea id="notesInput" aria-label="Notes" maxlength="800" placeholder="What should the engine know?"></textarea>
+          <div class="relation-row"><span>★ BOOST</span><div id="boostChips" class="relation-chips"></div><button type="button" data-add-relation="boost">＋</button></div>
+          <div class="relation-row avoid"><span>× AVOID</span><div id="avoidChips" class="relation-chips"></div><button type="button" data-add-relation="avoid">＋</button></div>
+        </section>
+      </form>
+
+      <footer class="subject-footer">
+        <button id="previousSubject" type="button" aria-label="Previous subject">‹</button>
+        <span id="saveStatus">Saved</span>
+        <button id="nextSubject" type="button" aria-label="Next subject">›</button>
+      </footer>
+    </section>
+
+    <section class="view" id="testView" data-view-panel="test" hidden>
+      <header class="view-heading"><div><span>TARGETED WORKFLOW</span><h2 id="testHeading">Nothing to test</h2></div><strong id="testProgress">0 / 0</strong></header>
+      <div class="test-meter"><i id="testMeterFill"></i></div>
+      <p class="test-reason" id="testReason">New and changed subjects appear here automatically.</p>
+      <div class="test-count" id="testCountButtons"><button type="button" data-test-count="2">2 DICE</button><button class="active" type="button" data-test-count="3">3 DICE</button></div>
+      <article class="test-combination" id="testCombination" aria-label="Targeted test combination"></article>
+      <button class="standout-button" id="testHighlight" type="button" aria-pressed="false">♡ STANDOUT</button>
+      <textarea id="testNote" maxlength="500" placeholder="Optional note about this combination"></textarea>
+      <div class="verdict-row">
+        <button class="no" type="button" data-test-rating="down">F*CK NO</button>
+        <button class="meh" type="button" data-test-rating="meh">MEH?</button>
+        <button class="yes" type="button" data-test-rating="up">H*LL YES</button>
+      </div>
+      <button class="secondary-action" id="nextTestButton" type="button">NEW COMBINATION</button>
+    </section>
+
+    <section class="view" id="exportView" data-view-panel="export" hidden>
+      <header class="view-heading"><div><span>SEPARATE DECK FILES</span><h2>Export per theme</h2></div><strong id="exportWarning">0 pending</strong></header>
+      <p class="export-copy">Only the selected theme is written to its JSON. Other paid decks stay out of that file and can later be delivered after purchase.</p>
+      <div class="export-themes" id="exportThemes"></div>
+      <div class="export-summary"><div><strong id="exportSubjects">0</strong><span>subjects</span></div><div><strong id="exportRecords">0</strong><span>slot records</span></div><div><strong id="exportPending">0</strong><span>pending tests</span></div></div>
+      <button class="primary-action" id="exportThemeButton" type="button">EXPORT CLASSIC.JSON</button>
+      <button class="secondary-action" id="exportBackupButton" type="button">EXPORT SAFE CANON BACKUP</button>
+      <div class="import-grid">
+        <label>IMPORT BACKUP<input id="backupInput" type="file" accept="application/json,.json"></label>
+        <label>RANKINGS CSV<input id="rankingsInput" type="file" accept="text/csv,.csv"></label>
+        <label>HIGHLIGHTS CSV<input id="highlightsInput" type="file" accept="text/csv,.csv"></label>
+        <button id="syncAllButton" type="button">SYNC ALL</button>
+      </div>
+      <p class="storage-note" id="storageNote">Changes save locally first and sync to shared storage when configured.</p>
+    </section>
+  </main>
+
+  <dialog id="relationDialog">
+    <form method="dialog" class="relation-dialog-card">
+      <header><div><small>ADD RELATION</small><h2 id="relationTitle">Boost partner</h2></div><button value="cancel" aria-label="Close">×</button></header>
+      <input id="relationSearch" type="search" placeholder="Search a subject…" autocomplete="off">
+      <div id="relationResults" class="relation-results"></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./canon.js?v=1"></script>
+</body>
+</html>

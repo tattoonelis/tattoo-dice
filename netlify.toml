@@ -11,7 +11,17 @@
   to = "/generator/"
   status = 301
 
+[[redirects]]
+  from = "/canon"
+  to = "/canon/"
+  status = 301
+
 [[headers]]
   for = "/generator/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow, noarchive"
+
+[[headers]]
+  for = "/canon/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow, noarchive"

@@ -20,6 +20,17 @@
 A separate ranking interface is included at `/admin/`. See `admin/README.md` and run `admin/setup.sql` in Supabase for shared storage.
 
 
+## Canon manager
+
+The internal mobile curation tool is isolated at `/canon/`. It starts with the
+approved 86-subject Classic multi-slot workbook plus Dog as a separate copy of
+Wolf's profile. It autosaves locally, can sync through the existing Supabase
+project after `canon/setup.sql` is run, imports Admin ranking/highlight exports,
+creates targeted tests for new or changed subjects, and exports one isolated
+runtime deck JSON per theme. The public root, public decks and animations are
+unchanged.
+
+
 ## v3.6.3 — Classic Multi-Slot Deck
 
 - Rebuilt Classic from the completed multi-slot workbook.
