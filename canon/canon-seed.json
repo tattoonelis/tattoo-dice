@@ -1,3455 +1,1515 @@
-{
-  "schemaVersion": 1,
-  "appVersion": "V0.2.54",
-  "generatedFrom": "Tattoo_Dice_Classic_Deck_Rating_v2_Multi_Slot.xlsx",
-  "generatedAt": "2026-07-31T00:00:00.000Z",
-  "themes": [
-    {
-      "id": "classic",
-      "name": "Classic",
-      "status": "live"
-    },
-    {
-      "id": "fantasy",
-      "name": "Fantasy",
-      "status": "live"
-    },
-    {
-      "id": "japanese",
-      "name": "Japanese",
-      "status": "planned"
-    },
-    {
-      "id": "horror",
-      "name": "Horror",
-      "status": "planned"
-    },
-    {
-      "id": "pirate",
-      "name": "Pirate",
-      "status": "planned"
-    },
-    {
-      "id": "cyberpunk",
-      "name": "Cyberpunk",
-      "status": "planned"
-    },
-    {
-      "id": "medieval",
-      "name": "Medieval",
-      "status": "planned"
-    },
-    {
-      "id": "halloween",
-      "name": "Halloween",
-      "status": "planned"
-    }
-  ],
-  "uses": [
-    {
-      "id": "focus",
-      "name": "Focus"
-    },
-    {
-      "id": "detail",
-      "name": "Detail"
-    },
-    {
-      "id": "wrapper",
-      "name": "Wrapper"
-    },
-    {
-      "id": "morph",
-      "name": "Morph"
-    },
-    {
-      "id": "filler",
-      "name": "Filler"
-    },
-    {
-      "id": "background",
-      "name": "Background"
-    },
-    {
-      "id": "anatomy",
-      "name": "Anatomy"
-    },
-    {
-      "id": "atmosphere",
-      "name": "Atmosphere"
-    },
-    {
-      "id": "directional",
-      "name": "Directional"
-    },
-    {
-      "id": "mask",
-      "name": "Mask"
-    }
-  ],
-  "subjects": [
-    {
-      "id": "8-ball",
-      "name": "8 Ball",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "8-ball",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "ace-of-spades",
-      "name": "Ace of Spades",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "cards",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "anchor",
-      "name": "Anchor",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "anchor",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "angel",
-      "name": "Angel",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "angel",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "axe",
-      "name": "Axe",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "weapon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "bamboo",
-      "name": "Bamboo",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "bamboe",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "barbed-wire",
-      "name": "Barbed Wire",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "barbed-wire",
-      "uses": [
-        "detail",
-        "wrapper",
-        "background"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "bear",
-      "name": "Bear",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "bear",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "blood",
-      "name": "Blood",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "effect",
-      "uses": [
-        "atmosphere",
-        "detail"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "bones",
-      "name": "Bones",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "bones",
-      "uses": [],
-      "notes": "NEW — requested addition. Suggested Detail; choose score 0–3.",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "boobs",
-      "name": "Boobs",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "effect"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "boobs",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "butterfly",
-      "name": "Butterfly",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "butterfly",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "cards",
-      "name": "Cards",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "cards",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "dog",
-      "name": "Dog",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "wolf",
-      "uses": [
-        "focus",
-        "detail",
-        "morph"
-      ],
-      "notes": "Same profile and behavior as Wolf; kept as a separate subject.",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Moon"
-        ]
-      },
-      "change": {
-        "state": "new",
-        "changedFields": [
-          "subject"
-        ],
-        "updatedAt": "2026-07-31T00:00:00.000Z"
-      },
-      "testing": {
-        "target": 30,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "funny-character",
-      "name": "Funny Character",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "cartoon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "cat",
-      "name": "Cat",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "feline",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "chain",
-      "name": "Chain",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "chain",
-      "uses": [
-        "detail",
-        "wrapper"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "cherry",
-      "name": "Cherry",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "floral",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "chrysanthemum",
-      "name": "Chrysanthemum",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "floral",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "clown",
-      "name": "Clown",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "clown",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "cobra",
-      "name": "Cobra",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "snake",
-      "uses": [
-        "focus",
-        "detail",
-        "wrapper"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [
-          "Barbed Wire"
-        ],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "cross",
-      "name": "Cross",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "cross",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "crystal-ball",
-      "name": "Crystal Ball",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "crystal-ball",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "dagger",
-      "name": "Dagger",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "weapon",
-      "uses": [
-        "focus",
-        "detail",
-        "directional"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "demon",
-      "name": "Demon",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "demon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "devil",
-      "name": "Devil",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "devil",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "dragon",
-      "name": "Dragon",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "dragon",
-      "uses": [
-        "focus",
-        "morph"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Flames"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "eagle",
-      "name": "Eagle",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "bird",
-      "uses": [
-        "focus",
-        "detail",
-        "morph"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Rose"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "evil-clown",
-      "name": "Evil Clown",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "clown",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "eye",
-      "name": "Eye",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "eye",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "fan",
-      "name": "Fan",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "fan",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "fire",
-      "name": "Fire",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "effect",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "flames",
-      "name": "Flames",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "effect",
-      "uses": [
-        "atmosphere",
-        "background",
-        "morph"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Heart",
-          "Dragon"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "flowers",
-      "name": "Flowers",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "floral",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "frog",
-      "name": "Frog",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "frog",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "geisha",
-      "name": "Geisha",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "lady",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "gorilla",
-      "name": "Gorilla",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "gorilla",
-      "uses": [
-        "focus"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [
-          "Tiger"
-        ],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "grim-reaper",
-      "name": "Grim Reaper",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "grim-reaper",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "hannya",
-      "name": "Hannya",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "hannya",
-      "uses": [
-        "focus"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "hat",
-      "name": "Hat",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "hat",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "heart",
-      "name": "Heart",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "heart",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Flames"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "helmet",
-      "name": "Helmet",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "helmet",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "lady-head",
-      "name": "Lady Head",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "lady",
-      "uses": [
-        "focus",
-        "detail",
-        "morph"
-      ],
-      "notes": "Requested pairing target for Skull / Rose.",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Skull"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "lightning",
-      "name": "Lightning",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "effect",
-      "uses": [
-        "atmosphere",
-        "background"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "lion",
-      "name": "Lion",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "feline",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "lotus",
-      "name": "Lotus",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "floral",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "mace",
-      "name": "Mace",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "weapon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "mask",
-      "name": "Mask",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "mask",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "mermaid",
-      "name": "Mermaid",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "mermaid",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "moon",
-      "name": "Moon",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "moon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Wolf"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "mountain",
-      "name": "Mountain",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "mountain",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "oni",
-      "name": "Oni",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "oni",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "panther",
-      "name": "Panther",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "feline",
-      "uses": [
-        "focus"
-      ],
-      "notes": "Requested pairing target for Skull / Rose.",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "parrot",
-      "name": "Parrot",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "bird",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "peony",
-      "name": "Peony",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "floral",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "pig",
-      "name": "Pig",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "pig",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "pile-of-skulls",
-      "name": "Pile of Skulls",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "skull",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "pin-up",
-      "name": "Pin-up",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "lady",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "pistols",
-      "name": "Pistols",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "weapon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "goat",
-      "name": "Goat",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "ram",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "raven",
-      "name": "Raven",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "bird",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "rope",
-      "name": "Rope",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "rope",
-      "uses": [
-        "detail",
-        "wrapper"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "rose",
-      "name": "Rose",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "floral",
-      "uses": [
-        "focus",
-        "detail",
-        "filler",
-        "morph"
-      ],
-      "notes": "PAIRING REVIEW: consider Detail if you want this to appear with Panther, Lady Head, and other Main subjects.",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Eagle"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "sacred-heart",
-      "name": "Sacred Heart",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "heart",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "scorpion",
-      "name": "Scorpion",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "scorpion",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "shark",
-      "name": "Shark",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "shark",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "shield",
-      "name": "Shield",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "shield",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "skin-rip",
-      "name": "Skin Rip",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "effect"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "effect",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "skull",
-      "name": "Skull",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "skull",
-      "uses": [
-        "focus",
-        "detail",
-        "morph",
-        "mask"
-      ],
-      "notes": "PAIRING REVIEW: consider Detail if you want this to appear with Panther, Lady Head, and other Main subjects.",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Lady Head"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "smoke",
-      "name": "Smoke",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "effect",
-      "uses": [
-        "atmosphere",
-        "background"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "snake",
-      "name": "Snake",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "snake",
-      "uses": [
-        "focus",
-        "detail",
-        "wrapper",
-        "morph"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [
-          "Cobra",
-          "Barbed Wire",
-          "Chain"
-        ],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "snake-head",
-      "name": "Snake Head",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "snake",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "spider",
-      "name": "Spider",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "spider",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "spider-web",
-      "name": "Spider Web",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 2,
-      "weight": 6.0,
-      "family": "spider",
-      "uses": [
-        "background",
-        "detail"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "sun",
-      "name": "Sun",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "sun",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "swallow",
-      "name": "Swallow",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "bird",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "sword",
-      "name": "Sword",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "weapon",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "tiger",
-      "name": "Tiger",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "feline",
-      "uses": [
-        "focus"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [
-          "Gorilla"
-        ],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "tribal",
-      "name": "Tribal",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main",
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "tribal",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "vampire",
-      "name": "Vampire",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "vampire",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "viking",
-      "name": "Viking",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "main"
-      ],
-      "score": 0,
-      "weight": 0.25,
-      "family": "viking",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "water",
-      "name": "Water",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "effect",
-      "uses": [
-        "atmosphere",
-        "background"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "waves",
-      "name": "Waves",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "effect",
-      "uses": [
-        "atmosphere",
-        "background"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "wing",
-      "name": "Wing",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "detail",
-        "effect"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "wing",
-      "uses": [
-        "detail",
-        "anatomy"
-      ],
-      "notes": "RULE: never combine with an already-winged subject (Butterfly, Eagle, Parrot, Raven, Swallow, or future winged birds/insects).",
-      "relations": {
-        "avoid": [
-          "Butterfly",
-          "Eagle",
-          "Parrot",
-          "Raven",
-          "Swallow"
-        ],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "wizard",
-      "name": "Wizard",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "wizard",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "wolf",
-      "name": "Wolf",
-      "active": true,
-      "themes": [
-        "classic",
-        "fantasy"
-      ],
-      "slots": [
-        "main",
-        "detail"
-      ],
-      "score": 3,
-      "weight": 12.0,
-      "family": "wolf",
-      "uses": [
-        "focus",
-        "detail",
-        "morph"
-      ],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": [
-          "Moon"
-        ]
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    },
-    {
-      "id": "yin-yang",
-      "name": "Yin Yang",
-      "active": true,
-      "themes": [
-        "classic"
-      ],
-      "slots": [
-        "detail"
-      ],
-      "score": 1,
-      "weight": 2.0,
-      "family": "yin-yang",
-      "uses": [],
-      "notes": "Current live Classic deck",
-      "relations": {
-        "avoid": [],
-        "boost": []
-      },
-      "change": {
-        "state": "baseline",
-        "changedFields": [],
-        "updatedAt": null
-      },
-      "testing": {
-        "target": 0,
-        "completed": 0,
-        "ratings": {
-          "up": 0,
-          "meh": 0,
-          "down": 0
-        },
-        "notes": [],
-        "highlights": 0
-      }
-    }
-  ]
+﻿{
+    "schemaVersion":  2,
+    "source":  "Tattoo_Dice_Classic_Deck_Rating_v2_Multi_Slot.xlsx",
+    "themes":  [
+                   {
+                       "id":  "classic",
+                       "name":  "Classic"
+                   },
+                   {
+                       "id":  "fantasy",
+                       "name":  "Fantasy"
+                   }
+               ],
+    "subjects":  [
+                     {
+                         "id":  "8-ball",
+                         "name":  "8 Ball",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "8-ball",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "ace-of-spades",
+                         "name":  "Ace of Spades",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "cards",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "anchor",
+                         "name":  "Anchor",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "anchor",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "angel",
+                         "name":  "Angel",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "angel",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "axe",
+                         "name":  "Axe",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "weapon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "bamboo",
+                         "name":  "Bamboo",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "bamboe",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "barbed-wire",
+                         "name":  "Barbed Wire",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "barbed-wire",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "bear",
+                         "name":  "Bear",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "bear",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "blood",
+                         "name":  "Blood",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "bones",
+                         "name":  "Bones",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "bones",
+                         "notes":  "NEW â€” requested addition. Suggested Detail; choose score 0â€“3.",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "boobs",
+                         "name":  "Boobs",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "effect"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "boobs",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "butterfly",
+                         "name":  "Butterfly",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "butterfly",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "cards",
+                         "name":  "Cards",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "cards",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "dog",
+                         "name":  "Dog",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "wolf",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "funny-character",
+                         "name":  "Funny Character",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "cartoon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "cat",
+                         "name":  "Cat",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "feline",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "chain",
+                         "name":  "Chain",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "chain",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "cherry",
+                         "name":  "Cherry",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "floral",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "chrysanthemum",
+                         "name":  "Chrysanthemum",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "floral",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "clown",
+                         "name":  "Clown",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "clown",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "cobra",
+                         "name":  "Cobra",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "snake",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "cross",
+                         "name":  "Cross",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "cross",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "crystal-ball",
+                         "name":  "Crystal Ball",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "crystal-ball",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "dagger",
+                         "name":  "Dagger",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "weapon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "demon",
+                         "name":  "Demon",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "demon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "devil",
+                         "name":  "Devil",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "devil",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "dragon",
+                         "name":  "Dragon",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "dragon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "eagle",
+                         "name":  "Eagle",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "bird",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "evil-clown",
+                         "name":  "Evil Clown",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "clown",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "eye",
+                         "name":  "Eye",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "eye",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "fan",
+                         "name":  "Fan",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "fan",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "fire",
+                         "name":  "Fire",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "flames",
+                         "name":  "Flames",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "flowers",
+                         "name":  "Flowers",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "floral",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "frog",
+                         "name":  "Frog",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "frog",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "geisha",
+                         "name":  "Geisha",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "lady",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "gorilla",
+                         "name":  "Gorilla",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "gorilla",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "grim-reaper",
+                         "name":  "Grim Reaper",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "grim-reaper",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "hannya",
+                         "name":  "Hannya",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "hannya",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "hat",
+                         "name":  "Hat",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "hat",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "heart",
+                         "name":  "Heart",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "heart",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "helmet",
+                         "name":  "Helmet",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "helmet",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "lady-head",
+                         "name":  "Lady Head",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "lady",
+                         "notes":  "Requested pairing target for Skull / Rose.",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "lightning",
+                         "name":  "Lightning",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "lion",
+                         "name":  "Lion",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "feline",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "lotus",
+                         "name":  "Lotus",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "floral",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "mace",
+                         "name":  "Mace",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "weapon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "mask",
+                         "name":  "Mask",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "mask",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "mermaid",
+                         "name":  "Mermaid",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "mermaid",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "moon",
+                         "name":  "Moon",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "moon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "mountain",
+                         "name":  "Mountain",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "mountain",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "oni",
+                         "name":  "Oni",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "oni",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "panther",
+                         "name":  "Panther",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "feline",
+                         "notes":  "Requested pairing target for Skull / Rose.",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "parrot",
+                         "name":  "Parrot",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "bird",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "peony",
+                         "name":  "Peony",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "floral",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "pig",
+                         "name":  "Pig",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "pig",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "pile-of-skulls",
+                         "name":  "Pile of Skulls",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "skull",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "pin-up",
+                         "name":  "Pin-up",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "lady",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "pistols",
+                         "name":  "Pistols",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "weapon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "goat",
+                         "name":  "Goat",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "ram",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "raven",
+                         "name":  "Raven",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "bird",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "rope",
+                         "name":  "Rope",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "rope",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "rose",
+                         "name":  "Rose",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "floral",
+                         "notes":  "PAIRING REVIEW: consider Detail if you want this to appear with Panther, Lady Head, and other Main subjects.",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "sacred-heart",
+                         "name":  "Sacred Heart",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "heart",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "scorpion",
+                         "name":  "Scorpion",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "scorpion",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "shark",
+                         "name":  "Shark",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "shark",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "shield",
+                         "name":  "Shield",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "shield",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "skin-rip",
+                         "name":  "Skin Rip",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "effect"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "skull",
+                         "name":  "Skull",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "skull",
+                         "notes":  "PAIRING REVIEW: consider Detail if you want this to appear with Panther, Lady Head, and other Main subjects.",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "smoke",
+                         "name":  "Smoke",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "snake",
+                         "name":  "Snake",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "snake",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "snake-head",
+                         "name":  "Snake Head",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "snake",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "spider",
+                         "name":  "Spider",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "spider",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "spider-web",
+                         "name":  "Spider Web",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  2,
+                         "weight":  6,
+                         "family":  "spider",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "sun",
+                         "name":  "Sun",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "sun",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "swallow",
+                         "name":  "Swallow",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "bird",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "sword",
+                         "name":  "Sword",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "weapon",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "tiger",
+                         "name":  "Tiger",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "feline",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "tribal",
+                         "name":  "Tribal",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "tribal",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "vampire",
+                         "name":  "Vampire",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "vampire",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "viking",
+                         "name":  "Viking",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "main"
+                                   ],
+                         "score":  0,
+                         "weight":  0.25,
+                         "family":  "viking",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "water",
+                         "name":  "Water",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "waves",
+                         "name":  "Waves",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "effect",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "wing",
+                         "name":  "Wing",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "detail",
+                                       "effect"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "wing",
+                         "notes":  "RULE: never combine with an already-winged subject (Butterfly, Eagle, Parrot, Raven, Swallow, or future winged birds/insects).",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "wizard",
+                         "name":  "Wizard",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "wizard",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "wolf",
+                         "name":  "Wolf",
+                         "active":  true,
+                         "themes":  [
+                                        "classic",
+                                        "fantasy"
+                                    ],
+                         "slots":  [
+                                       "main",
+                                       "detail"
+                                   ],
+                         "score":  3,
+                         "weight":  12,
+                         "family":  "wolf",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     },
+                     {
+                         "id":  "yin-yang",
+                         "name":  "Yin Yang",
+                         "active":  true,
+                         "themes":  [
+                                        "classic"
+                                    ],
+                         "slots":  [
+                                       "detail"
+                                   ],
+                         "score":  1,
+                         "weight":  2,
+                         "family":  "yin-yang",
+                         "notes":  "Current live Classic deck",
+                         "updatedAt":  null
+                     }
+                 ]
 }

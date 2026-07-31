@@ -688,3 +688,14 @@ This file is the frozen baseline for all following local edits.
 - Added isolated per-theme runtime JSON export so paid decks do not need to ship together in a future app binary.
 - Added targeted testing for new, changed and removed subjects instead of restarting the full ranking run.
 - Left the public root, public deck files, Generator, Admin Ranking, dice animations and existing storage untouched.
+
+# V0.2.55 — Canon landscape sheet
+
+- Rebuilt `/canon/` as a compact landscape table matching the original Excel workflow.
+- Reduced editing to Word, Score, automatic Weight, Main, Detail, Effect, Family and Notes.
+- Made Score, every dice column and Family directly clickable in each word row.
+- Limited the theme selector to the existing Classic and Fantasy themes.
+- Removed the separate Canon testing workflow, possibilities, relations and speculative themes.
+- Kept all combination testing exclusively in the existing Admin Ranking page.
+- Preserved local autosave, Supabase synchronization, full safety backup and separate JSON export per theme.
+- Left the public app, public decks, Admin Ranking and all animations unchanged.
