@@ -1,3 +1,18 @@
+# V0.2.56 — shared ranking intelligence
+
+- Added one shared generator for Public, Generator and Admin Ranking.
+- Preserved Main / Detail / Effect, subject weights, duplicate prevention,
+  family exclusion, `requires`, `blockedWith` and existing slot fallbacks.
+- Converted ranking evidence into conservative word-pair multipliers without
+  changing the base droprate of individual subjects.
+- Requires at least three pair observations and Bayesian shrinkage before any
+  relationship changes the selection chance.
+- Caps positive influence at 1.15 per relationship while allowing stronger
+  negative evidence to reduce weak relationships without hard-blocking them.
+- Kept hard blocks limited to the existing canonical rules.
+- Updated Admin goals to 500 two-dice tests and 1200 three-dice tests.
+- Kept the V0.2.53 Admin layout and illustrated branding intact.
+
 # v2.42 — overflow Ground Contact layer
 
 - Kept the approved non-hover dice behaviour from v2.41.

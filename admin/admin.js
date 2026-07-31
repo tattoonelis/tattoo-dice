@@ -7,6 +7,11 @@ document.addEventListener("touchend",e=>{const now=Date.now();if(now-lastTouchEn
 }
 
 import { initAdminDice, setAdminDiceDeck, showAdminDice } from "./admin-dice.js?v=18";
+import {
+  buildRelationshipModel,
+  makeGeneratorRoll,
+  prepareDeck
+} from "../shared-generator.js";
 
 function initAdminPwa(){
   if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(()=>{});}
@@ -18,14 +23,13 @@ function initAdminPwa(){
 const SUPABASE_URL = "https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 const TABLE = "admin_rankings";
-const TEST_TARGETS = Object.freeze({2:500,3:1000});
+const TEST_TARGETS = Object.freeze({2:500,3:1200});
 const HIGHLIGHTS_STORAGE_KEY = "tattooDiceAdminStandouts";
 const MILESTONE_MESSAGES = {"5": "Nice. 5% done. We’re officially rolling.", "10": "Damn son. 10% done. Keep going.", "15": "15%. Your taste is becoming data.", "20": "20% done. This formula is getting smarter.", "25": "Quarter done. Not bad, tattoo wizard.", "30": "30%. You’re cooking now.", "35": "35% done. Bad rolls are getting nervous.", "40": "40%. The deck is starting to fear you.", "45": "45%. Almost halfway, you magnificent bastard.", "50": "Halfway there. Holy sh*t.", "55": "55%. No turning back now.", "60": "60% done. The formula is learning your language.", "65": "65%. That’s a suspicious amount of dedication.", "70": "70%. You’re bullying this deck into shape.", "75": "Three quarters done. Absolute machine.", "80": "80%. The finish line is sweating.", "85": "85%. Almost disgustingly productive.", "90": "90%. Final stretch, don’t get soft now.", "95": "95%. Five percent between you and glory.", "100": "You did it, m*therf*cker!"};
 const ADMIN_PIN = "231189";
 
-const WEIGHT_BY_SCORE = {0: 0.25, 1: 2, 2: 6, 3: 12};
-
 let deck = [];
+let relationshipModel = new Map();
 let currentRoll = [];
 let selectedRating = "open";
 let records = [];
@@ -162,14 +166,15 @@ async function init(){
   bindEvents();
   syncAdminControls();
   await loadDeck();
-  roll();
   await refreshRecords();
+  roll();
 }
 
 function bindEvents(){
   themeSelect.addEventListener("change", async () => {
     syncAdminControls();
     await loadDeck();
+    refreshRelationshipModel();
     updateProgress();
     roll();
   });
@@ -239,14 +244,8 @@ async function loadDeck(){
   const theme = themeSelect.value;
   const response = await fetch(`../decks/${theme}.json`, {cache:"no-store"});
   if(!response.ok) throw new Error(`Could not load ${theme} deck.`);
-  deck = await response.json();
+  deck = prepareDeck(await response.json());
   setAdminDiceDeck(deck);
-
-  // Accept either explicit weight or derive it from score.
-  deck = deck.map(item => ({
-    ...item,
-    weight: Number(item.weight ?? WEIGHT_BY_SCORE[Number(item.score)] ?? 1)
-  }));
 
   const mains = [...new Set(
     deck
@@ -274,72 +273,12 @@ function roll(){
 }
 
 function makeRoll(count){
-  const plan = count === 1
-    ? ["main"]
-    : count === 2
-      ? ["main","detail"]
-      : ["main","detail","effect"];
-
-  const chosen = [];
-  const chosenWords = new Set();
-  const usedFamilies = new Set();
-  const forced = mainSelect.value;
-
-  if(forced !== "Random"){
-    const item = deck.find(entry => entry.slot === "main" && entry.word === forced);
-    if(item){
-      chosen.push(item);
-      chosenWords.add(item.word);
-      if(item.family) usedFamilies.add(item.family);
-    }
-  }
-
-  for(let index = chosen.length; index < plan.length; index++){
-    const slot = plan[index];
-    let picked = pickForSlot(slot, usedFamilies, chosenWords);
-
-    if(!picked && slot === "effect"){
-      picked = pickForSlot("detail", usedFamilies, chosenWords);
-    }
-    if(!picked && slot === "detail"){
-      picked = pickForSlot("main", usedFamilies, chosenWords);
-    }
-    if(!picked) break;
-
-    chosen.push(picked);
-    chosenWords.add(picked.word);
-    if(picked.family) usedFamilies.add(picked.family);
-  }
-
-  return chosen;
-}
-
-function pickForSlot(slot, usedFamilies, chosenWords){
-  let candidates = deck.filter(item =>
-    item.slot === slot &&
-    !chosenWords.has(item.word) &&
-    (!item.family || !usedFamilies.has(item.family))
-  );
-
-  if(!candidates.length){
-    candidates = deck.filter(item =>
-      item.slot === slot &&
-      !chosenWords.has(item.word)
-    );
-  }
-
-  return weightedChoice(candidates);
-}
-
-function weightedChoice(items){
-  if(!items.length) return null;
-  const total = items.reduce((sum,item) => sum + Math.max(.001,Number(item.weight)||1),0);
-  let cursor = Math.random() * total;
-  for(const item of items){
-    cursor -= Math.max(.001,Number(item.weight)||1);
-    if(cursor <= 0) return item;
-  }
-  return items[items.length - 1];
+  return makeGeneratorRoll({
+    deck,
+    count,
+    selectedMain:mainSelect.value,
+    relationshipModel
+  });
 }
 
 function renderRoll(){
@@ -512,7 +451,12 @@ async function refreshRecords(){
     records = loadLocal();
     storageMode = "local";
   }
+  refreshRelationshipModel();
   renderDashboard();
+}
+
+function refreshRelationshipModel(){
+  relationshipModel=buildRelationshipModel(records,{theme:themeSelect.value});
 }
 
 

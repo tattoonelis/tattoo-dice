@@ -1,5 +1,6 @@
 {
   "name": "tattoo-dice",
   "version": "3.6.4",
+  "type": "module",
   "private": true
 }

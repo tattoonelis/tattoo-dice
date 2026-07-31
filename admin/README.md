@@ -135,7 +135,15 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - Admin access and ranking use the supplied Tattoo Dice Admin header.
 - UI colors, rounded font, dice materials and Roll motion match the generator build.
 - The ranking workflow now exposes only 2-dice and 3-dice testing.
-- Targets are tracked per theme and per count: 500 two-dice tests and 1000 three-dice tests.
+- Targets are tracked per theme and per count: 500 two-dice tests and 1200 three-dice tests.
+
+## V0.2.56 Shared ranking intelligence
+
+- Admin Ranking, Public and Generator now use the same shared selection module.
+- Admin now applies the same slot, weight, duplicate, family, `requires` and `blockedWith` checks as Public.
+- Existing rankings create conservative pair multipliers: weak relationships become less likely, proven strong relationships receive only a small bonus.
+- Individual subject weights are never reduced because of a weak partner.
+- New Admin ratings update the Admin model after saving; Public and Generator load the same current ranking model on startup and theme changes.
 - Existing Supabase records, ranking math and `tattoo-dice-admin-rankings.csv` remain compatible.
 - Standout combinations use the Tattoo Dice heart interaction and are exported separately as `tattoo-dice-admin-highlights.csv`.
 - Public root, `/generator/` and `/admin/test/` are intentionally untouched.

@@ -1,8 +1,10 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { fetchRelationshipModel, makeGeneratorRoll, prepareDeck } from "./shared-generator.js";
 
 let wordCount = 3;
 let deck = [];
+let relationshipModel = new Map();
 let secretSequence = "";
 let hiddenActive = false;
 let mainHintShownAt = 0;
@@ -1221,6 +1223,7 @@ async function selectTheme(themeName) {
 
   loadStoredMain();
   await loadDeck();
+  await loadRelationshipRankings();
   warmDiceTextures();
   validateDeckScores();
   buildMainMenu();
@@ -2120,12 +2123,15 @@ function applyMainSelectionDrop() {
 
   const nextRoll = makeRoll(wordCount);
 
-  // Universal slot system: Main selection changes ONLY slot 0.
-  // Rear slots, their transforms, materials and textures remain untouched.
-  if (typeof nextRoll[0] === "string" && diceMeshes[0]?.userData.layout) {
-    currentRoll[0] = nextRoll[0];
-    updateSlotFaceTextures(diceMeshes[0], nextRoll[0], diceMeshes[0].userData.layout);
-  }
+  // Rebuild the complete combination around the selected Main so the visible
+  // result cannot bypass shared family, compatibility or relationship rules.
+  currentRoll=nextRoll;
+  currentRoll.forEach((word,index)=>{
+    const die=diceMeshes[index];
+    if(typeof word==="string"&&die?.userData.layout){
+      updateSlotFaceTextures(die,word,die.userData.layout);
+    }
+  });
 
   updateMainSelectionGlow();
   playTopDrop(false);
@@ -2220,6 +2226,7 @@ async function init() {
   setSplashProgress(8);
 
   await loadDeck();
+  await loadRelationshipRankings();
   setSplashProgress(24);
 
   // Move first-use texture work behind the splash.
@@ -2878,6 +2885,7 @@ async function performOpeningReset() {
       fantasyUnlocked = false;
       localStorage.setItem("tattooDiceActiveTheme", activeTheme);
       await loadDeck();
+      await loadRelationshipRankings();
       await warmDiceTextures({ awaitCompletion: true });
       validateDeckScores();
       buildMainMenu();
@@ -2940,12 +2948,9 @@ async function transitionDiceCount(requestedCount) {
   try {
     await playCountSelectionExit();
 
-    const resizedRoll = currentRoll.slice(0, requestedCount);
+    let resizedRoll = currentRoll.slice(0, requestedCount);
     if (resizedRoll.length < requestedCount) {
-      const generatedRoll = makeRoll(requestedCount);
-      for (let index = resizedRoll.length; index < requestedCount; index++) {
-        if (typeof generatedRoll[index] === "string") resizedRoll.push(generatedRoll[index]);
-      }
+      resizedRoll=makeRoll(requestedCount,resizedRoll);
     }
 
     wordCount = requestedCount;
@@ -4289,10 +4294,23 @@ async function loadDeck() {
   try {
     const response = await fetch(`/decks/${activeTheme}.json`, { cache: "no-store" });
     if (!response.ok) throw new Error("Deck request failed");
-    deck = await response.json();
+    deck = prepareDeck(await response.json());
   } catch (error) {
     console.error("Could not load deck:", error);
     deck = [];
+  }
+}
+
+async function loadRelationshipRankings(){
+  try{
+    relationshipModel=await fetchRelationshipModel({
+      supabaseUrl:SUPABASE_URL,
+      supabaseKey:SUPABASE_KEY,
+      theme:activeTheme
+    });
+  }catch(error){
+    console.warn("Relationship rankings unavailable; using base deck weights.",error);
+    relationshipModel=new Map();
   }
 }
 
@@ -4676,85 +4694,9 @@ function resizeRenderer() {
   camera.updateProjectionMatrix();
 }
 
-function makeRoll(count) {
-  const plan = count === 1
-    ? ["main"]
-    : count === 2
-      ? ["main", "detail"]
-      : ["main", "detail", "effect"];
-
-  const chosen = [];
-  const chosenWords = new Set();
-  const usedFamilies = new Set();
-
-  if (selectedMain !== "Random") {
-    const forcedMain = deck.find(
-      item => item.slot === "main" && item.word === selectedMain
-    );
-
-    if (forcedMain) {
-      chosen.push(forcedMain.word);
-      chosenWords.add(forcedMain.word);
-      usedFamilies.add(getFamily(forcedMain));
-    }
-  }
-
-  for (let index = chosen.length; index < plan.length; index++) {
-    const slot = plan[index];
-    let picked = pickForSlot(slot, usedFamilies, chosenWords);
-    if (!picked && slot === "effect") {
-      picked = pickForSlot("detail", usedFamilies, chosenWords);
-    }
-    if (!picked && slot === "detail") {
-      picked = pickForSlot("main", usedFamilies, chosenWords);
-    }
-    if (!picked) continue;
-
-    chosen.push(picked.word);
-    chosenWords.add(picked.word);
-    usedFamilies.add(getFamily(picked));
-  }
-
-  return chosen.length ? chosen : ["Roll again"];
-}
-
-function requirementsMet(item, chosenWords) {
-  if (!Array.isArray(item.requires) || item.requires.length === 0) return true;
-  return item.requires.every(requiredWord => chosenWords.has(requiredWord));
-}
-
-function compatibilityMet(item, chosenWords) {
-  if (chosenWords.has(item.word)) return false;
-  if (!Array.isArray(item.blockedWith) || item.blockedWith.length === 0) return true;
-  return !item.blockedWith.some(blockedWord => chosenWords.has(blockedWord));
-}
-
-function pickForSlot(slot, usedFamilies, chosenWords = new Set()) {
-  const options = deck.filter(item =>
-    item.slot === slot &&
-    !chosenWords.has(item.word) &&
-    !usedFamilies.has(getFamily(item)) &&
-    requirementsMet(item, chosenWords) &&
-    compatibilityMet(item, chosenWords)
-  );
-  if (!options.length) return null;
-  return weightedPick(options);
-}
-
-function getFamily(item) {
-  return item.family || item.word.toLowerCase().replace(/\s+/g, "-");
-}
-
-function weightedPick(items) {
-  const total = items.reduce((sum, item) => sum + Number(item.weight || 1), 0);
-  let roll = Math.random() * total;
-
-  for (const item of items) {
-    roll -= Number(item.weight || 1);
-    if (roll <= 0) return item;
-  }
-
-  return items[items.length - 1];
+function makeRoll(count,seedWords=[]) {
+  const chosen=makeGeneratorRoll({deck,count,selectedMain,seedWords,relationshipModel});
+  return chosen.length?chosen.map(item=>item.word):["Roll again"];
 }
 
 function registerSecretInput(value) {
