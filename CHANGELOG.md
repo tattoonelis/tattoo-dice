@@ -1,3 +1,13 @@
+# V0.2.57 — live Canon decks
+
+- Canon now publishes the selected theme as a complete runtime deck inside the existing Supabase Canon table.
+- Public, `/generator/` and `/admin/` read the same published deck on startup and theme changes.
+- Returning to an already-open Public, Generator or Admin page refreshes the live Canon deck automatically.
+- The bundled JSON remains the safe fallback whenever the live Canon record is unavailable or empty.
+- Existing `blockedWith` and `requires` metadata is retained in Canon publication; the current Wing exclusions remain unchanged.
+- Family choices are derived only from active subjects, so an unused family disappears automatically.
+- Classic live publication matches the existing 139 JSON records exactly and adds only Dog in its intended Main and Detail slots.
+
 # V0.2.56 — shared ranking intelligence
 
 - Added one shared generator for Public, Generator and Admin Ranking.

@@ -9,6 +9,7 @@ document.addEventListener("touchend",e=>{const now=Date.now();if(now-lastTouchEn
 import { initAdminDice, setAdminDiceDeck, showAdminDice } from "./admin-dice.js?v=18";
 import {
   buildRelationshipModel,
+  fetchCanonDeck,
   makeGeneratorRoll,
   prepareDeck
 } from "../shared-generator.js";
@@ -244,7 +245,18 @@ async function loadDeck(){
   const theme = themeSelect.value;
   const response = await fetch(`../decks/${theme}.json`, {cache:"no-store"});
   if(!response.ok) throw new Error(`Could not load ${theme} deck.`);
-  deck = prepareDeck(await response.json());
+  const baselineDeck = prepareDeck(await response.json());
+  try{
+    deck = await fetchCanonDeck({
+      supabaseUrl:SUPABASE_URL,
+      supabaseKey:SUPABASE_KEY,
+      theme,
+      baselineDeck
+    });
+  }catch(error){
+    console.warn("Live Canon unavailable; using bundled deck.",error);
+    deck = baselineDeck;
+  }
   setAdminDiceDeck(deck);
 
   const mains = [...new Set(
@@ -261,6 +273,16 @@ async function loadDeck(){
     mainSelect.append(option);
   });
 }
+
+let liveCanonRefreshInProgress=false;
+async function refreshLiveCanonOnReturn(){
+  if(document.visibilityState==="hidden"||liveCanonRefreshInProgress||!adminUnlocked||!deck.length)return;
+  liveCanonRefreshInProgress=true;
+  try{await loadDeck();}
+  finally{liveCanonRefreshInProgress=false;}
+}
+window.addEventListener("focus",refreshLiveCanonOnReturn);
+document.addEventListener("visibilitychange",refreshLiveCanonOnReturn);
 
 function roll(){
   setCurrentHighlightVisual(false);

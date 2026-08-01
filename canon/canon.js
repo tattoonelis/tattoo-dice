@@ -82,14 +82,14 @@ function mergeDatabase(seed,local){
   const result={schemaVersion:2,themes:seed.themes,subjects:seed.subjects.map(subject=>normalizeSubject(subject,seed.themes))};
   if(!local||!Array.isArray(local.subjects))return result;
   const localById=new Map(local.subjects.map(subject=>[subject.id,subject]));
-  result.subjects=result.subjects.map(subject=>localById.has(subject.id)?normalizeSubject(localById.get(subject.id),result.themes):subject);
+  result.subjects=result.subjects.map(subject=>localById.has(subject.id)?normalizeSubject(localById.get(subject.id),result.themes,subject):subject);
   for(const subject of local.subjects){
     if(!result.subjects.some(item=>item.id===subject.id))result.subjects.push(normalizeSubject(subject,result.themes));
   }
   return result;
 }
 
-function normalizeSubject(subject,themes=db?.themes||[]){
+function normalizeSubject(subject,themes=db?.themes||[],fallback={}){
   const validThemes=new Set(themes.map(theme=>theme.id));
   const slots=[...new Set((subject.slots||[]).filter(slot=>["main","detail","effect"].includes(slot)))];
   const score=Math.max(0,Math.min(3,Number(subject.score)||0));
@@ -101,9 +101,13 @@ function normalizeSubject(subject,themes=db?.themes||[]){
     slots:slots.length?slots:["detail"],score,weight:WEIGHTS[score],
     family:String(subject.family||slug(subject.name)||"other"),
     notes:String(subject.notes||""),
+    blockedWith:normalizeWordList(subject.blockedWith??fallback.blockedWith),
+    requires:normalizeWordList(subject.requires??fallback.requires),
     updatedAt:subject.updatedAt||subject.change?.updatedAt||null
   };
 }
+
+function normalizeWordList(value){return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||"").trim()).filter(Boolean))];}
 
 function loadLocal(){
   try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||localStorage.getItem(LEGACY_STORAGE_KEY)||"null");}catch{return null;}
@@ -116,9 +120,10 @@ async function loadCloudSubjects(){
     if(!response.ok)throw new Error(await response.text());
     const rows=await response.json();
     for(const row of rows){
-      const subject=normalizeSubject(row.payload,db.themes);
-      if(!subject.themes.length)continue;
+      if(String(row.id||"").startsWith("__deck_"))continue;
       const index=db.subjects.findIndex(item=>item.id===row.id);
+      const subject=normalizeSubject(row.payload,db.themes,index>=0?db.subjects[index]:{});
+      if(!subject.themes.length)continue;
       const localTime=Date.parse(db.subjects[index]?.updatedAt||0);
       const cloudTime=Date.parse(row.updated_at||subject.updatedAt||0);
       if(index<0)db.subjects.push(subject);else if(cloudTime>=localTime)db.subjects[index]=subject;
@@ -139,6 +144,17 @@ async function saveCloudSubject(subject){
   const response=await supabaseFetch(`${CANON_TABLE}?on_conflict=id`,{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify([{id:subject.id,payload:subject,updated_at:updatedAt}])});
   if(!response.ok)throw new Error(await response.text());
   cloudAvailable=true;setStorageBadge("CLOUD");
+}
+
+async function publishLiveDeck(theme=currentTheme){
+  const updatedAt=new Date().toISOString();
+  const rows=[{
+    id:`__deck_${theme}`,
+    payload:{schemaVersion:1,theme,entries:buildThemeDeck(theme),publishedAt:updatedAt},
+    updated_at:updatedAt
+  }];
+  const response=await supabaseFetch(`${CANON_TABLE}?on_conflict=id`,{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(rows)});
+  if(!response.ok)throw new Error(await response.text());
 }
 
 function renderThemeTabs(){
@@ -190,7 +206,7 @@ function getSubject(id){return db.subjects.find(subject=>subject.id===id);}
 
 function addWord(){
   let name="New Word";let number=1;while(db.subjects.some(subject=>subject.name===name))name=`New Word ${++number}`;
-  const subject={id:uniqueId(name),name,active:true,themes:[currentTheme],slots:["detail"],score:1,weight:2,family:"other",notes:"",updatedAt:new Date().toISOString()};
+  const subject={id:uniqueId(name),name,active:true,themes:[currentTheme],slots:["detail"],score:1,weight:2,family:"other",notes:"",blockedWith:[],requires:[],updatedAt:new Date().toISOString()};
   db.subjects.push(subject);touch(subject);$("#wordSearch").value="";renderRows();
   requestAnimationFrame(()=>{const input=$(`[data-subject-id="${subject.id}"] .word-input`);input?.focus();input?.select();input?.scrollIntoView({block:"center"});});
   toast(`New word added to ${themeName(currentTheme)}.`);
@@ -205,7 +221,7 @@ function removeFromTheme(subject){
 function openFamilyDialog(subject){
   familySubjectId=subject.id;$("#familyWord").textContent=subject.name;$("#familySearch").value="";renderFamilyResults();$("#familyDialog").showModal();
 }
-function allFamilies(){return [...new Set(db.subjects.map(subject=>subject.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
+function allFamilies(){return [...new Set(db.subjects.filter(subject=>subject.active&&subject.themes.length).map(subject=>subject.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
 function renderFamilyResults(){
   const subject=getSubject(familySubjectId);const search=$("#familySearch").value.trim().toLowerCase();
   $("#familyResults").innerHTML=allFamilies().filter(family=>!search||family.toLowerCase().includes(search)).map(family=>`<button type="button" data-family="${escapeHtml(family)}" class="${subject?.family===family?"current":""}">${escapeHtml(family.toUpperCase())}</button>`).join("");
@@ -219,7 +235,7 @@ function touch(subject,rerender=false){
   subject.updatedAt=new Date().toISOString();subject.weight=WEIGHTS[subject.score];saveLocal();setSaveStatus("SAVING","saving");
   clearTimeout(saveTimers.get(subject.id));
   saveTimers.set(subject.id,setTimeout(async()=>{
-    try{await saveCloudSubject(subject);setSaveStatus("SAVED TO CLOUD","saved");}
+    try{await saveCloudSubject(subject);await publishLiveDeck(currentTheme);setSaveStatus("LIVE","saved");}
     catch{cloudAvailable=false;setStorageBadge("LOCAL");setSaveStatus("SAVED LOCALLY","saved");}
   },650));
   if(rerender)renderRows();
@@ -230,9 +246,16 @@ function openDataDialog(){
   const name=themeName(currentTheme);$("#dataDialogTitle").textContent=name;$("#exportThemeButton").textContent=`EXPORT ${name.toUpperCase()}.JSON`;setStorageBadge(cloudAvailable?"CLOUD":"LOCAL");$("#dataDialog").showModal();
 }
 function exportThemeJson(){
-  const subjects=db.subjects.filter(subject=>subject.active&&subject.themes.includes(currentTheme));
-  const deck=subjects.flatMap(subject=>subject.slots.map(slot=>({word:subject.name,score:subject.score,weight:subject.weight,family:subject.family,slot}))).sort((a,b)=>a.word.localeCompare(b.word)||a.slot.localeCompare(b.slot));
+  const deck=buildThemeDeck(currentTheme);
   downloadJson(deck,`${currentTheme}.json`);toast(`${currentTheme}.json exported with ${deck.length} dice records.`);
+}
+function buildThemeDeck(theme){
+  return db.subjects.filter(subject=>subject.active&&subject.themes.includes(theme)).flatMap(subject=>subject.slots.map(slot=>{
+    const entry={word:subject.name,score:subject.score,weight:subject.weight,slot,family:subject.family};
+    if(subject.blockedWith?.length)entry.blockedWith=[...subject.blockedWith];
+    if(subject.requires?.length)entry.requires=[...subject.requires];
+    return entry;
+  })).sort((a,b)=>a.word.localeCompare(b.word)||a.slot.localeCompare(b.slot));
 }
 function exportBackup(){downloadJson({...db,exportedAt:new Date().toISOString()},`tattoo-dice-canon-backup-${dateStamp()}.json`);toast("Safe Canon backup exported.");}
 async function importBackup(file){
@@ -245,7 +268,7 @@ async function importBackup(file){
 }
 async function syncAll(){
   setStorageBadge("SYNCING");let saved=0;
-  try{for(const subject of db.subjects){await saveCloudSubject(subject);saved++;}toast(`${saved} words synced to shared storage.`);setSaveStatus("SAVED TO CLOUD","saved");}
+  try{for(const subject of db.subjects){await saveCloudSubject(subject);saved++;}await publishLiveDeck(currentTheme);toast(`${saved} words synced; ${themeName(currentTheme)} published live.`);setSaveStatus("LIVE","saved");}
   catch{cloudAvailable=false;setStorageBadge("LOCAL");toast("Shared table is not ready. Run canon/setup.sql once.");}
 }
 

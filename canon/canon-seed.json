@@ -215,6 +215,9 @@
                          "score":  3,
                          "weight":  12,
                          "family":  "butterfly",
+                         "blockedWith":  [
+                                             "Wing"
+                                         ],
                          "notes":  "Current live Classic deck",
                          "updatedAt":  null
                      },
@@ -494,6 +497,9 @@
                          "score":  3,
                          "weight":  12,
                          "family":  "bird",
+                         "blockedWith":  [
+                                             "Wing"
+                                         ],
                          "notes":  "Current live Classic deck",
                          "updatedAt":  null
                      },
@@ -938,6 +944,9 @@
                          "score":  1,
                          "weight":  2,
                          "family":  "bird",
+                         "blockedWith":  [
+                                             "Wing"
+                                         ],
                          "notes":  "Current live Classic deck",
                          "updatedAt":  null
                      },
@@ -1056,6 +1065,9 @@
                          "score":  0,
                          "weight":  0.25,
                          "family":  "bird",
+                         "blockedWith":  [
+                                             "Wing"
+                                         ],
                          "notes":  "Current live Classic deck",
                          "updatedAt":  null
                      },
@@ -1317,6 +1329,9 @@
                          "score":  3,
                          "weight":  12,
                          "family":  "bird",
+                         "blockedWith":  [
+                                             "Wing"
+                                         ],
                          "notes":  "Current live Classic deck",
                          "updatedAt":  null
                      },
@@ -1456,6 +1471,13 @@
                          "score":  3,
                          "weight":  12,
                          "family":  "wing",
+                         "blockedWith":  [
+                                             "Butterfly",
+                                             "Eagle",
+                                             "Parrot",
+                                             "Raven",
+                                             "Swallow"
+                                         ],
                          "notes":  "RULE: never combine with an already-winged subject (Butterfly, Eagle, Parrot, Raven, Swallow, or future winged birds/insects).",
                          "updatedAt":  null
                      },

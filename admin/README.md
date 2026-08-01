@@ -154,3 +154,10 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - One die remains visible but disabled.
 - Theme selection, statistics, rankings and exports live in the Admin menu.
 - Progress and V0.2.53 use the same footer positions as the Tattoo Dice counter and credits.
+
+## V0.2.57 Live Canon
+
+- Admin Ranking loads the complete live deck published by Canon from Supabase.
+- The bundled theme JSON remains the safe fallback.
+- Returning to an already-open Admin page automatically refreshes Canon before subsequent rolls.
+- Canon controls the available deck; rankings continue to control relationship probabilities.

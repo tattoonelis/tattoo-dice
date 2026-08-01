@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { fetchRelationshipModel, makeGeneratorRoll, prepareDeck } from "../shared-generator.js";
+import { fetchCanonDeck, fetchRelationshipModel, makeGeneratorRoll, prepareDeck } from "../shared-generator.js";
 
 let wordCount = 3;
 let deck = [];
@@ -4489,7 +4489,18 @@ async function loadDeck() {
   try {
     const response = await fetch(`/generator/decks/${activeTheme}.json`, { cache: "no-store" });
     if (!response.ok) throw new Error("Deck request failed");
-    deck = prepareDeck(await response.json());
+    const baselineDeck = prepareDeck(await response.json());
+    try {
+      deck = await fetchCanonDeck({
+        supabaseUrl:SUPABASE_URL,
+        supabaseKey:SUPABASE_KEY,
+        theme:activeTheme,
+        baselineDeck
+      });
+    } catch (canonError) {
+      console.warn("Live Canon unavailable; using bundled deck.",canonError);
+      deck = baselineDeck;
+    }
   } catch (error) {
     console.error("Could not load deck:", error);
     deck = [];
@@ -4508,6 +4519,16 @@ async function loadRelationshipRankings(){
     relationshipModel=new Map();
   }
 }
+
+let liveCanonRefreshInProgress=false;
+async function refreshLiveCanonOnReturn(){
+  if(document.visibilityState==="hidden"||liveCanonRefreshInProgress||!deck.length)return;
+  liveCanonRefreshInProgress=true;
+  try{await loadDeck();validateDeckScores();buildMainMenu();}
+  finally{liveCanonRefreshInProgress=false;}
+}
+window.addEventListener("focus",refreshLiveCanonOnReturn);
+document.addEventListener("visibilitychange",refreshLiveCanonOnReturn);
 
 function setRollRenderPerformanceMode(active) {
   // v2.4: no visual state switch during Roll. The preferred dimmer one-layer

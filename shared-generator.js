@@ -11,6 +11,28 @@ export function prepareDeck(rawDeck){
     .map(item => ({...item,weight:normaliseWeight(item)}));
 }
 
+export async function fetchCanonDeck({
+  supabaseUrl,
+  supabaseKey,
+  theme,
+  baselineDeck=[],
+  table="canon_subjects"
+}){
+  const query=new URLSearchParams({id:`eq.__deck_${theme}`,select:"payload",limit:"1"});
+  const response=await fetch(`${supabaseUrl}/rest/v1/${table}?${query}`,{
+    cache:"no-store",
+    headers:{apikey:supabaseKey,authorization:`Bearer ${supabaseKey}`}
+  });
+  if(!response.ok) throw new Error("Canon request failed");
+  const rows=await response.json();
+  const publishedDeck=rows?.[0]?.payload?.entries;
+  if(!Array.isArray(publishedDeck)||!publishedDeck.length){
+    if(Array.isArray(baselineDeck)&&baselineDeck.length) return prepareDeck(baselineDeck);
+    throw new Error("Published Canon deck is empty");
+  }
+  return prepareDeck(publishedDeck);
+}
+
 export function buildRelationshipModel(records,{theme}={}){
   const accepted=(Array.isArray(records)?records:[]).filter(record =>
     record &&
