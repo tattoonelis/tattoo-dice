@@ -2071,7 +2071,7 @@ function buildMainMenu() {
 
   const mainWords = [...new Set(
     deck
-      .filter(item => item.slot === "main" && Number(item.score || 0) >= 3)
+      .filter(item => item.slot === "main" && Number(item.score || 0) === 3)
       .map(item => item.word)
       .filter(Boolean)
   )].sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
@@ -4323,28 +4323,43 @@ async function loadDeck() {
   }
 }
 
-async function loadRelationshipRankings(){
+async function loadRelationshipRankings({preserveOnError=false}={}){
   try{
-    relationshipModel=await fetchRelationshipModel({
+    const latestModel=await fetchRelationshipModel({
       supabaseUrl:SUPABASE_URL,
       supabaseKey:SUPABASE_KEY,
       theme:activeTheme
     });
+    relationshipModel=latestModel;
   }catch(error){
     console.warn("Relationship rankings unavailable; using base deck weights.",error);
-    relationshipModel=new Map();
+    if(!preserveOnError)relationshipModel=new Map();
   }
 }
 
-let liveCanonRefreshInProgress=false;
-async function refreshLiveCanonOnReturn(){
-  if(document.visibilityState==="hidden"||liveCanonRefreshInProgress||!deck.length)return;
-  liveCanonRefreshInProgress=true;
-  try{await loadAvailablePublicThemes();if(!currentThemeAccessLocked){await loadDeck();validateDeckScores();buildMainMenu();}}
-  finally{liveCanonRefreshInProgress=false;}
+const FULL_LIVE_SYNC_INTERVAL_MS=60000;
+const FULL_LIVE_SYNC_AFTER_ROLL_MS=30000;
+let lastFullLiveSyncAt=Date.now();
+let liveDataRefreshPromise=null;
+async function refreshLiveData({force=false}={}){
+  if(document.visibilityState==="hidden")return;
+  if(liveDataRefreshPromise)return liveDataRefreshPromise;
+  liveDataRefreshPromise=(async()=>{
+    await loadAvailablePublicThemes();
+    if(currentThemeAccessLocked)return;
+    const fullSyncDue=force||Date.now()-lastFullLiveSyncAt>=FULL_LIVE_SYNC_AFTER_ROLL_MS;
+    if(!fullSyncDue)return;
+    await Promise.all([loadDeck(),loadRelationshipRankings({preserveOnError:true})]);
+    validateDeckScores();
+    buildMainMenu();
+    lastFullLiveSyncAt=Date.now();
+  })();
+  try{await liveDataRefreshPromise;}finally{liveDataRefreshPromise=null;}
 }
-window.addEventListener("focus",refreshLiveCanonOnReturn);
-document.addEventListener("visibilitychange",refreshLiveCanonOnReturn);
+function refreshLiveDataOnReturn(){if(document.visibilityState!=="hidden")refreshLiveData({force:true}).catch(()=>{});}
+window.addEventListener("focus",refreshLiveDataOnReturn);
+document.addEventListener("visibilitychange",refreshLiveDataOnReturn);
+setInterval(()=>{if(!rollInProgress)refreshLiveData({force:true}).catch(()=>{});},FULL_LIVE_SYNC_INTERVAL_MS);
 
 function setRollRenderPerformanceMode(active) {
   // v2.4: no visual state switch during Roll. The preferred dimmer one-layer
@@ -4384,7 +4399,7 @@ async function roll(options = { countIt: true }) {
     console.error("Recovered from Roll error:", error);
   } finally {
     try{
-      await loadAvailablePublicThemes();
+      await refreshLiveData();
       if(currentThemeAccessLocked){pendingUnlockTheme=activeTheme;showDiceCountNotice("THEME LOCKED");}
     }catch{}
     rollButton.classList.remove("rolling");

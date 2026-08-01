@@ -1,3 +1,14 @@
+# V0.2.60 — native Admin Live and continuous content sync
+
+- Added `/admin/live/`, a full-screen native-style Live preview that keeps the installed Admin Panel inside its own app scope and provides one fixed return button.
+- The preview embeds the exact public root app; it is not a separate generator build.
+- Live now refreshes both the published Canon deck and the ranking relationship model when opened, when returning to the app, at least once per minute while active and after a roll when the last full refresh is over 30 seconds old.
+- The public theme lock is still checked after every completed roll, independent of the throttled full-data refresh.
+- Canon edits therefore reach already-open public sessions without requiring a manual reload, generally on the next roll or within one minute.
+- Main selection now explicitly contains only subjects that currently have the Main slot and score exactly 3.
+- New score-3 Mains appear automatically; removing Main or lowering the score to 2 removes them automatically and resets an invalid fixed selection to Random.
+- A temporary ranking-network error preserves the last working relationship model instead of clearing it during a background refresh.
+
 # V0.2.59 — public theme locks
 
 - Connected the public Live App to the shared Canon theme catalog, so every Canon theme appears automatically without adding another hard-coded button.

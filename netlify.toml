@@ -12,6 +12,11 @@
   status = 301
 
 [[redirects]]
+  from = "/admin/live"
+  to = "/admin/live/"
+  status = 301
+
+[[redirects]]
   from = "/admin/ranking"
   to = "/admin/ranking/"
   status = 301

@@ -179,3 +179,12 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - Live checks access when opened or resumed, when the theme menu opens, and after each completed roll.
 - If a theme is locked while somebody is rolling, that roll finishes and the following roll is stopped.
 - This uses the existing `canon_subjects` table and needs no new Supabase setup.
+
+## V0.2.60 Native Live and automatic public sync
+
+- The Live App card opens `/admin/live/`: a full-screen, app-like view of the exact public app with an Admin return button.
+- This remains inside the installed Admin PWA instead of opening a separate-looking management screen.
+- Public sessions refresh Canon and Ranking on startup, theme changes, app return, every minute while active and after rolls when a full refresh is due.
+- Theme access is still checked after every roll.
+- Main selection is derived live from the current deck and shows only active Main entries with score exactly 3.
+- A new score-3 Main is added automatically. Lowering it to 2, removing its Main slot or removing it from the theme removes it automatically.
