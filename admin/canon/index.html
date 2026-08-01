@@ -8,7 +8,7 @@
   <title>Tattoo Dice Canon</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="../assets/admin-icon-180.png">
-  <link rel="stylesheet" href="./canon.css?v=5">
+  <link rel="stylesheet" href="./canon.css?v=6">
 </head>
 <body class="canon-locked">
   <div class="pin-gate" id="pinGate" role="dialog" aria-modal="true" aria-label="Tattoo Dice Canon access">
@@ -30,7 +30,7 @@
 
   <main class="app-shell" id="app" aria-hidden="true">
     <header class="topbar">
-      <div class="brand"><img src="../assets/admin-ranking-header.png" alt=""><strong>CANON</strong></div>
+      <div class="brand"><strong>CANON</strong></div>
       <nav class="theme-tabs" id="themeTabs" aria-label="Theme"></nav>
       <div class="top-actions">
         <span class="storage-badge" id="storageBadge">LOADING</span>
@@ -71,7 +71,6 @@
     <form method="dialog" class="dialog-card">
       <header><div><small>CANON DATA</small><h2 id="dataDialogTitle">Classic</h2></div><button value="cancel" aria-label="Close">×</button></header>
       <p>Export the current theme for the app, or make a complete safety backup.</p>
-      <button class="public-theme-action" id="publicThemeButton" type="button">UNLOCK FOR PUBLIC</button>
       <button class="primary-action" id="exportThemeButton" type="button">EXPORT CLASSIC.JSON</button>
       <button class="secondary-action" id="exportBackupButton" type="button">EXPORT SAFE BACKUP</button>
       <label class="file-action">IMPORT SAFE BACKUP<input id="backupInput" type="file" accept="application/json,.json"></label>
@@ -100,7 +99,7 @@
       </div>
       <p class="theme-selection-count"><strong id="themeSelectionCount">0</strong> WORDS SELECTED</p>
       <div class="theme-word-list" id="themeWordList"></div>
-      <p class="theme-copy-note">Every selected word keeps its score, weight, dice columns, family, notes and existing rules.</p>
+      <p class="theme-copy-note">Selected words copy their Classic profile once, then remain independent inside this theme.</p>
       <button class="primary-action" id="createThemeButton" type="button">CREATE THEME</button>
     </form>
   </dialog>
@@ -108,6 +107,6 @@
   <div class="portrait-hint"><strong>TURN YOUR PHONE</strong><span>Canon works as a clear table in landscape mode.</span></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="../admin-nav.js?v=1"></script>
-  <script type="module" src="./canon.js?v=5"></script>
+  <script type="module" src="./canon.js?v=6"></script>
 </body>
 </html>

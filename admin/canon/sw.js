@@ -1,5 +1,5 @@
-const CACHE="tattoo-dice-canon-v5";
-const FILES=["./","./index.html","./canon.css","./canon.js","./canon-seed.json","./manifest.webmanifest","../admin-nav.js?v=1","../assets/admin-ranking-header.png","../assets/admin-icon-192.png"];
+const CACHE="tattoo-dice-canon-v6";
+const FILES=["./","./index.html","./canon.css?v=6","./canon.js?v=6","./canon-seed.json","./fantasy-words.json","./manifest.webmanifest","../admin-nav.js?v=1","../assets/admin-ranking-header.png","../assets/admin-icon-192.png"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES))));
 self.addEventListener("activate",event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))));
 self.addEventListener("fetch",event=>{

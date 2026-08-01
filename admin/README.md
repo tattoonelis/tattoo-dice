@@ -188,3 +188,14 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - Theme access is still checked after every roll.
 - Main selection is derived live from the current deck and shows only active Main entries with score exactly 3.
 - A new score-3 Main is added automatically. Lowering it to 2, removing its Main slot or removing it from the theme removes it automatically.
+
+## V0.2.61 Independent theme profiles
+
+- A subject has one shared name but a separate score, slots, family, notes and hard-rule profile for every theme.
+- New themes copy selected Classic profiles once and then diverge independently.
+- Fantasy contains the 147 supplied word names. Existing Classic matches inherit the live Classic profile; new names start empty at score 0.
+- An incomplete entry has no slot or family. It is visible in Canon as `UNASSIGNED` but cannot enter a published deck or ranking roll.
+- Choosing at least one slot and a family makes an entry publishable automatically.
+- Public OPEN / LOCK controls are available directly beside each theme tab.
+- This V3 payload continues using `canon_subjects`; no Supabase migration is required.
+- Secure purchases, promotions and event entitlements are a later server-side phase and must not rely on the current visual lock alone.

@@ -1,3 +1,18 @@
+# V0.2.61 — independent theme profiles and Fantasy workspace
+
+- Rebuilt Canon subjects around independent per-theme profiles while preserving one shared word identity.
+- Existing legacy Canon rows migrate in the browser without a Supabase schema change.
+- Creating a new theme copies each selected word's current Classic profile once; later edits remain isolated inside that theme.
+- Added the 147 unique Fantasy words from the supplied PDF as a word-only source.
+- Exact current Classic matches inherit their score, weight, slots, family, notes and hard-rule metadata.
+- New Fantasy words start at score 0 / weight 0.25 with no slots, no family, no notes and no rules.
+- Incomplete words remain editable in Canon but are excluded from published decks, Generator, Ranking and Live until they have at least one slot and a family.
+- New manually added words use the same empty, incomplete starting state.
+- Added direct OPEN / LOCK public controls beside every theme; Classic remains permanently open.
+- Removed the cropped Canon header logo and made the full Canon table available in narrow portrait browser panels.
+- Removed the Admin Panel heading and vertically centered the four tool cards.
+- Purchase and event entitlements remain intentionally planned but are not part of this release.
+
 # V0.2.60 — native Admin Live and continuous content sync
 
 - Added `/admin/live/`, a full-screen native-style Live preview that keeps the installed Admin Panel inside its own app scope and provides one fixed return button.

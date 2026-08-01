@@ -2,7 +2,8 @@ const SUPABASE_URL="https://gkcsiqgsovbbavunibmv.supabase.co";
 const SUPABASE_KEY="sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 const CANON_TABLE="canon_subjects";
 const ADMIN_PIN="231189";
-const STORAGE_KEY="tattooDiceCanonV2";
+const STORAGE_KEY="tattooDiceCanonV3";
+const PREVIOUS_STORAGE_KEY="tattooDiceCanonV2";
 const LEGACY_STORAGE_KEY="tattooDiceCanonV1";
 const WEIGHTS={0:.25,1:2,2:6,3:12};
 
@@ -54,13 +55,15 @@ async function initialize(){
   initialized=true;
   bindEvents();
   setSaveStatus("LOADING","saving");
-  const seed=await fetch("./canon-seed.json",{cache:"no-store"}).then(response=>{
-    if(!response.ok)throw new Error("Canon seed could not be loaded.");
-    return response.json();
-  });
+  const [seed,fantasyWords]=await Promise.all([
+    fetch("./canon-seed.json",{cache:"no-store"}).then(response=>{if(!response.ok)throw new Error("Canon seed could not be loaded.");return response.json();}),
+    fetch("./fantasy-words.json",{cache:"no-store"}).then(response=>{if(!response.ok)throw new Error("Fantasy words could not be loaded.");return response.json();})
+  ]);
   db=mergeDatabase(seed,loadLocal());
   await loadCloudThemeCatalog();
   await loadCloudSubjects();
+  ensureFantasyWords(fantasyWords);
+  saveLocal();
   renderThemeTabs();
   renderRows();
   setSaveStatus("SAVED","saved");
@@ -68,6 +71,7 @@ async function initialize(){
 
 function bindEvents(){
   $("#themeTabs").addEventListener("click",event=>{
+    const lock=event.target.closest("[data-theme-lock]");if(lock){togglePublicTheme(lock.dataset.themeLock);return;}
     const button=event.target.closest("[data-theme]");if(!button)return;
     currentTheme=button.dataset.theme;renderThemeTabs();renderRows();
   });
@@ -78,7 +82,6 @@ function bindEvents(){
   $("#wordRows").addEventListener("input",handleRowInput);
   $("#dataButton").addEventListener("click",openDataDialog);
   $("#exportThemeButton").addEventListener("click",exportThemeJson);
-  $("#publicThemeButton").addEventListener("click",togglePublicTheme);
   $("#exportBackupButton").addEventListener("click",exportBackup);
   $("#backupInput").addEventListener("change",event=>importBackup(event.target.files[0]));
   $("#syncAllButton").addEventListener("click",syncAll);
@@ -97,7 +100,7 @@ function bindEvents(){
 
 function mergeDatabase(seed,local){
   const themes=mergeThemes(seed.themes,local?.themes);
-  const result={schemaVersion:2,themes,subjects:seed.subjects.map(subject=>normalizeSubject(subject,themes))};
+  const result={schemaVersion:3,themes,subjects:seed.subjects.map(subject=>normalizeSubject(subject,themes))};
   if(!local||!Array.isArray(local.subjects))return result;
   const localById=new Map(local.subjects.map(subject=>[subject.id,subject]));
   result.subjects=result.subjects.map(subject=>localById.has(subject.id)?normalizeSubject(localById.get(subject.id),result.themes,subject):subject);
@@ -119,26 +122,61 @@ function mergeThemes(...lists){
 
 function normalizeSubject(subject,themes=db?.themes||[],fallback={}){
   const validThemes=new Set(themes.map(theme=>theme.id));
-  const slots=[...new Set((subject.slots||[]).filter(slot=>["main","detail","effect"].includes(slot)))];
-  const score=Math.max(0,Math.min(3,Number(subject.score)||0));
+  const profiles={};
+  for(const [theme,profile] of Object.entries(fallback.profiles||{})){if(validThemes.has(theme))profiles[theme]=normalizeProfile(profile);}
+  if(subject.profiles&&typeof subject.profiles==="object"){
+    for(const [theme,profile] of Object.entries(subject.profiles)){if(validThemes.has(theme))profiles[theme]=normalizeProfile(profile,profiles[theme]);}
+  }else{
+    const legacyThemes=[...new Set((subject.themes||["classic"]).filter(theme=>validThemes.has(theme)))];
+    legacyThemes.forEach(theme=>{profiles[theme]=normalizeProfile({included:true,active:subject.active!==false,slots:subject.slots,score:subject.score,family:subject.family,notes:subject.notes,blockedWith:subject.blockedWith,requires:subject.requires,updatedAt:subject.updatedAt},profiles[theme]);});
+  }
   return{
     id:String(subject.id||slug(subject.name)||`subject-${Date.now()}`),
     name:String(subject.name||"New Word"),
     active:subject.active!==false,
-    themes:[...new Set((subject.themes||["classic"]).filter(theme=>validThemes.has(theme)))],
-    slots:slots.length?slots:["detail"],score,weight:WEIGHTS[score],
-    family:String(subject.family||slug(subject.name)||"other"),
-    notes:String(subject.notes||""),
-    blockedWith:normalizeWordList(subject.blockedWith??fallback.blockedWith),
-    requires:normalizeWordList(subject.requires??fallback.requires),
-    updatedAt:subject.updatedAt||subject.change?.updatedAt||null
+    profiles,
+    updatedAt:subject.updatedAt||subject.change?.updatedAt||fallback.updatedAt||null
   };
+}
+
+function normalizeProfile(profile={},fallback={}){
+  const slots=[...new Set((profile.slots??fallback.slots??[]).filter(slot=>["main","detail","effect"].includes(slot)))];
+  const score=Math.max(0,Math.min(3,Number(profile.score??fallback.score??0)||0));
+  return{
+    included:(profile.included??fallback.included??true)!==false,
+    active:(profile.active??fallback.active??true)!==false,
+    slots,
+    score,
+    weight:WEIGHTS[score],
+    family:String(profile.family??fallback.family??"").trim().toLowerCase(),
+    notes:String(profile.notes??fallback.notes??""),
+    blockedWith:normalizeWordList(profile.blockedWith??fallback.blockedWith),
+    requires:normalizeWordList(profile.requires??fallback.requires),
+    updatedAt:profile.updatedAt||fallback.updatedAt||null
+  };
+}
+
+function cloneProfile(profile){return normalizeProfile(JSON.parse(JSON.stringify(profile||{})));}
+function profileFor(subject,theme=currentTheme){return subject?.profiles?.[theme]||null;}
+function includedInTheme(subject,theme=currentTheme){const profile=profileFor(subject,theme);return subject?.active!==false&&Boolean(profile)&&profile.included!==false;}
+function profileReady(profile){return Boolean(profile?.active!==false&&profile?.slots?.length&&profile?.family);}
+function ensureFantasyWords(words){
+  if(!Array.isArray(words))return;
+  if(!db.themes.some(theme=>theme.id==="fantasy"))db.themes.push({id:"fantasy",name:"Fantasy",publicUnlocked:false});
+  for(const rawName of words){
+    const name=String(rawName||"").trim();if(!name)continue;
+    let subject=db.subjects.find(item=>item.name.localeCompare(name,"en",{sensitivity:"base"})===0);
+    if(!subject){subject={id:uniqueId(name),name,active:true,profiles:{},updatedAt:null};db.subjects.push(subject);}
+    if(Object.prototype.hasOwnProperty.call(subject.profiles,"fantasy"))continue;
+    const classic=profileFor(subject,"classic");
+    subject.profiles.fantasy=classic?cloneProfile({...classic,included:true}):normalizeProfile({included:true,active:true,score:0,slots:[],family:"",notes:"",blockedWith:[],requires:[]});
+  }
 }
 
 function normalizeWordList(value){return [...new Set((Array.isArray(value)?value:[]).map(item=>String(item||"").trim()).filter(Boolean))];}
 
 function loadLocal(){
-  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||localStorage.getItem(LEGACY_STORAGE_KEY)||"null");}catch{return null;}
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||localStorage.getItem(PREVIOUS_STORAGE_KEY)||localStorage.getItem(LEGACY_STORAGE_KEY)||"null");}catch{return null;}
 }
 function saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify(db));}
 
@@ -160,7 +198,7 @@ async function loadCloudSubjects(){
       if(String(row.id||"").startsWith("__deck_"))continue;
       const index=db.subjects.findIndex(item=>item.id===row.id);
       const subject=normalizeSubject(row.payload,db.themes,index>=0?db.subjects[index]:{});
-      if(!subject.themes.length)continue;
+      if(!Object.keys(subject.profiles||{}).length)continue;
       const localTime=Date.parse(db.subjects[index]?.updatedAt||0);
       const cloudTime=Date.parse(row.updated_at||subject.updatedAt||0);
       if(index<0)db.subjects.push(subject);else if(cloudTime>=localTime)db.subjects[index]=subject;
@@ -215,7 +253,7 @@ function openThemeBuilder(){
 }
 function selectableThemeSubjects(){
   const search=$("#themeWordSearch").value.trim().toLowerCase();
-  return db.subjects.filter(subject=>subject.active&&(!search||subject.name.toLowerCase().includes(search)||subject.family.toLowerCase().includes(search))).sort((a,b)=>a.name.localeCompare(b.name));
+  return db.subjects.filter(subject=>subject.active&&(!search||subject.name.toLowerCase().includes(search)||(profileFor(subject,"classic")?.family||"").includes(search))).sort((a,b)=>a.name.localeCompare(b.name));
 }
 function renderThemeWordChoices(){
   $("#themeWordList").innerHTML=selectableThemeSubjects().map(subject=>`<label class="theme-word-choice"><input type="checkbox" data-theme-subject="${escapeHtml(subject.id)}" ${pendingThemeWords.has(subject.id)?"checked":""}><span>${escapeHtml(subject.name)}</span></label>`).join("");
@@ -237,18 +275,22 @@ async function createThemeFromSelection(){
   const selected=db.subjects.filter(subject=>pendingThemeWords.has(subject.id));
   const updatedAt=new Date().toISOString();
   db.themes.push({id,name,publicUnlocked:false});
-  selected.forEach(subject=>{subject.themes=[...new Set([...subject.themes,id])];subject.updatedAt=updatedAt;});
+  selected.forEach(subject=>{
+    const source=profileFor(subject,"classic")||profileFor(subject,currentTheme);
+    subject.profiles[id]=source?cloneProfile({...source,included:true}):normalizeProfile({included:true,active:true,score:0,slots:[],family:""});
+    subject.profiles[id].updatedAt=updatedAt;subject.updatedAt=updatedAt;
+  });
   currentTheme=id;saveLocal();renderThemeTabs();renderRows();$("#themeDialog").close();setSaveStatus("SAVING","saving");
   try{await saveCloudSubjects(selected);await publishLiveDeck(id);cloudAvailable=true;setStorageBadge("CLOUD");setSaveStatus("LIVE","saved");toast(`${name} created with ${selected.length} words.`);}
   catch{cloudAvailable=false;setStorageBadge("LOCAL");setSaveStatus("SAVED LOCALLY","saved");toast(`${name} created locally. Use Sync All when cloud is available.`);}
 }
 
 function renderThemeTabs(){
-  $("#themeTabs").innerHTML=db.themes.map(theme=>`<button type="button" data-theme="${escapeHtml(theme.id)}" class="${theme.id===currentTheme?"active":""}">${escapeHtml(theme.name.toUpperCase())}${theme.publicUnlocked?"":" 🔒"}</button>`).join("");
+  $("#themeTabs").innerHTML=db.themes.map(theme=>`<div class="theme-tab ${theme.id===currentTheme?"active":""}"><button type="button" data-theme="${escapeHtml(theme.id)}">${escapeHtml(theme.name.toUpperCase())}</button><button type="button" class="theme-lock ${theme.publicUnlocked?"unlocked":"locked"}" data-theme-lock="${escapeHtml(theme.id)}" aria-label="${theme.publicUnlocked?"Lock":"Unlock"} ${escapeHtml(theme.name)} for public" ${theme.id==="classic"?"disabled":""}>${theme.publicUnlocked?"OPEN":"LOCK"}</button></div>`).join("");
 }
 function visibleSubjects(){
   const search=$("#wordSearch").value.trim().toLowerCase();
-  return db.subjects.filter(subject=>subject.active&&subject.themes.includes(currentTheme)&&(!search||subject.name.toLowerCase().includes(search)||subject.family.toLowerCase().includes(search))).sort((a,b)=>a.name.localeCompare(b.name));
+  return db.subjects.filter(subject=>includedInTheme(subject)&&(!search||subject.name.toLowerCase().includes(search)||(profileFor(subject)?.family||"").includes(search))).sort((a,b)=>a.name.localeCompare(b.name));
 }
 function renderRows(){
   const subjects=visibleSubjects();
@@ -257,13 +299,14 @@ function renderRows(){
   $("#wordRows").innerHTML=subjects.map(subject=>rowTemplate(subject)).join("");
 }
 function rowTemplate(subject){
-  return`<tr data-subject-id="${escapeHtml(subject.id)}">
+  const profile=profileFor(subject);const ready=profileReady(profile);
+  return`<tr data-subject-id="${escapeHtml(subject.id)}" class="${ready?"":"incomplete"}">
     <td class="word-cell"><input class="word-input" data-field="name" value="${escapeHtml(subject.name)}" maxlength="60" aria-label="Word"></td>
-    <td><div class="score-picker" aria-label="Score">${[0,1,2,3].map(score=>`<button type="button" data-score="${score}" class="${score===subject.score?"active":""}">${score}</button>`).join("")}</div></td>
-    <td class="weight-cell">${formatWeight(subject.weight)}</td>
-    ${["main","detail","effect"].map(slot=>`<td><button type="button" data-slot="${slot}" class="slot-button ${slot} ${subject.slots.includes(slot)?"active":""}" aria-pressed="${subject.slots.includes(slot)}">${subject.slots.includes(slot)?"✓":"·"}</button></td>`).join("")}
-    <td><button type="button" class="family-button" data-family-open title="${escapeHtml(subject.family)}">${escapeHtml(subject.family.toUpperCase())}</button></td>
-    <td><input class="notes-input" data-field="notes" value="${escapeHtml(subject.notes)}" maxlength="800" placeholder="Optional note" aria-label="Notes"></td>
+    <td><div class="score-picker" aria-label="Score">${[0,1,2,3].map(score=>`<button type="button" data-score="${score}" class="${score===profile.score?"active":""}">${score}</button>`).join("")}</div></td>
+    <td class="weight-cell">${formatWeight(profile.weight)}</td>
+    ${["main","detail","effect"].map(slot=>`<td><button type="button" data-slot="${slot}" class="slot-button ${slot} ${profile.slots.includes(slot)?"active":""}" aria-pressed="${profile.slots.includes(slot)}">${profile.slots.includes(slot)?"✓":"·"}</button></td>`).join("")}
+    <td><button type="button" class="family-button ${profile.family?"":"unassigned"}" data-family-open title="${escapeHtml(profile.family||"Unassigned")}">${escapeHtml(profile.family?profile.family.toUpperCase():"UNASSIGNED")}</button></td>
+    <td><input class="notes-input" data-field="notes" value="${escapeHtml(profile.notes)}" maxlength="800" placeholder="${ready?"Optional note":"Complete slots + family"}" aria-label="Notes"></td>
     <td><button type="button" class="remove-button" data-remove aria-label="Remove from theme">×</button></td>
   </tr>`;
 }
@@ -271,13 +314,13 @@ function rowTemplate(subject){
 function handleRowClick(event){
   const row=event.target.closest("[data-subject-id]");if(!row)return;
   const subject=getSubject(row.dataset.subjectId);if(!subject)return;
+  const profile=profileFor(subject);if(!profile)return;
   const scoreButton=event.target.closest("[data-score]");
-  if(scoreButton){subject.score=Number(scoreButton.dataset.score);subject.weight=WEIGHTS[subject.score];touch(subject);renderRows();return;}
+  if(scoreButton){profile.score=Number(scoreButton.dataset.score);profile.weight=WEIGHTS[profile.score];touch(subject);renderRows();return;}
   const slotButton=event.target.closest("[data-slot]");
   if(slotButton){
     const slot=slotButton.dataset.slot;
-    subject.slots=subject.slots.includes(slot)?subject.slots.filter(item=>item!==slot):[...subject.slots,slot];
-    if(!subject.slots.length){subject.slots=[slot];toast("A word needs at least one dice column.");return;}
+    profile.slots=profile.slots.includes(slot)?profile.slots.filter(item=>item!==slot):[...profile.slots,slot];
     touch(subject);renderRows();return;
   }
   if(event.target.closest("[data-family-open]")){openFamilyDialog(subject);return;}
@@ -286,42 +329,42 @@ function handleRowClick(event){
 function handleRowInput(event){
   const input=event.target.closest("[data-field]");const row=event.target.closest("[data-subject-id]");if(!input||!row)return;
   const subject=getSubject(row.dataset.subjectId);if(!subject)return;
-  subject[input.dataset.field]=input.value;touch(subject,false);
+  if(input.dataset.field==="name")subject.name=input.value;else{const profile=profileFor(subject);if(!profile)return;profile[input.dataset.field]=input.value;}
+  touch(subject,false);
 }
 function getSubject(id){return db.subjects.find(subject=>subject.id===id);}
 
 function addWord(){
   let name="New Word";let number=1;while(db.subjects.some(subject=>subject.name===name))name=`New Word ${++number}`;
-  const subject={id:uniqueId(name),name,active:true,themes:[currentTheme],slots:["detail"],score:1,weight:2,family:"other",notes:"",blockedWith:[],requires:[],updatedAt:new Date().toISOString()};
+  const subject={id:uniqueId(name),name,active:true,profiles:{[currentTheme]:normalizeProfile({included:true,active:true,slots:[],score:0,family:"",notes:"",blockedWith:[],requires:[]})},updatedAt:new Date().toISOString()};
   db.subjects.push(subject);touch(subject);$("#wordSearch").value="";renderRows();
   requestAnimationFrame(()=>{const input=$(`[data-subject-id="${subject.id}"] .word-input`);input?.focus();input?.select();input?.scrollIntoView({block:"center"});});
   toast(`New word added to ${themeName(currentTheme)}.`);
 }
 function removeFromTheme(subject){
   if(!confirm(`Remove ${subject.name} from ${themeName(currentTheme)}?`))return;
-  subject.themes=subject.themes.filter(theme=>theme!==currentTheme);
-  if(!subject.themes.length)subject.active=false;
+  const profile=profileFor(subject);if(!profile)return;profile.included=false;
   touch(subject);renderRows();toast(`${subject.name} removed from ${themeName(currentTheme)}.`);
 }
 
 function openFamilyDialog(subject){
   familySubjectId=subject.id;$("#familyWord").textContent=subject.name;$("#familySearch").value="";renderFamilyResults();$("#familyDialog").showModal();
 }
-function allFamilies(){return [...new Set(db.subjects.filter(subject=>subject.active&&subject.themes.length).map(subject=>subject.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
+function allFamilies(){return [...new Set(db.subjects.filter(subject=>includedInTheme(subject)).map(subject=>profileFor(subject)?.family).filter(Boolean))].sort((a,b)=>a.localeCompare(b));}
 function renderFamilyResults(){
   const subject=getSubject(familySubjectId);const search=$("#familySearch").value.trim().toLowerCase();
-  $("#familyResults").innerHTML=allFamilies().filter(family=>!search||family.toLowerCase().includes(search)).map(family=>`<button type="button" data-family="${escapeHtml(family)}" class="${subject?.family===family?"current":""}">${escapeHtml(family.toUpperCase())}</button>`).join("");
+  const profile=profileFor(subject);$("#familyResults").innerHTML=allFamilies().filter(family=>!search||family.toLowerCase().includes(search)).map(family=>`<button type="button" data-family="${escapeHtml(family)}" class="${profile?.family===family?"current":""}">${escapeHtml(family.toUpperCase())}</button>`).join("");
 }
 function setFamily(value){
   const family=value.trim().toLowerCase();const subject=getSubject(familySubjectId);if(!family||!subject){toast("Choose or type a family.");return;}
-  subject.family=family;touch(subject);$("#familyDialog").close();renderRows();toast(`${subject.name}: ${family}`);
+  const profile=profileFor(subject);if(!profile)return;profile.family=family;touch(subject);$("#familyDialog").close();renderRows();toast(`${subject.name}: ${family}`);
 }
 
-function touch(subject,rerender=false){
-  subject.updatedAt=new Date().toISOString();subject.weight=WEIGHTS[subject.score];saveLocal();setSaveStatus("SAVING","saving");
-  clearTimeout(saveTimers.get(subject.id));
-  saveTimers.set(subject.id,setTimeout(async()=>{
-    try{await saveCloudSubject(subject);await publishLiveDeck(currentTheme);setSaveStatus("LIVE","saved");}
+function touch(subject,rerender=false,theme=currentTheme){
+  const profile=profileFor(subject,theme);const updatedAt=new Date().toISOString();subject.updatedAt=updatedAt;if(profile){profile.updatedAt=updatedAt;profile.weight=WEIGHTS[profile.score];}saveLocal();setSaveStatus("SAVING","saving");
+  const timerKey=`${subject.id}:${theme}`;clearTimeout(saveTimers.get(timerKey));
+  saveTimers.set(timerKey,setTimeout(async()=>{
+    try{await saveCloudSubject(subject);await publishLiveDeck(theme);setSaveStatus("LIVE","saved");}
     catch{cloudAvailable=false;setStorageBadge("LOCAL");setSaveStatus("SAVED LOCALLY","saved");}
   },650));
   if(rerender)renderRows();
@@ -329,28 +372,28 @@ function touch(subject,rerender=false){
 function setSaveStatus(message,state){const element=$("#saveStatus");element.textContent=message;element.className=`save-state ${state||""}`;}
 
 function openDataDialog(){
-  const name=themeName(currentTheme);$("#dataDialogTitle").textContent=name;$("#exportThemeButton").textContent=`EXPORT ${name.toUpperCase()}.JSON`;updatePublicThemeButton();setStorageBadge(cloudAvailable?"CLOUD":"LOCAL");$("#dataDialog").showModal();
+  const name=themeName(currentTheme);$("#dataDialogTitle").textContent=name;$("#exportThemeButton").textContent=`EXPORT ${name.toUpperCase()}.JSON`;setStorageBadge(cloudAvailable?"CLOUD":"LOCAL");$("#dataDialog").showModal();
 }
 function currentThemeRecord(){return db.themes.find(theme=>theme.id===currentTheme);}
-function updatePublicThemeButton(){const theme=currentThemeRecord();const button=$("#publicThemeButton");const classic=theme?.id==="classic";const live=theme?.publicUnlocked===true;button.disabled=classic;button.textContent=classic?"ALWAYS PUBLIC":live?"LOCK FOR PUBLIC":"UNLOCK FOR PUBLIC";button.classList.toggle("public",live);}
-async function togglePublicTheme(){
-  const theme=currentThemeRecord();if(!theme)return;
+async function togglePublicTheme(themeId=currentTheme){
+  const theme=db.themes.find(item=>item.id===themeId);if(!theme)return;
   if(theme.id==="classic")return;
-  theme.publicUnlocked=!theme.publicUnlocked;saveLocal();renderThemeTabs();updatePublicThemeButton();setSaveStatus("SAVING","saving");
+  theme.publicUnlocked=!theme.publicUnlocked;saveLocal();renderThemeTabs();setSaveStatus("SAVING","saving");
   try{await publishThemeCatalog();setSaveStatus(theme.publicUnlocked?"PUBLIC":"LOCKED","saved");toast(`${theme.name} is now ${theme.publicUnlocked?"available":"locked"} in the Live App.`);}
-  catch{theme.publicUnlocked=!theme.publicUnlocked;saveLocal();renderThemeTabs();updatePublicThemeButton();setSaveStatus("SAVED LOCALLY","saved");toast("Public status could not be updated.");}
+  catch{theme.publicUnlocked=!theme.publicUnlocked;saveLocal();renderThemeTabs();setSaveStatus("SAVED LOCALLY","saved");toast("Public status could not be updated.");}
 }
 function exportThemeJson(){
   const deck=buildThemeDeck(currentTheme);
   downloadJson(deck,`${currentTheme}.json`);toast(`${currentTheme}.json exported with ${deck.length} dice records.`);
 }
 function buildThemeDeck(theme){
-  return db.subjects.filter(subject=>subject.active&&subject.themes.includes(theme)).flatMap(subject=>subject.slots.map(slot=>{
-    const entry={word:subject.name,score:subject.score,weight:subject.weight,slot,family:subject.family};
-    if(subject.blockedWith?.length)entry.blockedWith=[...subject.blockedWith];
-    if(subject.requires?.length)entry.requires=[...subject.requires];
+  return db.subjects.filter(subject=>includedInTheme(subject,theme)&&profileReady(profileFor(subject,theme))).flatMap(subject=>{
+    const profile=profileFor(subject,theme);return profile.slots.map(slot=>{
+    const entry={word:subject.name,score:profile.score,weight:profile.weight,slot,family:profile.family};
+    if(profile.blockedWith?.length)entry.blockedWith=[...profile.blockedWith];
+    if(profile.requires?.length)entry.requires=[...profile.requires];
     return entry;
-  })).sort((a,b)=>a.word.localeCompare(b.word)||a.slot.localeCompare(b.slot));
+  });}).sort((a,b)=>a.word.localeCompare(b.word)||a.slot.localeCompare(b.slot));
 }
 function exportBackup(){downloadJson({...db,exportedAt:new Date().toISOString()},`tattoo-dice-canon-backup-${dateStamp()}.json`);toast("Safe Canon backup exported.");}
 async function importBackup(file){
