@@ -7,21 +7,55 @@
   status = 301
 
 [[redirects]]
-  from = "/generator"
-  to = "/generator/"
+  from = "/admin/generator"
+  to = "/admin/generator/"
   status = 301
 
 [[redirects]]
-  from = "/canon"
-  to = "/canon/"
+  from = "/admin/ranking"
+  to = "/admin/ranking/"
   status = 301
 
-[[headers]]
-  for = "/generator/*"
-  [headers.values]
-    X-Robots-Tag = "noindex, nofollow, noarchive"
+[[redirects]]
+  from = "/admin/canon"
+  to = "/admin/canon/"
+  status = 301
+
+[[redirects]]
+  from = "/generator"
+  to = "/admin/generator/"
+  status = 301
+
+[[redirects]]
+  from = "/generator/*"
+  to = "/admin/generator/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/canon"
+  to = "/admin/canon/"
+  status = 301
+
+[[redirects]]
+  from = "/canon/*"
+  to = "/admin/canon/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/admin/test"
+  to = "/admin/generator/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/admin/test/*"
+  to = "/admin/generator/"
+  status = 301
+  force = true
 
 [[headers]]
-  for = "/canon/*"
+  for = "/admin/*"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow, noarchive"

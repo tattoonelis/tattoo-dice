@@ -2,222 +2,55 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#050505">
-  <title>Tattoo Dice Admin</title>
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>Tattoo Dice Admin Panel</title>
   <link rel="icon" href="./assets/admin-icon-192.png">
-  <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./assets/admin-icon-180.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Dice Admin">
-  <meta name="mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./admin-ranking.css?v=18">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./admin-panel.css?v=1">
 </head>
-<body class="admin-locked">
-  <div id="rotateAdminOverlay" class="rotate-admin-overlay" aria-hidden="true">
-    <div class="rotate-admin-card">
-      <div class="rotate-admin-icon">↻</div>
-      <h2>Rotate your device</h2>
-      <p>Dice Admin is designed for portrait mode.</p>
-    </div>
-  </div>
-
-  <div class="admin-pin-gate" id="adminPinGate" aria-hidden="false">
-    <div class="admin-pin-backdrop"></div>
-    <section class="admin-pin-card" role="dialog" aria-modal="true" aria-label="Tattoo Dice Admin access">
-      <img class="admin-access-logo" src="./assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
-      <p class="admin-pin-copy">Enter the six-digit PIN.</p>
-
-      <div class="admin-pin-display" id="adminPinDisplay" aria-label="PIN entry">
-        <span></span><span></span><span></span><span></span><span></span><span></span>
+<body class="panel-locked">
+  <div class="panel-pin" id="panelPin" role="dialog" aria-modal="true" aria-label="Tattoo Dice Admin access">
+    <section class="pin-card">
+      <img src="./assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
+      <p>Enter the six-digit PIN.</p>
+      <div class="pin-dots" id="panelPinDots" aria-label="PIN entry"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="pin-grid" id="panelPinGrid">
+        <button data-pin="1">1</button><button data-pin="2">2</button><button data-pin="3">3</button>
+        <button data-pin="4">4</button><button data-pin="5">5</button><button data-pin="6">6</button>
+        <button data-pin="7">7</button><button data-pin="8">8</button><button data-pin="9">9</button>
+        <button data-action="clear">C</button><button data-pin="0">0</button><button data-action="back">⌫</button>
       </div>
-
-      <div class="admin-pin-keypad" id="adminPinKeypad" aria-label="Numeric keypad">
-        <button type="button" data-pin-key="1">1</button>
-        <button type="button" data-pin-key="2">2</button>
-        <button type="button" data-pin-key="3">3</button>
-        <button type="button" data-pin-key="4">4</button>
-        <button type="button" data-pin-key="5">5</button>
-        <button type="button" data-pin-key="6">6</button>
-        <button type="button" data-pin-key="7">7</button>
-        <button type="button" data-pin-key="8">8</button>
-        <button type="button" data-pin-key="9">9</button>
-        <button type="button" class="pin-clear" data-pin-action="clear">C</button>
-        <button type="button" data-pin-key="0">0</button>
-        <button type="button" class="pin-back" data-pin-action="backspace">⌫</button>
-      </div>
-      <p class="admin-pin-status" id="adminPinStatus" role="status"></p>
+      <p class="pin-status" id="panelPinStatus" role="status"></p>
     </section>
   </div>
 
-  <div id="installHint" class="install-hint" hidden>
-    Add this page to your Home Screen, then open <strong>Dice Admin</strong> from the new icon.
-  </div>
-  <div id="milestoneOverlay" class="milestone-overlay" aria-hidden="true" hidden><div class="milestone-card"><span id="milestonePercent" class="milestone-percent">5%</span><p id="milestoneText">Nice. 5% done. We’re officially rolling.</p><small>Tap anywhere to continue</small></div></div><div class="desktop-stage">
-  <main class="admin-shell portrait-shell">
-    <header class="portrait-header centered-header">
-      <div class="portrait-brand">
-        <img class="admin-ranking-logo" src="./assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
-      </div>
+  <main class="panel" id="adminPanel" aria-hidden="true">
+    <header class="panel-header">
+      <img src="./assets/admin-ranking-header.png" alt="Tattoo Dice Admin">
+      <h1>ADMIN PANEL</h1>
+      <p>Build, test and improve Tattoo Dice from anywhere.</p>
     </header>
 
-    <section class="portrait-card vote-card">
-      <div class="compact-controls centered-controls">
-        <div class="theme-stepper" aria-label="Theme">
-          <button id="themePrevious" class="theme-arrow" type="button" aria-label="Previous theme">‹</button>
-          <div class="theme-value-wrap">
-            <span id="themeValue" class="theme-value">CLASSIC</span>
-          </div>
-          <button id="themeNext" class="theme-arrow" type="button" aria-label="Next theme">›</button>
-          <select id="themeSelect" class="native-control" tabindex="-1" aria-hidden="true">
-            <option value="classic">Classic</option>
-            <option value="fantasy">Fantasy</option>
-          </select>
-        </div>
+    <nav class="panel-grid" aria-label="Admin tools">
+      <a class="panel-card live" href="/">
+        <span class="card-icon">●</span><strong>LIVE APP</strong><small>Open the public Tattoo Dice app</small>
+      </a>
+      <a class="panel-card test" href="./generator/">
+        <span class="card-icon">◆</span><strong>TESTVERSIE</strong><small>Try the complete generator safely</small>
+      </a>
+      <a class="panel-card ranking" href="./ranking/">
+        <span class="card-icon">✓</span><strong>RANKING</strong><small>Judge rolls and train relationships</small>
+      </a>
+      <a class="panel-card canon" href="./canon/">
+        <span class="card-icon">≡</span><strong>CANON</strong><small>Manage themes, words and families</small>
+      </a>
+    </nav>
 
-        <div class="admin-dice-count" role="group" aria-label="Number of dice">
-          <button class="admin-count-die admin-count-die-disabled" type="button" aria-label="One die is not available" disabled>
-            <span class="admin-mini-die admin-mini-die-one" aria-hidden="true"><i></i></span>
-          </button>
-          <button class="admin-count-die" type="button" data-dice-count="2" aria-label="Test two dice">
-            <span class="admin-mini-die admin-mini-die-two" aria-hidden="true"><i></i><i></i></span>
-          </button>
-          <button class="admin-count-die active" type="button" data-dice-count="3" aria-label="Test three dice">
-            <span class="admin-mini-die admin-mini-die-three" aria-hidden="true"><i></i><i></i><i></i></span>
-          </button>
-          <select id="diceCount" class="native-control" tabindex="-1" aria-hidden="true">
-            <option value="2">2</option>
-            <option value="3" selected>3</option>
-          </select>
-        </div>
-
-        <label class="main-control">
-          <span>MAIN</span>
-          <select id="mainSelect">
-            <option value="Random">Random</option>
-          </select>
-        </label>
-      </div>
-
-      <div class="result-meta centered-meta">
-        <span id="resultTheme">Classic</span>
-        <span id="resultCount">3 dice</span>
-      </div>
-
-      <section class="dice-stage" aria-live="polite">
-        <div id="adminDiceScene" class="admin-dice-scene" aria-label="Tattoo Dice result"></div>
-        <button id="highlightToggle" class="admin-highlight-toggle" type="button" aria-pressed="false" aria-label="Mark this combination as special">
-          <svg class="admin-heart-icon" viewBox="0 0 32 29" aria-hidden="true">
-            <path d="M16 27.2 3.1 15.1C-3.9 8.5 5.8-3.1 13.7 3.3L16 5.2l2.3-1.9c7.9-6.4 17.6 5.2 10.6 11.8L16 27.2Z"/>
-          </svg>
-        </button>
-      </section>
-
-      <section class="portrait-judge centered-judge">
-<label class="notes-label centered-note">
-          <span>Note <small>(optional)</small></span>
-          <textarea id="noteInput" maxlength="1000" placeholder="Why does it work — or why not?"></textarea>
-        </label>
-
-        <div class="verdict-actions">
-          <button id="rejectButton" class="verdict-button verdict-no" type="button">F*CK NO</button>
-          <button id="mehButton" class="verdict-button verdict-meh" type="button">MEH?</button>
-          <button id="approveButton" class="verdict-button verdict-yes" type="button">H*LL YES</button>
-        </div>
-
-        <div id="statusMessage" class="status-message" role="status"></div>
-      </section>
-
-      <div id="adminControlDeck" class="admin-control-deck">
-        <button id="statsToggle" class="admin-utility-button admin-menu-button" type="button">MENU</button>
-        <div id="diceCountSlot" class="dice-count-slot"></div>
-        <button id="rollButton" class="admin-utility-button admin-roll-button" type="button">ROLL</button>
-      </div>
-
-      <footer class="portrait-progress">
-        <span id="progressTheme" hidden>CLASSIC · 3 DICE</span>
-        <div class="progress-track">
-          <div id="progressFill" class="progress-fill"></div>
-          <span class="progress-count-inside"><span id="progressCount">0</span> / <span id="progressTarget">1200</span></span>
-          <strong id="progressPercent">0.0%</strong>
-        </div>
-      </footer>
-    </section>
-
-    <footer id="adminFooterSlot" class="admin-footer-slot">
-      <div class="admin-version">V0.2.57</div>
-    </footer>
+    <footer><span>ALL SYSTEMS CONNECTED</span><strong>V0.2.59</strong></footer>
   </main>
-</div>
-
-<aside id="statsDrawer" class="stats-drawer" aria-hidden="true">
-  <div class="stats-backdrop" data-close-stats></div>
-  <section class="stats-sheet">
-    <header class="stats-header">
-      <h2>ADMIN MENU</h2>
-      <button class="stats-close" data-close-stats type="button" aria-label="Close menu">×</button>
-    </header>
-
-    <div id="menuControlsSlot" class="menu-controls-slot"></div>
-
-    <div class="stat-grid">
-      <div><strong id="totalRatings">0</strong><span>ratings</span></div>
-      <div><strong id="upRatings">0</strong><span>positive</span></div>
-      <div><strong id="downRatings">0</strong><span>negative</span></div>
-      <div><strong id="mehRatings">0</strong><span>meh</span></div>
-      <div><strong id="openRatings">0</strong><span>open</span></div>
-    </div>
-
-    <div class="stats-toolbar">
-      <h3>Combination Rankings</h3>
-      <div>
-        <button id="refreshButton" class="small-button" type="button">Refresh</button>
-        <button id="exportButton" class="small-button" type="button">Export CSV</button>
-        <button id="exportHighlightsButton" class="small-button" type="button">Export Highlights</button>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Combination</th>
-            <th>Theme</th>
-            <th>👍</th>
-            <th>👎</th>
-            <th>Meh</th>
-            <th>Open</th>
-            <th>Verdict</th>
-            <th>Net</th>
-              <th>Delete</th>
-          </tr>
-        </thead>
-        <tbody id="rankingBody">
-          <tr><td colspan="9" class="empty-cell">No saved rankings yet.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="stats-toolbar notes-toolbar">
-      <h3>Recent Notes</h3>
-    </div>
-    <div id="recentList" class="recent-list">
-      <p class="empty-cell">No notes yet.</p>
-    </div>
-
-    <a class="menu-back-link" href="../">BACK TO DICES</a>
-  </section>
-</aside>
-
-  <script type="module" src="./admin.js?v=20"></script>
+  <script src="./admin-panel.js?v=1"></script>
 </body>
 </html>

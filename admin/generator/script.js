@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
-import { fetchCanonDeck, fetchCanonThemes, fetchRelationshipModel, makeGeneratorRoll, prepareDeck } from "./shared-generator.js";
+import { fetchCanonDeck, fetchCanonThemes, fetchRelationshipModel, makeGeneratorRoll, prepareDeck } from "../../shared-generator.js";
 
 let wordCount = 3;
 let deck = [];
@@ -12,6 +12,8 @@ let mainHintDismissBound = false;
 let displayedCounterValue = null;
 let counterAnimationToken = 0;
 let rollInProgress = false;
+let expansionGestureActive = false;
+let expansionUiLocked = false;
 
 let currentRoll = [];
 
@@ -47,7 +49,28 @@ let shakeGravity = { x: 0, y: 0, z: 0 };
 const SHAKE_MAIN_LOCAL_AXIS = new THREE.Vector3(0, 0, 1);
 
 function diceInteractionBusy() {
-  return rollInProgress || introActive || snapshotDropActive;
+  return rollInProgress || introActive || snapshotDropActive || expansionUiLocked;
+}
+
+function dispatchExpansionEvent(name, detail = {}) {
+  window.dispatchEvent(new CustomEvent(`tattoo-dice:${name}`, { detail }));
+}
+
+function createRollStateSnapshot() {
+  const words = currentRoll.slice(0, wordCount);
+  return {
+    version: 1,
+    theme: activeTheme,
+    count: wordCount,
+    words,
+    subjectIds: words.map((word, index) => `${activeTheme}:${index}:${String(word).trim().toLowerCase()}`),
+    faceWords: diceMeshes.slice(0, wordCount).map(die =>
+      Array.isArray(die?.userData?.faceWords) ? die.userData.faceWords.slice() : null
+    ),
+    selectedMain,
+    selectedMainIndex: selectedMain === "Random" ? -1 : 0,
+    savedAt: Date.now()
+  };
 }
 
 function syncDiceCountButtons(targetCount = wordCount) {
@@ -153,10 +176,8 @@ function requestOpeningReset() {
 }
 
 let activeTheme = localStorage.getItem("tattooDiceActiveTheme") || "classic";
-let fantasyUnlocked = false;
-let availableThemes=[{id:"classic",name:"Classic",publicUnlocked:true},{id:"fantasy",name:"Fantasy",publicUnlocked:false}];
-let currentThemeAccessLocked=false;
-let pendingUnlockTheme="fantasy";
+let fantasyUnlocked = sessionStorage.getItem("tattooDiceAdminUnlocked")==="true";
+if (activeTheme === "fantasy" && !fantasyUnlocked) activeTheme = "classic";
 let selectedMain = "Random";
 let mainSelectionAtOpen = selectedMain;
 let themeSelectionAtOpen = activeTheme;
@@ -175,6 +196,7 @@ let mainPlasmaClock = 0;
 let mainPlasmaLastFrameTime = null;
 let mainPlasmaPaused = false;
 let liveMainAuraTransition = null;
+let diceStageResizeObserver = null;
 
 const rollButton = document.getElementById("rollButton");
 const diceOptions = document.querySelectorAll(".dice-option");
@@ -185,7 +207,10 @@ const mainHintOverlay = document.getElementById("mainHintOverlay");
 const mainHintButtonStage = document.getElementById("mainHintButtonStage");
 const themeButton = document.getElementById("themeButton");
 const themeModal = document.getElementById("themeModal");
-const themeChoiceList = document.getElementById("themeChoiceList");
+const classicThemeChoice = document.getElementById("classicThemeChoice");
+const fantasyThemeChoice = document.getElementById("fantasyThemeChoice");
+const fantasyThemeLabel = document.getElementById("fantasyThemeLabel");
+const adminThemeSelect = document.getElementById("adminThemeSelect");
 const pinModal = document.getElementById("pinModal");
 const pinDisplay = document.getElementById("pinDisplay");
 const pinKeypad = document.getElementById("pinKeypad");
@@ -207,6 +232,7 @@ const helpTourCopy = document.getElementById("helpTourCopy");
 const helpTourProgress = document.getElementById("helpTourProgress");
 const helpTourArrow = document.getElementById("helpTourArrow");
 const helpTourTarget = document.getElementById("helpTourTarget");
+const helpTourMessage = helpTourOverlay?.querySelector(".help-tour-message");
 const headerFlareCanvas = document.getElementById("headerFlareCanvas");
 
 const SECRET_CODE = "332211";
@@ -216,31 +242,51 @@ const SUPABASE_KEY = "sb_publishable_la1MqfOB-NqB0pMK1_ruJg_0UUZKrAV";
 
 const HELP_TOUR_STEPS = [
   {
-    title: "CHOOSE YOUR STYLE",
-    copy: "Choose Classic or unlock another tattoo style.",
+    id: "previous-roll",
+    title: "PREVIOUS ROLL",
+    copy: () => matchMedia("(pointer: coarse)").matches
+      ? "Swipe right on the dice to bring back your last roll."
+      : "Drag right on the dice to bring back your last roll.",
+    target: () => diceStageEl
+  },
+  {
+    id: "save-favorites",
+    title: "SAVE FAVORITES",
+    copy: "Tap the heart to save or remove the complete roll.",
+    target: () => document.getElementById("favoriteToggle")
+  },
+  {
+    id: "menu",
+    title: "OPEN THE MENU",
+    copy: "Choose a theme and open Favorites, the Guide or Generator.",
     target: () => themeButton
   },
   {
-    title: "CHOOSE YOUR DICE",
-    copy: "Roll 1, 2 or 3 tattoo subjects.",
-    target: () => document.querySelector(".utility-row .dice-select")
-  },
-  {
+    id: "roll",
     title: "ROLL YOUR IDEA",
-    copy: "Tap Roll, or enable Shake and move your device.",
+    copy: "Tap Roll to create a new tattoo idea.",
     target: () => rollButton
   },
   {
-    title: "SHAKE TO ROLL",
-    copy: "Turn it on, then shake your phone or tablet to roll.",
-    target: () => shakeToggle
-  },
-  {
+    id: "main",
     title: "CHOOSE A MAIN",
-    copy: "Lock one subject and combine it with 1 or 2 additional dice.",
+    copy: "Lock one subject, or keep everything Random.",
     target: () => mainButton
   },
   {
+    id: "shake",
+    title: "SHAKE TO ROLL",
+    copy: "Enable it, then shake your phone or tablet.",
+    target: () => shakeToggle
+  },
+  {
+    id: "dice-count",
+    title: "CHOOSE YOUR DICE",
+    copy: "Choose 1, 2 or 3 subjects for your roll.",
+    target: () => document.querySelector(".utility-row .dice-select")
+  },
+  {
+    id: "reset",
     title: "START FRESH",
     copy: "Reset returns to Classic, Random and 3 dice.",
     target: () => resetButton
@@ -570,7 +616,7 @@ function restoreHeaderAfterHelpTour() {
 }
 
 function positionHelpTourStep() {
-  if (!helpTourOverlay?.classList.contains("show") || !helpTourTarget || !helpTourArrow) return;
+  if (!helpTourOverlay?.classList.contains("show") || !helpTourTarget) return;
   restoreHelpTourControl();
   positionHelpTourHeader();
   const step = HELP_TOUR_STEPS[helpTourIndex];
@@ -584,20 +630,39 @@ function positionHelpTourStep() {
   helpTourTarget.style.setProperty("width", `${rect.width}px`, "important");
   helpTourTarget.style.setProperty("height", `${rect.height}px`, "important");
   liftControlIntoHelpTour(source, rect);
-  Object.assign(helpTourArrow.style, {
-    left: `${rect.left + rect.width / 2 - 14}px`,
-    top: `${Math.max(74, rect.top - 54)}px`
-  });
+
+  /* The explanation stays in one fixed band beneath the dice for every page.
+     Only the highlighted real control changes, so neither text nor dots jump. */
+  const messageHeight = helpTourMessage?.getBoundingClientRect().height || 96;
+  const headerBottom = helpTourHeaderState
+    ? helpTourHeaderState.top + helpTourHeaderState.height
+    : 64;
+  const firstButtonRowTop = themeButton?.getBoundingClientRect().top || innerHeight * .72;
+  const preferredCenter = firstButtonRowTop - 10 - messageHeight / 2;
+  const minimumCenter = headerBottom + 16 + messageHeight / 2;
+  const maximumCenter = innerHeight - 94 - messageHeight / 2;
+  const messageCenterY = Math.max(
+    minimumCenter,
+    Math.min(maximumCenter, preferredCenter)
+  );
+
+  if (helpTourMessage) {
+    helpTourMessage.style.setProperty("top", `${messageCenterY}px`, "important");
+  }
 }
 
 function renderHelpTourStep() {
   const step = HELP_TOUR_STEPS[helpTourIndex];
   if (!step || !helpTourTitle || !helpTourCopy || !helpTourProgress) return;
   helpTourTitle.textContent = step.title;
-  helpTourCopy.textContent = step.copy;
+  helpTourCopy.textContent = typeof step.copy === "function" ? step.copy() : step.copy;
   helpTourProgress.innerHTML = HELP_TOUR_STEPS
     .map((_, index) => `<span class="${index === helpTourIndex ? "active" : ""}">●</span>`)
     .join("");
+  helpTourOverlay?.querySelector(".guide-feature-demo")?.remove();
+  window.dispatchEvent(new CustomEvent("tattoo-dice:guide-step", {
+    detail: { id: step.id, index: helpTourIndex }
+  }));
   requestAnimationFrame(positionHelpTourStep);
 }
 
@@ -626,6 +691,8 @@ function closeHelpTour() {
   restoreHeaderAfterHelpTour();
   helpTourOverlay.setAttribute("aria-hidden", "true");
   helpTourTarget?.replaceChildren();
+  helpTourOverlay?.querySelector(".guide-feature-demo")?.remove();
+  window.dispatchEvent(new CustomEvent("tattoo-dice:guide-close"));
 }
 
 function advanceHelpTour() {
@@ -976,6 +1043,7 @@ async function finishShakeRoll() {
   clearTimeout(shakeStopTimer);
 
   try {
+    dispatchExpansionEvent("before-new-roll", { snapshot: createRollStateSnapshot(), source: "shake" });
     const nextRoll = makeRoll(wordCount);
     currentRoll = nextRoll;
     prepareDiceResult(nextRoll);
@@ -983,6 +1051,7 @@ async function finishShakeRoll() {
     const settleDurationMs = startShakeSettleAnimation();
     await wait(settleDurationMs + 45);
     incrementCounter();
+    dispatchExpansionEvent("roll-settled", { snapshot: createRollStateSnapshot(), source: "shake" });
   } catch (error) {
     console.error("Recovered from Shake to Roll error:", error);
     diceMeshes.forEach((die, index) => {
@@ -1085,10 +1154,12 @@ const FACE_NORMALS = [
   new THREE.Vector3(0, 0, -1)
 ];
 
-function setThemeModalState(open) {
+async function setThemeModalState(open) {
   if (!themeModal) return;
-  if(open)loadAvailablePublicThemes().catch(()=>{});
   const wasOpen = themeModal.classList.contains("open");
+  const previewedTheme = !open && wasOpen
+    ? (adminThemeSelect?.value||(document.getElementById("themeTrack")?.classList.contains("show-fantasy") ? "fantasy" : "classic"))
+    : activeTheme;
 
   if (open) {
     themeSelectionAtOpen = activeTheme;
@@ -1099,6 +1170,10 @@ function setThemeModalState(open) {
   themeModal.classList.toggle("open", open);
   themeModal.setAttribute("aria-hidden", String(!open));
   document.body.classList.toggle("theme-modal-open", open);
+
+  if (!open && wasOpen && previewedTheme !== activeTheme) {
+    await selectTheme(previewedTheme);
+  }
 
   if (!open && wasOpen && themeSelectionChanged && !introActive && !rollInProgress) {
     playTopDrop(false);
@@ -1137,7 +1212,7 @@ function updateDiceCountAvailability() {
   syncDiceCountButtons();
 }
 
-function showDiceCountNotice(message) {
+function showDiceCountNotice(message, duration = 1500) {
   const notice = document.getElementById("diceCountNotice");
   if (!notice) return;
 
@@ -1146,7 +1221,7 @@ function showDiceCountNotice(message) {
   void notice.offsetWidth;
   notice.classList.add("show");
   clearTimeout(notice._hideTimer);
-  notice._hideTimer = setTimeout(() => notice.classList.remove("show"), 1500);
+  notice._hideTimer = setTimeout(() => notice.classList.remove("show"), duration);
 }
 
 function updateActionButtonLabels() {
@@ -1154,7 +1229,7 @@ function updateActionButtonLabels() {
   const mainLabel = mainButton?.querySelector("span");
 
   if (themeLabel) {
-    themeLabel.textContent = String(themeRecord(activeTheme)?.name||activeTheme).toUpperCase();
+    themeLabel.textContent = "MENU";
   }
 
   if (mainLabel) {
@@ -1163,7 +1238,7 @@ function updateActionButtonLabels() {
 
   // CLASSIC / FANTASY and RANDOM use the same letter height as ROLL. Longer
   // selected Main names keep the former compact size so they never clip.
-  themeButton?.classList.toggle("compact-label", (themeLabel?.textContent.length || 0) > 7);
+  themeButton?.classList.remove("compact-label");
   mainButton?.classList.toggle("compact-label", (mainLabel?.textContent.length || 0) > 7);
 
   updateDiceCountAvailability();
@@ -1178,27 +1253,30 @@ function updateMainMenuSelection() {
 }
 
 function updateThemeMenu() {
-  if(themeChoiceList){
-    themeChoiceList.innerHTML=availableThemes.map(theme=>{
-      const unlocked=themeHasAccess(theme.id);
-      return `<button class="theme-choice ${theme.id===activeTheme?"active":""} ${unlocked?"":"locked"}" type="button" data-theme="${escapeThemeHtml(theme.id)}" aria-pressed="${theme.id===activeTheme}"><span>${escapeThemeHtml(theme.name)}</span></button>`;
-    }).join("");
-  }
+  if (!classicThemeChoice || !fantasyThemeChoice) return;
+
+  classicThemeChoice.classList.toggle("active", activeTheme === "classic");
+  classicThemeChoice.setAttribute("aria-pressed", String(activeTheme === "classic"));
+
+  fantasyThemeChoice.classList.toggle("active", activeTheme === "fantasy");
+  fantasyThemeChoice.classList.toggle("locked", !fantasyUnlocked);
+  fantasyThemeChoice.setAttribute("aria-pressed", String(activeTheme === "fantasy"));
+  fantasyThemeLabel.textContent = fantasyUnlocked ? "FANTASY" : "FANTASY  ·  LOCKED";
+  if(adminThemeSelect&&[...adminThemeSelect.options].some(option=>option.value===activeTheme))adminThemeSelect.value=activeTheme;
   updateActionButtonLabels();
   bindMainHintDismiss();
 }
 
-function themeRecord(id){return availableThemes.find(theme=>theme.id===id);}
-function themeHasAccess(id){const theme=themeRecord(id);return id==="classic"||theme?.publicUnlocked===true||(id==="fantasy"&&fantasyUnlocked);}
-function escapeThemeHtml(value){return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");}
-async function loadAvailablePublicThemes(){
-  const fallback=availableThemes;
-  try{availableThemes=await fetchCanonThemes({supabaseUrl:SUPABASE_URL,supabaseKey:SUPABASE_KEY,fallback});}catch{availableThemes=fallback;}
-  availableThemes=availableThemes.map(theme=>({id:String(theme.id),name:String(theme.name||theme.id),publicUnlocked:theme.id==="classic"||theme.publicUnlocked===true}));
-  if(!themeRecord(activeTheme))activeTheme="classic";
-  currentThemeAccessLocked=!themeHasAccess(activeTheme);
-  updateThemeMenu();
-  return availableThemes;
+async function loadAvailableAdminThemes(){
+  if(!adminThemeSelect)return;
+  const fallback=[{id:"classic",name:"Classic"},{id:"fantasy",name:"Fantasy"}];
+  let themes=fallback;
+  try{themes=await fetchCanonThemes({supabaseUrl:SUPABASE_URL,supabaseKey:SUPABASE_KEY,fallback});}catch{}
+  adminThemeSelect.innerHTML="";
+  themes.forEach(theme=>{const option=document.createElement("option");option.value=theme.id;option.textContent=theme.name;adminThemeSelect.append(option);});
+  if(!themes.some(theme=>theme.id===activeTheme))activeTheme=themes[0]?.id||"classic";
+  adminThemeSelect.value=activeTheme;
+  adminThemeSelect.addEventListener("change",async()=>{await selectTheme(adminThemeSelect.value);await setThemeModalState(false);});
 }
 
 function mainStorageKey(theme = activeTheme) {
@@ -1212,9 +1290,8 @@ function loadStoredMain() {
 }
 
 async function selectTheme(themeName) {
-  if (!themeHasAccess(themeName)) {
-    pendingUnlockTheme=themeName;
-    if(themeName==="fantasy")setPinModalState(true);else showDiceCountNotice("THEME LOCKED");
+  if (themeName === "fantasy" && !fantasyUnlocked) {
+    setPinModalState(true);
     return;
   }
   if (themeName === activeTheme) {
@@ -1222,8 +1299,8 @@ async function selectTheme(themeName) {
     return;
   }
 
+  dispatchExpansionEvent("roll-context-changed", { reason: "theme" });
   activeTheme = themeName;
-  currentThemeAccessLocked=false;
   if (activeTheme === "classic") fantasyUnlocked = false;
 
   selectedMain = "Random";
@@ -1326,6 +1403,7 @@ const MAIN_PLASMA_FRAGMENT_SHADER = `
   uniform vec3 uColor;
   uniform float uLayer;
   uniform float uBreath;
+  uniform float uOrbStrength;
   uniform float uCoordinateScale;
   varying vec2 vUv;
   varying vec3 vObjectPosition;
@@ -1510,7 +1588,7 @@ const MAIN_PLASMA_FRAGMENT_SHADER = `
     // resin instead of forming a hard neon circle.
     // Restore enough energy for the core to read through the resin while the
     // plasma brightness remains completely untouched.
-    float orbEnergy = 0.86 * clamp(orbBody * 0.88 + orbHalo * 0.48, 0.0, 1.0);
+    float orbEnergy = uOrbStrength * 0.86 * clamp(orbBody * 0.88 + orbHalo * 0.48, 0.0, 1.0);
     // Keep the approved size, motion and intensity, but shift the complete orb
     // towards a cleaner white instead of limiting white to its smallest core.
     float orbWhiteMix = clamp(0.72 + orbCore * 0.26, 0.0, 0.98);
@@ -1521,12 +1599,120 @@ const MAIN_PLASMA_FRAGMENT_SHADER = `
     // green halo are drawn by this transparent overlay.
     float layerStrength = uLayer < 0.5 ? 1.0 : 0.42;
     float plasmaAlpha = 0.50 * clamp(haloStrength * 0.42 + greenShoulder * 0.72 + whiteCore * 0.20, 0.0, 0.96);
-    float orbAlpha = 0.78 * clamp(orbHalo * 0.38 + orbBody * 0.56 + orbCore * 0.38, 0.0, 0.90);
+    float orbAlpha = uOrbStrength * 0.78 * clamp(orbHalo * 0.38 + orbBody * 0.56 + orbCore * 0.38, 0.0, 0.90);
     float alpha = surfaceMask * uProgress * layerStrength * max(plasmaAlpha, orbAlpha);
 
     gl_FragColor = vec4(colour, alpha);
   }
 `;
+
+const AI_GENERATE_PLASMA_VERTEX_SHADER = `
+  varying vec2 vUv;
+  varying vec3 vObjectPosition;
+  varying vec3 vObjectNormal;
+  varying vec2 vOrbPlanePosition;
+
+  void main() {
+    vUv = uv;
+    vObjectNormal = vec3(0.0, 0.0, 1.0);
+    // The flat button uses the same object-space plasma volume as the front
+    // face of the Main Dice. Only the presentation geometry is different.
+    vObjectPosition = vec3((uv.x - 0.5) * 2.8, (uv.y - 0.5) * 1.1, 0.0);
+    vOrbPlanePosition = vObjectPosition.xy;
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+  }
+`;
+
+let aiGeneratePlasmaCanvas = null;
+let aiGeneratePlasmaRenderer = null;
+let aiGeneratePlasmaScene = null;
+let aiGeneratePlasmaCamera = null;
+let aiGeneratePlasmaMaterial = null;
+let aiGeneratePlasmaTexture = null;
+let aiGeneratePlasmaWidth = 0;
+let aiGeneratePlasmaHeight = 0;
+
+function getMainPlasmaBreath(clock) {
+  const breathRaw =
+    Math.sin(clock * 1.37) * 0.52 +
+    Math.sin(clock * 0.73 + 1.8) * 0.31 +
+    Math.sin(clock * 0.29 + 4.1) * 0.17;
+  return THREE.MathUtils.clamp(0.5 + breathRaw * 0.42, 0, 1);
+}
+
+function setupAiGeneratePlasmaButton() {
+  aiGeneratePlasmaCanvas = document.getElementById("aiPageGeneratePlasma");
+  if (!aiGeneratePlasmaCanvas || aiGeneratePlasmaRenderer) return;
+
+  aiGeneratePlasmaRenderer = new THREE.WebGLRenderer({
+    canvas: aiGeneratePlasmaCanvas,
+    alpha: true,
+    antialias: true,
+    premultipliedAlpha: true,
+    powerPreference: "low-power"
+  });
+  aiGeneratePlasmaRenderer.setClearColor(0x000000, 0);
+  aiGeneratePlasmaRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+
+  aiGeneratePlasmaTexture = new THREE.DataTexture(
+    new Uint8Array([255, 255, 255, 255]),
+    1,
+    1,
+    THREE.RGBAFormat
+  );
+  aiGeneratePlasmaTexture.colorSpace = THREE.SRGBColorSpace;
+  aiGeneratePlasmaTexture.needsUpdate = true;
+
+  aiGeneratePlasmaMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      baseMap: { value: aiGeneratePlasmaTexture },
+      uTime: { value: 0 },
+      uProgress: { value: 1 },
+      uColor: { value: MAIN_PLASMA_COLOR.clone() },
+      uLayer: { value: 0 },
+      uBreath: { value: 0.5 },
+      // The button shares the plasma, not the internal orb.
+      uOrbStrength: { value: 0 },
+      uCoordinateScale: { value: 1 },
+      uShellOffset: { value: 0 }
+    },
+    vertexShader: AI_GENERATE_PLASMA_VERTEX_SHADER,
+    fragmentShader: MAIN_PLASMA_FRAGMENT_SHADER,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+    blending: THREE.NormalBlending,
+    toneMapped: false
+  });
+
+  aiGeneratePlasmaScene = new THREE.Scene();
+  aiGeneratePlasmaCamera = new THREE.Camera();
+  const plasmaSurface = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    aiGeneratePlasmaMaterial
+  );
+  plasmaSurface.frustumCulled = false;
+  aiGeneratePlasmaScene.add(plasmaSurface);
+}
+
+function updateAiGeneratePlasmaButton(timeSeconds) {
+  if (!aiGeneratePlasmaRenderer || !aiGeneratePlasmaMaterial || !aiGeneratePlasmaCanvas) return;
+  const aiPage = document.getElementById("aiPage");
+  if (!aiPage?.classList.contains("open")) return;
+
+  const rect = aiGeneratePlasmaCanvas.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width));
+  const height = Math.max(1, Math.round(rect.height));
+  if (width !== aiGeneratePlasmaWidth || height !== aiGeneratePlasmaHeight) {
+    aiGeneratePlasmaWidth = width;
+    aiGeneratePlasmaHeight = height;
+    aiGeneratePlasmaRenderer.setSize(width, height, false);
+  }
+
+  aiGeneratePlasmaMaterial.uniforms.uTime.value = timeSeconds;
+  aiGeneratePlasmaMaterial.uniforms.uBreath.value = getMainPlasmaBreath(timeSeconds);
+  aiGeneratePlasmaRenderer.render(aiGeneratePlasmaScene, aiGeneratePlasmaCamera);
+}
 
 function disposeMainPlasmaOverlay() {
   if (!mainPlasmaOverlayMesh) return;
@@ -1556,6 +1742,7 @@ function createMainPlasmaLayer(mainDie, layerIndex, shellOffset, renderOrder) {
       uColor: { value: MAIN_PLASMA_COLOR.clone() },
       uLayer: { value: layerIndex },
       uBreath: { value: 0.5 },
+      uOrbStrength: { value: 1.0 },
       // Slot geometry is unit-sized in v2.10. Parent scale handles 1/2/3
       // layout size, so the internal orb/plasma coordinates are identical in
       // every mode without a mode-specific correction.
@@ -1742,11 +1929,7 @@ function updateMainPlasmaTime(timeSeconds) {
 
   // Three non-matching rhythms create a slow, organic breath without random
   // jumps. The result remains deterministic, snapshot-safe and cheap.
-  const breathRaw =
-    Math.sin(mainPlasmaClock * 1.37) * 0.52 +
-    Math.sin(mainPlasmaClock * 0.73 + 1.8) * 0.31 +
-    Math.sin(mainPlasmaClock * 0.29 + 4.1) * 0.17;
-  const breath = THREE.MathUtils.clamp(0.5 + breathRaw * 0.42, 0, 1);
+  const breath = getMainPlasmaBreath(mainPlasmaClock);
 
   if (mainPlasmaOverlayMesh) {
     forEachMainPlasmaMaterial(material => {
@@ -2094,6 +2277,9 @@ function buildMainMenu() {
     button.setAttribute("aria-pressed", String(word === selectedMain));
 
     button.addEventListener("click", () => {
+      if (word !== selectedMain) {
+        dispatchExpansionEvent("roll-context-changed", { reason: "main" });
+      }
       selectedMain = word;
       mainSelectionChanged = selectedMain !== mainSelectionAtOpen;
       localStorage.setItem(mainStorageKey(), selectedMain);
@@ -2136,8 +2322,6 @@ function applyMainSelectionDrop() {
 
   const nextRoll = makeRoll(wordCount);
 
-  // Rebuild the complete combination around the selected Main so the visible
-  // result cannot bypass shared family, compatibility or relationship rules.
   currentRoll=nextRoll;
   currentRoll.forEach((word,index)=>{
     const die=diceMeshes[index];
@@ -2228,10 +2412,9 @@ async function init() {
   disablePageZoom();
   requestPortraitLock();
   setupThree();
+  setupAiGeneratePlasmaButton();
   initialiseHeaderFlares();
-  await loadAvailablePublicThemes();
-
-  if(currentThemeAccessLocked){activeTheme="classic";currentThemeAccessLocked=false;localStorage.setItem("tattooDiceActiveTheme",activeTheme);}
+  await loadAvailableAdminThemes();
 
   // Requested startup state: Random every time.
   selectedMain = "Random";
@@ -2319,19 +2502,11 @@ async function init() {
     }, { passive: false });
 
     themeModal.querySelectorAll("[data-close-theme]").forEach(element => {
-      element.addEventListener("pointerup", event => {
+      element.addEventListener("pointerup", async event => {
         event.preventDefault();
-        setThemeModalState(false);
+        await setThemeModalState(false);
       }, { passive: false });
     });
-
-    themeChoiceList?.addEventListener("pointerup", async event => {
-      const choice=event.target.closest("[data-theme]");if(!choice)return;
-      event.preventDefault();
-      const themeName=choice.dataset.theme;
-      await selectTheme(themeName);
-      if(themeHasAccess(themeName))setThemeModalState(false);
-    }, { passive: false });
 
     pinModal?.querySelectorAll("[data-close-pin]").forEach(element => {
       element.addEventListener("pointerup", event => {
@@ -2353,10 +2528,8 @@ async function init() {
       if (pinInput.length === 4) {
         if (pinInput === FANTASY_UNLOCK_CODE) {
           fantasyUnlocked = true;
-          currentThemeAccessLocked=false;
-          await selectTheme(pendingUnlockTheme||"fantasy");
+          await selectTheme("fantasy");
           setPinModalState(false);
-          setThemeModalState(false);
           updateActionButtonLabels();
         } else {
           pinInput = "";
@@ -2888,6 +3061,7 @@ async function performOpeningReset() {
   snapshotDropActive = true;
 
   try {
+    dispatchExpansionEvent("roll-context-changed", { reason: "reset" });
     const needsClassicDeck = activeTheme !== "classic";
     if (needsClassicDeck) {
       activeTheme = "classic";
@@ -2951,6 +3125,7 @@ async function transitionDiceCount(requestedCount) {
   }
 
   introIsStartup = false;
+  dispatchExpansionEvent("roll-context-changed", { reason: "count" });
   introActive = true;
   snapshotDropActive = true;
 
@@ -2959,7 +3134,11 @@ async function transitionDiceCount(requestedCount) {
 
     let resizedRoll = currentRoll.slice(0, requestedCount);
     if (resizedRoll.length < requestedCount) {
-      resizedRoll=makeRoll(requestedCount,resizedRoll);
+      // Expand the existing result inside the same unique-selection context.
+      // Previously a separate full roll was generated and only its trailing
+      // values were copied, so that roll could unknowingly repeat a word that
+      // was already present on one of the retained dice.
+      resizedRoll = makeRoll(requestedCount, resizedRoll);
     }
 
     wordCount = requestedCount;
@@ -3178,6 +3357,7 @@ function setupThree() {
   floorGlow = null;
 
   resizeRenderer();
+  observeDiceStageSize();
   animate();
 }
 
@@ -3815,7 +3995,19 @@ function warmDiceTextures({ awaitCompletion = false } = {}) {
   return awaitCompletion ? textureWarmupPromise : Promise.resolve();
 }
 
+function syncDiceResultAccessibility(words) {
+  if (!diceStageEl || !Array.isArray(words)) return;
+  const visibleWords = words.slice(0, wordCount).filter(word => typeof word === "string" && word.trim());
+  diceStageEl.setAttribute(
+    "aria-label",
+    visibleWords.length
+      ? `Tattoo dice result: ${visibleWords.join(", ")}`
+      : "Tattoo dice result"
+  );
+}
+
 function prepareDiceResult(words) {
+  syncDiceResultAccessibility(words);
   diceMeshes.forEach((die, index) => {
     const nextWord = words[index];
     if (!die || !die.visible || typeof nextWord !== "string") return;
@@ -3842,6 +4034,9 @@ function commitPendingDiceMaterials(die) {
   const material = die.material?.[faceIndex];
   if (material) {
     material.map = pendingTexture;
+    if (Array.isArray(die.userData.faceWords)) {
+      die.userData.faceWords[faceIndex] = currentRoll[diceMeshes.indexOf(die)] || "";
+    }
 
     if (die === diceMeshes[0] && mainPlasmaOverlayMesh) {
       mainPlasmaOverlayMesh.children.forEach(child => {
@@ -4050,11 +4245,15 @@ function ensureDiceSlots() {
   setMainTintProgress(0);
 }
 
-function updateSlotFaceTextures(die, finalWord, layout) {
+function updateSlotFaceTextures(die, finalWord, layout, savedFaceWords = null) {
   const visibleFaceIndex = getLandingFaceIndex(layout);
-  const allFaces = makeFaceWords(finalWord, visibleFaceIndex);
+  const allFaces = Array.isArray(savedFaceWords) && savedFaceWords.length === 6
+    ? savedFaceWords.slice()
+    : makeFaceWords(finalWord, visibleFaceIndex);
+  allFaces[visibleFaceIndex] = finalWord;
 
   die.userData.visibleFaceIndex = visibleFaceIndex;
+  die.userData.faceWords = allFaces.slice();
   allFaces.forEach((faceWord, faceIndex) => {
     const material = die.material[faceIndex];
     if (!material) return;
@@ -4076,7 +4275,7 @@ function updateSlotFaceTextures(die, finalWord, layout) {
   die.userData.materialsCommitted = true;
 }
 
-function applyLayoutToDiceSlot(index, word, layout, visible, animateIn = false) {
+function applyLayoutToDiceSlot(index, word, layout, visible, animateIn = false, savedFaceWords = null) {
   const die = diceMeshes[index];
   const shadow = diceShadowMeshes[index];
   if (!die || !shadow) return;
@@ -4095,15 +4294,16 @@ function applyLayoutToDiceSlot(index, word, layout, visible, animateIn = false) 
   die.userData.diceSize = size;
   applyCanonicalDicePose(index, wordCount);
 
-  updateSlotFaceTextures(die, word, layout);
+  updateSlotFaceTextures(die, word, layout, savedFaceWords);
 
   shadow.userData.layout = layout;
   shadow.userData.dieSize = size;
   syncDiceShadow(index, animateIn ? 0 : 1, !animateIn);
 }
 
-function renderDice(words, animateIn = false) {
+function renderDice(words, animateIn = false, savedFaceWords = null) {
   ensureDiceSlots();
+  syncDiceResultAccessibility(words);
 
   const layout = getDiceComposite(words.length);
 
@@ -4114,7 +4314,8 @@ function renderDice(words, animateIn = false) {
       visible ? words[index] : "",
       visible ? layout[index] : null,
       visible,
-      animateIn
+      animateIn,
+      Array.isArray(savedFaceWords?.[index]) ? savedFaceWords[index] : null
     );
   }
 
@@ -4302,7 +4503,7 @@ function validateDeckScores() {
 async function loadDeck() {
   let baselineDeck=[];
   try {
-    const response = await fetch(`/decks/${activeTheme}.json`, { cache: "no-store" });
+    const response = await fetch(`/admin/generator/decks/${activeTheme}.json`, { cache: "no-store" });
     if(response.ok)baselineDeck=prepareDeck(await response.json());
   }catch{}
   try {
@@ -4340,7 +4541,7 @@ let liveCanonRefreshInProgress=false;
 async function refreshLiveCanonOnReturn(){
   if(document.visibilityState==="hidden"||liveCanonRefreshInProgress||!deck.length)return;
   liveCanonRefreshInProgress=true;
-  try{await loadAvailablePublicThemes();if(!currentThemeAccessLocked){await loadDeck();validateDeckScores();buildMainMenu();}}
+  try{await loadDeck();validateDeckScores();buildMainMenu();}
   finally{liveCanonRefreshInProgress=false;}
 }
 window.addEventListener("focus",refreshLiveCanonOnReturn);
@@ -4356,10 +4557,6 @@ function setRollRenderPerformanceMode(active) {
 async function roll(options = { countIt: true }) {
   if (!deck.length) return;
 
-  if(currentThemeAccessLocked||!themeHasAccess(activeTheme)){
-    pendingUnlockTheme=activeTheme;showDiceCountNotice("THEME LOCKED");setThemeModalState(true);return;
-  }
-
   if (rollInProgress || introActive || snapshotDropActive) {
     pendingRollRequest = true;
     return;
@@ -4371,6 +4568,7 @@ async function roll(options = { countIt: true }) {
   rollButton.classList.add("rolling");
 
   try {
+    dispatchExpansionEvent("before-new-roll", { snapshot: createRollStateSnapshot(), source: "button" });
     const nextRoll = makeRoll(wordCount);
     currentRoll = nextRoll;
     prepareDiceResult(nextRoll);
@@ -4380,13 +4578,10 @@ async function roll(options = { countIt: true }) {
     await wait(rollDurationMs + 45);
 
     if (options.countIt) incrementCounter();
+    dispatchExpansionEvent("roll-settled", { snapshot: createRollStateSnapshot(), source: "button" });
   } catch (error) {
     console.error("Recovered from Roll error:", error);
   } finally {
-    try{
-      await loadAvailablePublicThemes();
-      if(currentThemeAccessLocked){pendingUnlockTheme=activeTheme;showDiceCountNotice("THEME LOCKED");}
-    }catch{}
     rollButton.classList.remove("rolling");
     rollInProgress = false;
     setRollRenderPerformanceMode(false);
@@ -4482,6 +4677,7 @@ function animate() {
   requestAnimationFrame(animate);
   const t = performance.now() / 1000;
   updateMainPlasmaTime(t);
+  updateAiGeneratePlasmaButton(t);
   updateDiceShadowLifecycles(t * 1000);
 
   if (introActive && snapshotDropActive) {
@@ -4734,8 +4930,30 @@ function resizeRenderer() {
   camera.updateProjectionMatrix();
 }
 
-function makeRoll(count,seedWords=[]) {
-  const chosen=makeGeneratorRoll({deck,count,selectedMain,seedWords,relationshipModel});
+function observeDiceStageSize() {
+  if (!sceneWrap || typeof ResizeObserver !== "function") return;
+
+  diceStageResizeObserver?.disconnect();
+  diceStageResizeObserver = new ResizeObserver(entries => {
+    const entry = entries[0];
+    if (!entry?.contentRect.width || !entry.contentRect.height) return;
+
+    const rendererSize = renderer?.getSize(new THREE.Vector2());
+    const widthChanged = !rendererSize || Math.abs(rendererSize.x - entry.contentRect.width) > 0.5;
+    const heightChanged = !rendererSize || Math.abs(rendererSize.y - entry.contentRect.height) > 0.5;
+    if (widthChanged || heightChanged) resizeRenderer();
+  });
+  diceStageResizeObserver.observe(sceneWrap);
+}
+
+function makeRoll(count, seedWords = []) {
+  const chosen=makeGeneratorRoll({
+    deck,
+    count,
+    selectedMain,
+    seedWords,
+    relationshipModel
+  });
   return chosen.length?chosen.map(item=>item.word):["Roll again"];
 }
 
@@ -4870,6 +5088,89 @@ function easeInOutCubic(x) {
     ? 4 * x * x * x
     : 1 - Math.pow(-2 * x + 2, 3) / 2;
 }
+
+function captureDiceStageComposite() {
+  if (!renderer?.domElement || !diceStageEl) return "";
+  renderSceneWithDiceLayers();
+  const stageRect = diceStageEl.getBoundingClientRect();
+  const scale = Math.min(window.devicePixelRatio || 1, 2);
+  const output = document.createElement("canvas");
+  output.width = Math.max(1, Math.round(stageRect.width * scale));
+  output.height = Math.max(1, Math.round(stageRect.height * scale));
+  const context = output.getContext("2d");
+  context.scale(scale, scale);
+
+  const drawLayer = layer => {
+    if (!layer) return;
+    const rect = layer.getBoundingClientRect();
+    context.drawImage(
+      layer,
+      rect.left - stageRect.left,
+      rect.top - stageRect.top,
+      rect.width,
+      rect.height
+    );
+  };
+
+  drawLayer(groundShadowCanvas);
+  drawLayer(renderer.domElement);
+  return output.toDataURL("image/png");
+}
+
+function captureRollPreview(snapshot) {
+  if (!snapshot || snapshot.theme !== activeTheme || snapshot.count !== wordCount) return "";
+  const current = createRollStateSnapshot();
+  renderDice(snapshot.words.slice(), false, snapshot.faceWords);
+  enforceActiveDiceSlots();
+  renderSceneWithDiceLayers();
+  const preview = captureDiceStageComposite();
+  currentRoll = current.words.slice();
+  renderDice(currentRoll, false, current.faceWords);
+  enforceActiveDiceSlots();
+  renderSceneWithDiceLayers();
+  return preview;
+}
+
+function restoreRollSnapshot(snapshot) {
+  if (!snapshot || snapshot.theme !== activeTheme || snapshot.count !== wordCount) return false;
+  currentRoll = snapshot.words.slice(0, wordCount);
+  renderDice(currentRoll, false, snapshot.faceWords);
+  enforceActiveDiceSlots();
+  updateMainSelectionGlow();
+  renderSceneWithDiceLayers();
+  dispatchExpansionEvent("roll-restored", { snapshot: createRollStateSnapshot() });
+  return true;
+}
+
+window.TattooDiceBridge = {
+  getState: () => createRollStateSnapshot(),
+  isIdle: () => !rollInProgress && !introActive && !snapshotDropActive && !expansionUiLocked,
+  setGestureActive(value) {
+    expansionGestureActive = Boolean(value);
+  },
+  setUiLocked(value) {
+    expansionUiLocked = Boolean(value);
+    document.body.classList.toggle("expansion-ui-locked", expansionUiLocked);
+  },
+  captureCurrentPreview: captureDiceStageComposite,
+  captureRollPreview,
+  restoreRollSnapshot,
+  openGuide: openHelpTour,
+  closeGuide: closeHelpTour,
+  closeMenu: () => setThemeModalState(false),
+  showNotice: showDiceCountNotice,
+  hideNotice() {
+    const notice = document.getElementById("diceCountNotice");
+    clearTimeout(notice?._hideTimer);
+    notice?.classList.remove("show");
+  },
+  getStageElements: () => ({
+    stage: diceStageEl,
+    scene: renderer?.domElement || null,
+    shadows: groundShadowCanvas
+  })
+};
+dispatchExpansionEvent("bridge-ready", { bridge: window.TattooDiceBridge });
 
 // Start only after the entire ES module has evaluated.
 // v2.20 called init() too early: setupThree() synchronously read

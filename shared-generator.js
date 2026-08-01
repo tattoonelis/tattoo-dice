@@ -33,6 +33,18 @@ export async function fetchCanonDeck({
   return prepareDeck(publishedDeck);
 }
 
+export async function fetchCanonThemes({supabaseUrl,supabaseKey,table="canon_subjects",fallback=[]}){
+  const query=new URLSearchParams({id:"eq.__themes",select:"payload",limit:"1"});
+  const response=await fetch(`${supabaseUrl}/rest/v1/${table}?${query}`,{
+    cache:"no-store",
+    headers:{apikey:supabaseKey,authorization:`Bearer ${supabaseKey}`}
+  });
+  if(!response.ok)throw new Error("Canon theme request failed");
+  const rows=await response.json();
+  const themes=rows?.[0]?.payload?.themes;
+  return Array.isArray(themes)&&themes.length?themes:fallback;
+}
+
 export function buildRelationshipModel(records,{theme}={}){
   const accepted=(Array.isArray(records)?records:[]).filter(record =>
     record &&

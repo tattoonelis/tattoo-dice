@@ -1,3 +1,25 @@
+# V0.2.59 — public theme locks
+
+- Connected the public Live App to the shared Canon theme catalog, so every Canon theme appears automatically without adding another hard-coded button.
+- New themes are locked for the public by default while remaining fully available inside Testversie and Ranking.
+- Added an explicit `UNLOCK FOR PUBLIC` / `LOCK FOR PUBLIC` control to Canon; Classic remains permanently public.
+- Kept the existing Fantasy PIN (`2311`) intact. Other locked themes can only be opened by unlocking them in Canon.
+- The Live App refreshes theme access on startup, when returning to the app, when opening the theme menu and after every completed roll.
+- A roll already in motion always finishes cleanly. If an admin locks its theme during that roll, the result is shown but the next roll is blocked.
+- Public rolls remain fast because the remote access check happens after the animation, never before a normal unlocked roll.
+- No Supabase schema changes are required; public access is stored in the existing `__themes` Canon catalog row.
+
+# V0.2.58 — unified Admin Panel
+
+- Replaced `/admin/` with one PIN-protected Admin Panel showing Live App, Testversie, Ranking and Canon.
+- Moved the existing Generator preview to `/admin/generator/`, Ranking to `/admin/ranking/` and Canon to `/admin/canon/` without redesigning their working interfaces.
+- Added a fixed Admin button inside Testversie, Ranking and Canon.
+- Shared one session unlock across the Admin Panel so switching tools does not repeatedly ask for the PIN.
+- Redirected the former `/generator/`, `/canon/` and obsolete `/admin/test/` routes into the new Admin structure.
+- Added Canon theme creation: enter a name, select existing words only, and inherit every selected word's full score, weight, slots, family, notes and hard-rule metadata.
+- Published a shared theme catalog through the existing `canon_subjects` table so new themes automatically appear in Testversie and Ranking.
+- Kept the public root app, public animation code, public deck files and illustrated logo unchanged.
+
 # V0.2.57 — live Canon decks
 
 - Canon now publishes the selected theme as a complete runtime deck inside the existing Supabase Canon table.

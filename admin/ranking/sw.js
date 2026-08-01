@@ -1,0 +1,5 @@
+const CACHE="tattoo-dice-admin-ranking-v21";
+const ASSETS=["/admin/ranking/","/admin/ranking/index.html","/admin/ranking/admin-ranking.css?v=18","/admin/ranking/admin.js?v=21","/admin/ranking/admin-dice.js?v=18","/shared-generator.js","/admin/ranking/manifest.webmanifest","/admin/admin-nav.js?v=1","/admin/assets/admin-ranking-header.png","/admin/assets/admin-icon-180.png","/admin/assets/admin-icon-192.png","/admin/assets/admin-icon-512.png","/decks/classic.json","/decks/fantasy.json"];
+self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
+self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener("fetch",e=>{if(e.request.method!=="GET")return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;}).catch(()=>caches.match(e.request)));});

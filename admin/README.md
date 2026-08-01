@@ -1,4 +1,4 @@
-# Tattoo Dice Admin Ranking Beta
+# Tattoo Dice Admin Panel
 
 Open locally at:
 
@@ -41,8 +41,7 @@ A tie remains Open.
 
 ## Important
 
-This is an admin/test interface, but it does not yet include authentication.
-Do not share the `/admin` URL publicly if only you should submit rankings.
+This is a PIN-protected internal panel. The PIN remains a client-side discovery deterrent rather than server-side authentication.
 
 
 ## Admin PIN
@@ -51,7 +50,7 @@ The admin page is protected by a client-side six-digit PIN:
 
 `231189`
 
-The PIN is intentionally not stored. Reloading `/admin/` requires it again.
+The unlock is retained only for the current browser-tab session so Testversie, Ranking and Canon can be opened without entering the PIN repeatedly.
 
 This is a discovery deterrent, not strong server-side authentication. Do not publish
 the PIN if the admin area must remain private.
@@ -146,7 +145,7 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - New Admin ratings update the Admin model after saving; Public and Generator load the same current ranking model on startup and theme changes.
 - Existing Supabase records, ranking math and `tattoo-dice-admin-rankings.csv` remain compatible.
 - Standout combinations use the Tattoo Dice heart interaction and are exported separately as `tattoo-dice-admin-highlights.csv`.
-- Public root, `/generator/` and `/admin/test/` are intentionally untouched.
+- Public root remains untouched; internal tools now live together under `/admin/`.
 
 ### Clean testing workspace
 - Ranking always tests Random combinations; fixed Main selection is intentionally hidden.
@@ -161,3 +160,22 @@ It opens standalone without Safari tabs or the URL bar. Landscape is preferred.
 - The bundled theme JSON remains the safe fallback.
 - Returning to an already-open Admin page automatically refreshes Canon before subsequent rolls.
 - Canon controls the available deck; rankings continue to control relationship probabilities.
+
+## V0.2.58 Unified Admin Panel
+
+- `/admin/` is the central home with Live App, Testversie, Ranking and Canon.
+- Ranking moved to `/admin/ranking/`, Testversie to `/admin/generator/` and Canon to `/admin/canon/`.
+- Each internal tool has a fixed route back to Admin Panel.
+- Canon can create a new theme by selecting existing word names; complete subject profiles are inherited automatically.
+- The shared Supabase theme catalog makes new themes available in Testversie and Ranking without code changes.
+
+## V0.2.59 Public theme locks
+
+- The public Live App now reads the same theme catalog as Canon, Testversie and Ranking.
+- Every newly created theme starts locked for public use.
+- Open a theme in Canon and use `UNLOCK FOR PUBLIC` or `LOCK FOR PUBLIC` in its Data screen.
+- Classic is always public. Fantasy keeps the existing `2311` tester PIN.
+- Locked themes remain available without restriction in Testversie and Ranking.
+- Live checks access when opened or resumed, when the theme menu opens, and after each completed roll.
+- If a theme is locked while somebody is rolling, that roll finishes and the following roll is stopped.
+- This uses the existing `canon_subjects` table and needs no new Supabase setup.

@@ -3,8 +3,9 @@
 ## Combined preview release V0.2.53
 
 - The public root remains the approved v2.52.24 app.
-- The current development build is isolated under `/generator/`.
-- `/generator/` is protected by the same six-digit PIN as Admin and Admin Test.
+- The complete internal toolset now starts at `/admin/`.
+- The Generator test version lives at `/admin/generator/`, Ranking at `/admin/ranking/` and Canon at `/admin/canon/`.
+- One Admin Panel PIN session covers all three internal tools.
 - The public root contains no Favorites or Generator controls from the development build.
 - This remains a preview release until the product owner explicitly approves V1.0.0.
 
@@ -17,17 +18,17 @@
 
 ## Admin Ranking Beta
 
-A separate ranking interface is included at `/admin/`. See `admin/README.md` and run `admin/setup.sql` in Supabase for shared storage.
+A separate ranking interface is included at `/admin/ranking/`. See `admin/README.md` and run `admin/setup.sql` in Supabase for shared storage.
 
 
 ## Canon manager
 
-The internal mobile curation sheet is isolated at `/canon/` and optimized for
+The internal mobile curation sheet is available at `/admin/canon/` and optimized for
 iPhone landscape. It starts with the approved 86-subject Classic multi-slot
 workbook plus Dog as a separate copy of Wolf's profile. The table mirrors Excel:
 Word, Score, automatic Weight, Main, Detail, Effect, Family and Notes. It
 autosaves locally, can sync through the existing Supabase project after
-`canon/setup.sql` is run, and exports one isolated runtime deck JSON per theme.
+`admin/canon/setup.sql` is run, and exports one isolated runtime deck JSON per theme. New themes can be created by selecting existing words; their complete profiles are inherited automatically.
 Combination testing remains exclusively in the unchanged Admin Ranking page.
 The public root, public decks and animations are unchanged.
 

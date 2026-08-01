@@ -30,7 +30,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=3.6.4-sidequest-v2.52.24-responsive-desktop-live-tour" />
+  <link rel="stylesheet" href="/style.css?v=3.6.4-live-themes-v1" />
   <script type="importmap">
     {
       "imports": {
@@ -129,12 +129,7 @@
     <section class="theme-modal-card" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
       <button class="theme-modal-close" type="button" aria-label="Close theme menu" data-close-theme>×</button>
       <h2 id="themeModalTitle">THEME</h2>
-      <button class="theme-choice active" id="classicThemeChoice" type="button" data-theme="classic" aria-pressed="true">
-        <span>CLASSIC</span>
-      </button>
-      <button class="theme-choice locked" id="fantasyThemeChoice" type="button" data-theme="fantasy" aria-pressed="false">
-        <span id="fantasyThemeLabel">Fantasy 🔒</span>
-      </button>
+      <div class="theme-choice-list" id="themeChoiceList"></div>
     </section>
   </div>
 
@@ -189,6 +184,6 @@
       <div class="portrait-lock-text">Tattoo Dice works best in portrait mode.</div>
     </div>
   </div>
-  <script type="module" src="/script.js?v=3.6.4-live-canon-v1"></script>
+  <script type="module" src="/script.js?v=3.6.4-live-themes-v1"></script>
 </body>
 </html>
